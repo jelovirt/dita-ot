@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension-point id="dita.xsl.strings" name="%extension-point.name" schema="schema/dita.xsl.strings.exsd"/>
+   <extension-point id="dita.template" name="%extension-point.name.0" schema="schema/dita.template.exsd"/>
+   <extension-point id="dita.xsl.messages" name="%extension-point.name.1" schema="schema/dita.xsl.messages.exsd"/>
+   <extension-point id="dita.xsl.param" name="%extension-point.name.3" schema="schema/dita.param.exsd"/>
+   <extension-point id="dita.ant.conductor" name="Ant extension" schema="schema/dita.ant.conductor.exsd"/>
+   <extension-point id="dita.ant.dependency" name="Abt target dependency" schema="schema/dita.ant.dependency.exsd"/>
+   <extension-point id="dita.transtype" name="Transformation type" schema="schema/dita.transtype.exsd"/>
+   <extension-point id="dita.xsl.import" name="XSLT Override" schema="schema/dita.xsl.import.exsd"/>
+   <extension-point id="dita.catalog" name="Catalog" schema="schema/dita.catalog.exsd"/>
+</plugin>
