@@ -1,3 +1,12 @@
+/*
+ * This file is part of the DITA Open Toolkit project hosted on
+ * Sourceforge.net. See the accompanying license.txt file for 
+ * applicable licenses.
+ */
+
+/*
+ * (c) Copyright IBM Corp. 2011 All Rights Reserved.
+ */
 package org.dita.dost;
 
 import java.io.BufferedInputStream;
@@ -43,7 +52,7 @@ public class TestUtils {
 	}
 	
 	/**
-	 * Read file contents into a string
+	 * Read file contents into a string.
 	 * 
 	 * @param file file to read
 	 * @return contents of the file
@@ -54,7 +63,7 @@ public class TestUtils {
 	}
 	
 	/**
-	 * Read file contents into a string
+	 * Read file contents into a string.
 	 * 
 	 * @param file file to read
 	 * @param ignoreHead ignore first row
@@ -66,11 +75,17 @@ public class TestUtils {
 		BufferedReader in = null;
 		try {
             in = new BufferedReader(new FileReader(file));
+            boolean firstLine = true;
             if (ignoreHead) {
             	in.readLine();
             }
             String str;
             while ((str = in.readLine()) != null) {
+            	if (!firstLine) {
+            	    std.append("\n");
+            	} else {
+            		firstLine = false;
+            	}
             	std.append(str);
             }
         } finally {
