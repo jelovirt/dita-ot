@@ -22,7 +22,6 @@ import org.dita.dost.util.StringUtils;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
-import org.xml.sax.helpers.XMLReaderFactory;
 /**
  * MergeTopicParser reads topic file and transform the references to other dita
  * files into internal references. The parse result of MergeTopicParser will be
@@ -48,17 +47,15 @@ public class MergeTopicParser extends AbstractXMLReader {
 	public MergeTopicParser() {
 		logger = new DITAOTJavaLogger();
 		try{
-			if (System.getProperty(Constants.SAX_DRIVER_PROPERTY) == null){
-				//The default sax driver is set to xerces's sax driver
-				StringUtils.initSaxDriver();
-			}
 			if(reader == null){
-				reader = XMLReaderFactory.createXMLReader();
+				reader = StringUtils.getXMLReader();
 				reader.setContentHandler(this);
 				reader.setFeature(Constants.FEATURE_NAMESPACE_PREFIX, true);
 			}
-			if(topicInfo == null){
-				topicInfo = new StringBuffer(Constants.INT_1024);
+			synchronized(this) {
+    			if(topicInfo == null){
+    				topicInfo = new StringBuffer(Constants.INT_1024);
+    			}
 			}
 			
 			content = new ContentImpl();

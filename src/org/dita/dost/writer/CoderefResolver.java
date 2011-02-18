@@ -12,6 +12,7 @@ package org.dita.dost.writer;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileReader;
+import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.HashSet;
 import java.util.Properties;
@@ -27,7 +28,6 @@ import org.dita.dost.util.StringUtils;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
-import org.xml.sax.helpers.XMLReaderFactory;
 /**
  * CoderefResolver class, resolving 
  * coderef attribute in topic file.
@@ -54,11 +54,7 @@ public class CoderefResolver extends AbstractXMLWriter {
 		coderefSpec = new HashSet<String>();
 		
 		try {
-            if (System.getProperty(Constants.SAX_DRIVER_PROPERTY) == null){
-                //The default sax driver is set to xerces's sax driver
-            	StringUtils.initSaxDriver();
-            }
-            reader = XMLReaderFactory.createXMLReader();
+            reader = StringUtils.getXMLReader();
             reader.setContentHandler(this);
             reader.setProperty(Constants.LEXICAL_HANDLER_PROPERTY,this);
             reader.setFeature(Constants.FEATURE_NAMESPACE_PREFIX, true);
@@ -173,13 +169,23 @@ public class CoderefResolver extends AbstractXMLWriter {
 					String codeFile = FileUtils.normalizeDirectory(
 							currentFile.getParentFile().getAbsolutePath(), hrefValue);
 					if (new File(codeFile).exists()){
-						FileReader codeReader = new FileReader(new File(codeFile));
-						char[] buffer = new char[Constants.INT_1024 * Constants.INT_4];
-						int len;
-						while((len = codeReader.read(buffer)) != -1){
-							output.write(StringUtils.escapeXML(buffer, 0, len));
+						FileReader codeReader = null;
+						try {
+							codeReader = new FileReader(new File(codeFile));
+    						char[] buffer = new char[Constants.INT_1024 * Constants.INT_4];
+    						int len;
+    						while((len = codeReader.read(buffer)) != -1){
+    							output.write(StringUtils.escapeXML(buffer, 0, len));
+    						}
+						} finally {
+							if (codeReader != null) {
+								try {
+									codeReader.close();
+								} catch (IOException e) {
+									logger.logException(e);
+								}
+							}
 						}
-						codeReader.close();
 					}else{
 						//report error of href target is not valid
 					}

@@ -31,7 +31,6 @@ import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
-import org.xml.sax.helpers.XMLReaderFactory;
 
 
 /**
@@ -124,11 +123,7 @@ public class MapLinksReader extends AbstractXMLReader {
         
         
         try {
-            if (System.getProperty(Constants.SAX_DRIVER_PROPERTY) == null){
-                //The default sax driver is set to xerces's sax driver
-            	StringUtils.initSaxDriver();
-            }
-            reader = XMLReaderFactory.createXMLReader();
+            reader = StringUtils.getXMLReader();
             reader.setContentHandler(this);
             reader.setProperty(Constants.LEXICAL_HANDLER_PROPERTY,this);
             //Added by william on 2009-11-8 for ampbug:2893664 start
@@ -265,7 +260,7 @@ public class MapLinksReader extends AbstractXMLReader {
      */
     public Content getContent() {
 
-        ContentImpl result = new ContentImpl();
+    	ContentImpl result = new ContentImpl();
         result.setCollection( map.entrySet());
         return result;
     }

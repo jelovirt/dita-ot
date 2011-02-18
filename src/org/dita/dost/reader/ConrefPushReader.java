@@ -23,7 +23,6 @@ import org.dita.dost.util.StringUtils;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
-import org.xml.sax.helpers.XMLReaderFactory;
 /**
  * Class for reading conref push content.
  *
@@ -95,7 +94,7 @@ public class ConrefPushReader extends AbstractXMLReader {
 		pushtable = new Hashtable<String, Hashtable<String,String>>();
 		javaLogger = new DITAOTJavaLogger();
 		try{
-			reader = XMLReaderFactory.createXMLReader();
+			reader = StringUtils.getXMLReader();
 			reader.setFeature(Constants.FEATURE_NAMESPACE_PREFIX, true);
 			reader.setFeature(Constants.FEATURE_NAMESPACE, true);
 			
@@ -179,11 +178,11 @@ public class ConrefPushReader extends AbstractXMLReader {
 					pushType = null;
 				}
 			}
-		}else if (pushcontent != null && pushcontent.length() > 0 && level == 0){
+		}//else if (pushcontent != null && pushcontent.length() > 0 && level == 0){
 			//if there is no element with conaction="mark" after 
 			//one with conaction="pushbefore", report syntax error
 			
-		}
+		//}
 	}	
 	/**
 	 * replace content.

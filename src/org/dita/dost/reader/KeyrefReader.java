@@ -25,7 +25,6 @@ import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
-import org.xml.sax.helpers.XMLReaderFactory;
 /**
  * KeyrefReader class which reads ditamap file to collect key definitions.
  *
@@ -66,7 +65,7 @@ public class KeyrefReader extends AbstractXMLReader {
 		keyDefTable = new Hashtable<String, String>();
 		keys = new HashSet<String>();
 		try {
-			reader = XMLReaderFactory.createXMLReader();
+			reader = StringUtils.getXMLReader();
 			reader.setFeature(Constants.FEATURE_NAMESPACE_PREFIX, true);
 			reader.setFeature(Constants.FEATURE_NAMESPACE, true);
 		} catch (SAXException ex) {

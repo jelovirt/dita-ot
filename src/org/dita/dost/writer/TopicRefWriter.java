@@ -28,7 +28,6 @@ import org.dita.dost.util.StringUtils;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
-import org.xml.sax.helpers.XMLReaderFactory;
 
 
 /**
@@ -64,11 +63,7 @@ public class TopicRefWriter extends AbstractXMLWriter {
 		logger = new DITAOTJavaLogger();
 		
         try {
-            if (System.getProperty(Constants.SAX_DRIVER_PROPERTY) == null){
-                //The default sax driver is set to xerces's sax driver
-            	StringUtils.initSaxDriver();
-            }
-            reader = XMLReaderFactory.createXMLReader();
+            reader = StringUtils.getXMLReader();
             reader.setContentHandler(this);
             reader.setProperty(Constants.LEXICAL_HANDLER_PROPERTY,this);
             reader.setFeature(Constants.FEATURE_NAMESPACE_PREFIX, true);
@@ -350,7 +345,31 @@ public class TopicRefWriter extends AbstractXMLWriter {
 		if (checkDITAHREF(atts)) {
 				// replace the href value if it's referenced topic is extracted.
 			String rootPathName=currentFilePathName;
-			String changeTarget=(String)changeTable.get(FileUtils.resolveFile(currentFilePath, attValue));
+			// Added on 20110125 for bug:Chunking remaps in-file <xref> to
+			// invalid value - ID: 3162808 start
+			String changeTargetkey = FileUtils.resolveFile(currentFilePath,
+					attValue);
+			String changeTarget = (String) changeTable.get(changeTargetkey);
+ 
+			final int sharpIndex = attValue.lastIndexOf(Constants.SHARP);
+			if (sharpIndex != -1) {
+				final int slashIndex = attValue.indexOf(Constants.SLASH,
+						sharpIndex);
+				if (slashIndex != -1) {
+					changeTargetkey = changeTargetkey
+							+ attValue.substring(sharpIndex, slashIndex);
+				} else {
+					changeTargetkey = changeTargetkey
+							+ attValue.substring(sharpIndex);
+				}
+				String changeTarget_with_elemt = (String) changeTable
+						.get(changeTargetkey);
+				if (changeTarget_with_elemt != null) {
+					changeTarget = changeTarget_with_elemt;
+				}
+			}				
+			
+			// Added on 20110125 for bug:Chunking remaps in-file <xref> to invalid value - ID: 3162808   end 
 			String elementID=getElementID(attValue);
 			String pathtoElem = 
 				attValue.contains(Constants.SHARP) ? attValue.substring(attValue.indexOf(Constants.SHARP)+1) : "";

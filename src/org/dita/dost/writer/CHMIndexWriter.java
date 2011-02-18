@@ -10,6 +10,7 @@
 package org.dita.dost.writer;
 
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
@@ -19,6 +20,8 @@ import java.util.List;
 import org.dita.dost.exception.DITAOTException;
 import org.dita.dost.index.IndexTerm;
 import org.dita.dost.index.IndexTermTarget;
+import org.dita.dost.log.DITAOTJavaLogger;
+import org.dita.dost.log.DITAOTLogger;
 import org.dita.dost.module.Content;
 import org.dita.dost.util.Constants;
 
@@ -32,10 +35,12 @@ import org.dita.dost.util.Constants;
  */
 public class CHMIndexWriter extends AbstractExtendDitaWriter implements AbstractWriter, IDitaTranstypeIndexWriter {
     
+	private final DITAOTLogger logger = new DITAOTJavaLogger();
+	
 	//RFE 2987769 Eclipse index-see - Added extends AbstractExtendedDitaWriter
 	
 	/** List of indexterms */
-    private List termList = null;
+    private List<IndexTerm> termList = null;
 
     /**
      * Default Constructor.
@@ -47,7 +52,7 @@ public class CHMIndexWriter extends AbstractExtendDitaWriter implements Abstract
      * @see org.dita.dost.writer.AbstractWriter#setContent(org.dita.dost.module.Content)
      */
     public void setContent(Content content) {
-        termList = (List) content.getCollection();
+        termList = (List<IndexTerm>) content.getCollection();
     }
 
     /**
@@ -92,12 +97,22 @@ public class CHMIndexWriter extends AbstractExtendDitaWriter implements Abstract
     /**
 	 * @see org.dita.dost.writer.AbstractWriter#write(java.lang.String)
 	 */
-	public void write(String filename) throws DITAOTException {		
+	public void write(String filename) throws DITAOTException {
+		OutputStream out = null;
 		try {
-			write(new FileOutputStream(filename));
+			out = new FileOutputStream(filename);
+			write(out);
 		} catch (Exception e) {
 			throw new DITAOTException(e);
-		}
+		} finally {
+        	if (out != null) {
+        		try {
+        			out.close();
+        		} catch (IOException e) {
+        			logger.logException(e);
+        		}
+        	}
+        }
 	}
 
 	/**
@@ -107,8 +122,8 @@ public class CHMIndexWriter extends AbstractExtendDitaWriter implements Abstract
      * @param printWriter
      */
     private void outputIndexTerm(IndexTerm term, PrintWriter printWriter) {
-        List targets = term.getTargetList();
-        List subTerms = term.getSubTerms();
+        List<IndexTermTarget> targets = term.getTargetList();
+        List<IndexTerm> subTerms = term.getSubTerms();
         int targetNum = targets.size();
         int subTermNum = subTerms.size();
 
@@ -164,11 +179,11 @@ public class CHMIndexWriter extends AbstractExtendDitaWriter implements Abstract
      * The list of targets to store the result found
      */
 	private void findTargets(IndexTerm term) {
-		List subTerms = term.getSubTerms();
-		List subTargets = null;
+		List<IndexTerm> subTerms = term.getSubTerms();
+		List<IndexTermTarget> subTargets = null;
 		if (subTerms != null && ! subTerms.isEmpty()){
 			for (int i = 0; i < subTerms.size(); i++){
-				IndexTerm subTerm = (IndexTerm) subTerms.get(i);
+				IndexTerm subTerm = subTerms.get(i);
 				subTargets = subTerm.getTargetList();
 				if (subTargets != null && !subTargets.isEmpty()){
 				// edited by William on 2009-07-13 for indexterm bug:2819853 start

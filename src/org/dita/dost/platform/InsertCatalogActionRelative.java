@@ -9,15 +9,13 @@
  */
 package org.dita.dost.platform;
 
+import java.io.File;
+
 import org.dita.dost.util.Constants;
-import org.dita.dost.util.StringUtils;
+import org.dita.dost.util.FileUtils;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
-
-import org.dita.dost.util.FileUtils;
-
-import java.io.File;
 
 /**
  * InsertCatalogActionRelative inserts the children of the root element of an XML document
@@ -32,8 +30,7 @@ import java.io.File;
  * @author Deborah Pickett
  *
  */
-public class InsertCatalogActionRelative extends InsertAction implements
-		IAction {
+public class InsertCatalogActionRelative extends InsertAction {
 
 	@Override
 	public void startElement(final String uri, final String localName, final String qName,

@@ -29,8 +29,7 @@ import org.junit.Test;
 public class TestJavaHelpIndexWriter {
 	JavaHelpIndexWriter javahelpindexwriter =new JavaHelpIndexWriter();
 	String filenameout="test-stub" + File.separator + "TestJavaHelpIndexWriter" + File.separator + "javahelpindexwriteroutput.xml";
-	FileOutputStream fileoutputstream;
-	Collection collection = new ArrayList();
+	Collection<IndexTerm> collection = new ArrayList<IndexTerm>();
 	IndexTerm indexterm1=new IndexTerm();
 	IndexTerm indexterm2=new IndexTerm();
 	File javahelpindexwriterfile =new File("test-stub" + File.separator + "TestJavaHelpIndexWriter" + File.separator + "javahelpindexwriteroutput.xml");

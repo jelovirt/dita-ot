@@ -11,6 +11,8 @@ package org.dita.dost.reader;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Properties;
 import java.util.Stack;
 import java.util.StringTokenizer;
@@ -27,7 +29,6 @@ import org.dita.dost.util.StringUtils;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
-import org.xml.sax.helpers.XMLReaderFactory;
 
 /**
  * MergeMapParser reads the ditamap file after preprocessing and merges
@@ -55,12 +56,8 @@ public class MergeMapParser extends AbstractXMLReader {
 	public MergeMapParser() {
 		logger = new DITAOTJavaLogger();
 		try{
-			if (System.getProperty(Constants.SAX_DRIVER_PROPERTY) == null){
-				//The default sax driver is set to xerces's sax driver
-				StringUtils.initSaxDriver();
-			}
 			if(reader == null){
-				reader = XMLReaderFactory.createXMLReader();
+				reader = StringUtils.getXMLReader();
 				reader.setContentHandler(this);
 				reader.setFeature(Constants.FEATURE_NAMESPACE_PREFIX, true);
 			}
@@ -236,11 +233,15 @@ public class MergeMapParser extends AbstractXMLReader {
 		Properties property = new Properties();
 	    File ditalist = new File(tempdir, Constants.FILE_NAME_DITA_LIST);
         File xmlDitalist = new File(tempdir, Constants.FILE_NAME_DITA_LIST_XML);
+        InputStream in = null;
         try{
-	        if(xmlDitalist.exists())
-	        	property.loadFromXML(new FileInputStream(xmlDitalist));
-	        else 
-	        	property.loadFromXML(new FileInputStream(ditalist));
+	        if(xmlDitalist.exists()) {
+	        	in = new FileInputStream(xmlDitalist);
+	        	property.loadFromXML(in);
+	        } else {
+	        	in = new FileInputStream(ditalist);
+	        	property.loadFromXML(in);
+	        }
 	        String hrefTargetList = property.getProperty(Constants.HREF_TARGET_LIST);
 	        String resourceOnlySet = property.getProperty(Constants.RESOURCE_ONLY_LIST);
 	        resourceOnlySet = (resourceOnlySet == null ? "" : resourceOnlySet);
@@ -274,7 +275,15 @@ public class MergeMapParser extends AbstractXMLReader {
 			}
         }catch (Exception e){
         	logger.logException(e);
-        }		
+        } finally {
+        	if (in != null) {
+        		try {
+        			in.close();
+        		} catch (IOException e) {
+        			logger.logException(e);
+        		}
+        	}
+        }
 	}
 
 }

@@ -29,7 +29,6 @@ import org.dita.dost.util.Constants;
 import org.dita.dost.util.FileUtils;
 import org.dita.dost.util.StringUtils;
 import org.xml.sax.XMLReader;
-import org.xml.sax.helpers.XMLReaderFactory;
 
 /**
  * Integrator is the main class to control and excute the 
@@ -282,10 +281,7 @@ public class Integrator {
 		featureTable = new Hashtable<String,String>(Constants.INT_16);
 		logger = new DITAOTJavaLogger();
 		try {
-            if (System.getProperty(Constants.SAX_DRIVER_PROPERTY) == null){
-                StringUtils.initSaxDriver();
-            }
-            reader = XMLReaderFactory.createXMLReader();            
+            reader = StringUtils.getXMLReader();
         } catch (final Exception e) {
         	throw new RuntimeException("Failed to initialize XML parser: " + e.getMessage(), e);
         }

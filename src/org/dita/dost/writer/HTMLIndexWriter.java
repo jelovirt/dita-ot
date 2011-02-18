@@ -10,6 +10,7 @@
 package org.dita.dost.writer;
 
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
@@ -19,6 +20,8 @@ import java.util.List;
 import org.dita.dost.exception.DITAOTException;
 import org.dita.dost.index.IndexTerm;
 import org.dita.dost.index.IndexTermTarget;
+import org.dita.dost.log.DITAOTJavaLogger;
+import org.dita.dost.log.DITAOTLogger;
 import org.dita.dost.module.Content;
 import org.dita.dost.util.Constants;
 
@@ -35,7 +38,8 @@ import org.dita.dost.util.Constants;
  */
 public class HTMLIndexWriter extends AbstractExtendDitaWriter implements AbstractWriter, IDitaTranstypeIndexWriter {
     /** List of indexterms */
-    private List termList = null;
+    private List<IndexTerm> termList = null;
+    private final DITAOTLogger logger = new DITAOTJavaLogger();
 
     /**
      * Default Constructor.
@@ -47,7 +51,7 @@ public class HTMLIndexWriter extends AbstractExtendDitaWriter implements Abstrac
      * @see org.dita.dost.writer.AbstractWriter#setContent(org.dita.dost.module.Content)
      */
     public void setContent(Content content) {
-        termList = (List) content.getCollection();
+        termList = (List<IndexTerm>) content.getCollection();
     }
 
     /**
@@ -72,7 +76,7 @@ public class HTMLIndexWriter extends AbstractExtendDitaWriter implements Abstrac
             printWriter.println("<ul>");
 			String printLetter = "A"; //Initializing the variable for the alphabetical headings.
             for (int i = 0; i < termNum; i++) {
-                IndexTerm term = (IndexTerm) termList.get(i);
+                IndexTerm term = termList.get(i);
 				
 				//Add alphabetical headings:
 				if (i == 0)
@@ -104,11 +108,21 @@ public class HTMLIndexWriter extends AbstractExtendDitaWriter implements Abstrac
     /**
 	 * @see org.dita.dost.writer.AbstractWriter#write(java.lang.String)
 	 */
-	public void write(String filename) throws DITAOTException {		
+	public void write(String filename) throws DITAOTException {
+		OutputStream out = null;
 		try {
-			write(new FileOutputStream(filename));
+			out = new FileOutputStream(filename);
+			write(out);
 		} catch (Exception e) {
 			throw new DITAOTException(e);
+		} finally {
+			if (out != null) {
+				try {
+	                out.close();
+                } catch (IOException e) {
+                	logger.logException(e);
+                }
+			}
 		}
 	}
 
@@ -119,8 +133,8 @@ public class HTMLIndexWriter extends AbstractExtendDitaWriter implements Abstrac
      * @param printWriter
      */
     private void outputIndexTerm(IndexTerm term, PrintWriter printWriter) {
-        List targets = term.getTargetList();
-        List subTerms = term.getSubTerms();
+        List<IndexTermTarget> targets = term.getTargetList();
+        List<IndexTerm> subTerms = term.getSubTerms();
         int targetNum = targets.size();
         int subTermNum = subTerms.size();
 
@@ -141,7 +155,7 @@ public class HTMLIndexWriter extends AbstractExtendDitaWriter implements Abstrac
 		}
 		else
 		{
-            IndexTermTarget target = (IndexTermTarget) targets.get(0);
+            IndexTermTarget target = targets.get(0);
             printWriter.print("<a href=\"");
 			printWriter.print(target.getTargetURI());
             printWriter.print("\">");
@@ -155,7 +169,7 @@ public class HTMLIndexWriter extends AbstractExtendDitaWriter implements Abstrac
             printWriter.println("<ul>");
 
             for (int i = 0; i < subTermNum; i++) {
-                IndexTerm subTerm = (IndexTerm) subTerms.get(i);
+                IndexTerm subTerm = subTerms.get(i);
                 outputIndexTerm(subTerm, printWriter);
             }
 
@@ -175,11 +189,11 @@ public class HTMLIndexWriter extends AbstractExtendDitaWriter implements Abstrac
      * The list of targets to store the result found
      */
 	private void findTargets(IndexTerm term) {
-		List subTerms = term.getSubTerms();
-		List subTargets = null;
+		List<IndexTerm> subTerms = term.getSubTerms();
+		List<IndexTermTarget> subTargets = null;
 		if (subTerms != null && ! subTerms.isEmpty()){
 			for (int i = 0; i < subTerms.size(); i++){
-				IndexTerm subTerm = (IndexTerm) subTerms.get(i);
+				IndexTerm subTerm = subTerms.get(i);
 				subTargets = subTerm.getTargetList();
 				if (subTargets != null && !subTargets.isEmpty()){
 					findTargets(subTerm);
