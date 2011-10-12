@@ -10,4 +10,18 @@
    <extension-point id="dita.transtype" name="Transformation type" schema="schema/dita.transtype.exsd"/>
    <extension-point id="dita.xsl.import" name="XSLT Override" schema="schema/dita.xsl.import.exsd"/>
    <extension-point id="dita.catalog" name="Catalog" schema="schema/dita.catalog.exsd"/>
+   <extension point="dita.template">
+      <template file="catalog-dita_template.xml"/>
+      <template file="build_template.xml"/>
+      <template file="resource/messages_template.xml"/>
+   </extension>
+   <extension point="dita.template">
+      <template file="xsl/common/allstrings_template.xml"/>
+   </extension>
+   <extension
+         point="dita.template">
+      <template
+            file="build_general_template.xml">
+      </template>
+   </extension>
 </plugin>

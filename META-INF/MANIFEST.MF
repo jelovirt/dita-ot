@@ -5,17 +5,18 @@ Bundle-SymbolicName: org.sf.dita-ot;singleton:=true
 Bundle-Version: 2.0.0.qualifier
 Bundle-ClassPath: lib/saxon/saxon9-dom.jar,
  lib/saxon/saxon9.jar,
- output2/
+ output2/,
+ lib/
 Eclipse-BundleShape: dir
 Require-Bundle: org.apache.xerces;bundle-version="2.9.0",
- com.ibm.icu;bundle-version="4.2.1",
+ com.ibm.icu;bundle-version="4.2.1";resolution:=optional,
  org.apache.commons.logging;bundle-version="1.0.4",
- org.apache.ant;bundle-version="1.7.1"
+ org.apache.ant;bundle-version="1.7.1",
+ org.apache.commons.codec;bundle-version="1.4.0"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Export-Package: org.dita.dost.exception,
  org.dita.dost.index,
  org.dita.dost.invoker,
- org.dita.dost.junit,
  org.dita.dost.log,
  org.dita.dost.module,
  org.dita.dost.pipeline,
