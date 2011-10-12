@@ -27,7 +27,6 @@ import org.dita.dost.util.StringUtils;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
-import org.xml.sax.helpers.XMLReaderFactory;
 
 
 /**
@@ -68,11 +67,7 @@ public class DitaLinksWriter extends AbstractXMLWriter {
         logger = new DITAOTJavaLogger();
         
         try {
-            if (System.getProperty(Constants.SAX_DRIVER_PROPERTY) == null){
-                //The default sax driver is set to xerces's sax driver
-            	StringUtils.initSaxDriver();
-            }
-            reader = XMLReaderFactory.createXMLReader();
+            reader = StringUtils.getXMLReader();
             reader.setContentHandler(this);
             reader.setProperty(Constants.LEXICAL_HANDLER_PROPERTY,this);
             reader.setFeature(Constants.FEATURE_NAMESPACE_PREFIX, true);

@@ -37,40 +37,46 @@ import org.xml.sax.SAXException;
 
 public class DitamapIndexTermReader extends AbstractXMLReader {
 	/** The stack used to store elements */
-	private Stack elementStack = null;
+	private Stack<Object> elementStack = null;
 	
 	/** List used to store all the specialized index terms */
-	private List indexTermSpecList = null;
+	private List<String> indexTermSpecList = null;
 	
 	/** List used to store all the specialized topicref tags */
-	private List topicrefSpecList = null;
+	private List<String> topicrefSpecList = null;
 	
 	/** List used to store all the specialized index-see tags */
-	private List indexSeeSpecList = null;
+	private List<String> indexSeeSpecList = null;
 	
 	/** List used to store all the specialized index-see-also tags */
-	private List indexSeeAlsoSpecList = null;
+	private List<String> indexSeeAlsoSpecList = null;
 	
 	private String mapPath = null;
 
 	private DITAOTJavaLogger javaLogger = null;
 	//Added by William on 2010-04-26 for ref:2990783 start
-	private IndexTermCollection result = IndexTermCollection.getInstantce();
+	private IndexTermCollection result;
 	// assumes index terms have been moved by preprocess
 	private boolean indexMoved = true; 
 	//Added by William on 2010-04-26 for ref:2990783 end
 	
 	/**
 	 * Create a new instance of sax handler for ditamap.
+	 * 
+	 * @deprecated use {@link #DitamapIndexTermReader(IndexTermCollection, boolean)} instead
 	 */
+	@Deprecated
 	public DitamapIndexTermReader() {
 		super();
-		elementStack = new Stack();
-		indexTermSpecList = new ArrayList(Constants.INT_16);
-		topicrefSpecList = new ArrayList(Constants.INT_16);
-		indexSeeSpecList = new ArrayList(Constants.INT_16);
-		indexSeeAlsoSpecList = new ArrayList(Constants.INT_16);
+		elementStack = new Stack<Object>();
+		indexTermSpecList = new ArrayList<String>(Constants.INT_16);
+		topicrefSpecList = new ArrayList<String>(Constants.INT_16);
+		indexSeeSpecList = new ArrayList<String>(Constants.INT_16);
+		indexSeeAlsoSpecList = new ArrayList<String>(Constants.INT_16);
 		javaLogger = new DITAOTJavaLogger();
+		if (result == null) {
+		    result = IndexTermCollection.getInstantce();
+		}
 	}
 	//Added by William on 2010-04-26 for ref:2990783 start
 	public DitamapIndexTermReader(IndexTermCollection result, boolean indexMoved) {

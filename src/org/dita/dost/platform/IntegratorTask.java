@@ -10,10 +10,9 @@
 package org.dita.dost.platform;
 
 import java.io.File;
+
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
-import org.dita.dost.util.Constants;
-import org.dita.dost.util.StringUtils;
 
 /**
  * Task run by ant scripts, invoking Task.
@@ -27,10 +26,6 @@ public class IntegratorTask extends Task {
 	 * Default Constructor.
 	 */
 	public IntegratorTask() {
-		if (System.getProperty(Constants.SAX_DRIVER_PROPERTY) == null){
-            //The default sax driver is set to xerces's sax driver
-			StringUtils.initSaxDriver();
-        }
 		adaptee = new Integrator();
 	}
 

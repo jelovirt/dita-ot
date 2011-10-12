@@ -1,3 +1,12 @@
+/*
+ * This file is part of the DITA Open Toolkit project hosted on
+ * Sourceforge.net. See the accompanying license.txt file for 
+ * applicable licenses.
+ */
+
+/*
+ * (c) Copyright IBM Corp. 2010 All Rights Reserved.
+ */
 package org.dita.dost.writer;
 
 import java.io.File;
@@ -33,7 +42,6 @@ import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
-import org.xml.sax.helpers.XMLReaderFactory;
 /**
  * KeyrefPaser class parsing keyref attribute.
  *
@@ -181,7 +189,7 @@ public class KeyrefPaser extends AbstractXMLWriter {
 		elemName = new Stack<String>();
 		hasSubElem = new Stack<Boolean>();
 		try {
-			parser = XMLReaderFactory.createXMLReader();
+			parser = StringUtils.getXMLReader();
 			parser.setFeature(Constants.FEATURE_NAMESPACE_PREFIX, true);
 			parser.setFeature(Constants.FEATURE_NAMESPACE, true);
 			parser.setContentHandler(this);

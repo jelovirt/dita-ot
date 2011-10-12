@@ -18,6 +18,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 
+import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
+import org.xml.sax.helpers.XMLReaderFactory;
+
 import org.dita.dost.log.DITAOTJavaLogger;
 
 /**
@@ -44,8 +48,8 @@ public class StringUtils {
 	 *            Description of the Parameter
 	 * @return java.lang.String
 	 */
-	@SuppressWarnings("unchecked")
-	public static String assembleString(Collection coll, String delim) {
+	@SuppressWarnings("rawtypes")
+    public static String assembleString(Collection coll, String delim) {
 		StringBuffer buff = new StringBuffer(Constants.INT_256);
 		Iterator iter = null;
 
@@ -55,7 +59,7 @@ public class StringUtils {
 
 		iter = coll.iterator();
 		while (iter.hasNext()) {
-			buff.append(iter.next());
+			buff.append(iter.next().toString());
 
 			if (iter.hasNext()) {
 				buff.append(delim);
@@ -87,7 +91,6 @@ public class StringUtils {
 	public static String escapeXML(char[] chars, int offset, int length){
 		StringBuffer escaped = new StringBuffer();
 		
-		String test = new String(chars,offset, length);
         int end = offset + length;
         for (int i = offset; i < end; ++i) {
             char c = chars[i];
@@ -315,7 +318,10 @@ public class StringUtils {
 	
 	/**
 	 * Init sax driver info.
+	 * 
+	 * @deprecated use {@link #getXMLReader} instead to get the preferred SAX parser
 	 */
+	@Deprecated
 	public static void initSaxDriver(){
 		//The default sax driver is set to xerces's sax driver
 		DITAOTJavaLogger logger = new DITAOTJavaLogger();
@@ -343,6 +349,41 @@ public class StringUtils {
 		
 	}
 	
+	/**
+     * Get preferred SAX parser.
+     * 
+     * Preferred XML readers are in order:
+     * 
+     * <ol>
+     *   <li>{@link Constants.SAX_DRIVER_DEFAULT_CLASS}</li>
+     *   <li>{@link Constants.SAX_DRIVER_SUN_HACK_CLASS}</li>
+     *   <li>{@link Constants.SAX_DRIVER_CRIMSON_CLASS}</li>
+     * </ol>
+     * 
+     * @return XML parser instance.
+	 * @throws SAXException if instantiating XMLReader failed
+     */
+    public static XMLReader getXMLReader() throws SAXException {
+        if (System.getProperty(Constants.SAX_DRIVER_PROPERTY) != null) {
+            return XMLReaderFactory.createXMLReader();
+        }
+        try {
+            Class.forName(Constants.SAX_DRIVER_DEFAULT_CLASS);
+            return XMLReaderFactory.createXMLReader(Constants.SAX_DRIVER_DEFAULT_CLASS);
+        } catch (ClassNotFoundException e) {
+            try {
+                Class.forName(Constants.SAX_DRIVER_SUN_HACK_CLASS);
+                return XMLReaderFactory.createXMLReader(Constants.SAX_DRIVER_SUN_HACK_CLASS);
+            } catch (ClassNotFoundException ex) {
+                try {
+                    Class.forName(Constants.SAX_DRIVER_CRIMSON_CLASS);
+                    return XMLReaderFactory.createXMLReader(Constants.SAX_DRIVER_CRIMSON_CLASS);
+                } catch (ClassNotFoundException exc){
+                    return XMLReaderFactory.createXMLReader();
+                }
+            }
+        }
+    }
 
 		/**
 		 * Return a Java Locale object.
@@ -376,7 +417,7 @@ public class StringUtils {
 				
 				if (underscoreIndex == -1){
 					language = tempString;
-				}else if (underscoreIndex == 2 | underscoreIndex == 3){
+				}else if (underscoreIndex == 2 || underscoreIndex == 3){
 					//check is first subtag is two or three characters in length.
 					language = tempString.substring(0, underscoreIndex);
 				}
@@ -448,15 +489,15 @@ public class StringUtils {
 		/**
 		 * Get max value.
 		 */
-		public static Integer getMax(Integer ul_depth, Integer ol_depth, Integer sl_depth, 
-				Integer dl_depth, Integer table_depth, Integer stable_depth){
+		public static Integer getMax(String ul_depth, String ol_depth, String sl_depth, 
+				String dl_depth, String table_depth, String stable_depth){
 			
-			int unDepth = ul_depth;
-			int olDepth = ol_depth;
-			int slDepth = sl_depth;
-			int dlDepth = dl_depth;
-			int tableDepth = table_depth;
-			int stableDepth = stable_depth;
+			int unDepth = Integer.parseInt(ul_depth);
+			int olDepth = Integer.parseInt(ol_depth);
+			int slDepth = Integer.parseInt(sl_depth);
+			int dlDepth = Integer.parseInt(dl_depth);
+			int tableDepth = Integer.parseInt(table_depth);
+			int stableDepth = Integer.parseInt(stable_depth);
 			
 			int max = unDepth;
 			if(olDepth > max){
@@ -482,13 +523,13 @@ public class StringUtils {
 		/**
 		 * Get max value.
 		 */
-		public static Integer getMax(Integer fn_depth, Integer list_depth, Integer dlist_depth, Integer table_depth, Integer stable_depth){
+		public static Integer getMax(String fn_depth, String list_depth, String dlist_depth, String table_depth, String stable_depth){
 			
-			int fnDepth = fn_depth;
-			int listDepth = list_depth;
-			int dlistDepth = dlist_depth;
-			int tableDepth = table_depth;
-			int stableDepth = stable_depth;
+			int fnDepth = Integer.parseInt(fn_depth);
+			int listDepth = Integer.parseInt(list_depth);
+			int dlistDepth = Integer.parseInt(dlist_depth);
+			int tableDepth = Integer.parseInt(table_depth);
+			int stableDepth = Integer.parseInt(stable_depth);
 			
 			int max = fnDepth;
 			if(listDepth > max){

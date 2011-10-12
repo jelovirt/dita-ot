@@ -1,5 +1,11 @@
-/**
- * 
+/*
+ * This file is part of the DITA Open Toolkit project hosted on
+ * Sourceforge.net. See the accompanying license.txt file for 
+ * applicable licenses.
+ */
+
+/*
+ * (c) Copyright IBM Corp. 2010 All Rights Reserved.
  */
 package org.dita.dost.util;
 
@@ -16,8 +22,6 @@ public class VersionUtil {
 	private final String milestone = "@@MILESTONE@@";
 
 	private final String otversion = "@@OTVERSION@@";
-
-	private DITAOTJavaLogger logger = new DITAOTJavaLogger();
 	
 
 	/**

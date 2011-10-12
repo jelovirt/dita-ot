@@ -1,3 +1,12 @@
+/*
+ * This file is part of the DITA Open Toolkit project hosted on
+ * Sourceforge.net. See the accompanying license.txt file for 
+ * applicable licenses.
+ */
+
+/*
+ * (c) Copyright IBM Corp. 2010 All Rights Reserved.
+ */
 package org.dita.dost.writer;
 import static org.junit.Assert.assertEquals;
 
@@ -20,8 +29,7 @@ import org.junit.Test;
 public class TestJavaHelpIndexWriter {
 	JavaHelpIndexWriter javahelpindexwriter =new JavaHelpIndexWriter();
 	String filenameout="test-stub" + File.separator + "TestJavaHelpIndexWriter" + File.separator + "javahelpindexwriteroutput.xml";
-	FileOutputStream fileoutputstream;
-	Collection collection = new ArrayList();
+	Collection<IndexTerm> collection = new ArrayList<IndexTerm>();
 	IndexTerm indexterm1=new IndexTerm();
 	IndexTerm indexterm2=new IndexTerm();
 	File javahelpindexwriterfile =new File("test-stub" + File.separator + "TestJavaHelpIndexWriter" + File.separator + "javahelpindexwriteroutput.xml");

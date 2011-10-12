@@ -1,3 +1,12 @@
+/*
+ * This file is part of the DITA Open Toolkit project hosted on
+ * Sourceforge.net. See the accompanying license.txt file for 
+ * applicable licenses.
+ */
+
+/*
+ * (c) Copyright IBM Corp. 2010 All Rights Reserved.
+ */
 package org.dita.dost.module;
 
 import java.io.BufferedReader;
@@ -8,6 +17,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 
 import org.dita.dost.exception.DITAOTException;
+import org.dita.dost.log.DITAOTJavaLogger;
+import org.dita.dost.log.DITAOTLogger;
 import org.dita.dost.pipeline.AbstractPipelineInput;
 import org.dita.dost.pipeline.AbstractPipelineOutput;
 import org.dita.dost.pipeline.PipelineHashIO;
@@ -17,6 +28,8 @@ import org.dita.dost.util.Constants;
  * This class replace all non-ASCII characters to their RTF Unicode-escaped forms. 
  */
 public class EscapeUnicodeModule implements AbstractPipelineModule {
+	
+	private DITAOTLogger logger = new DITAOTJavaLogger();
 	
 	/**
 	 * Entry point of EscapeUnicodeModule.
@@ -65,18 +78,37 @@ public class EscapeUnicodeModule implements AbstractPipelineModule {
 				}
 				//fw.append(transliterator.transliterate(data));
 			}
-			
+			fw.flush();			
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		} finally {
-			try {
-				fw.flush();
-				fw.close();
-				br.close();
-				is.close();
-				fi.close();
-			} catch (Exception e) {
-				// nop
+			if (fw != null) {
+    			try {
+    				fw.close();
+    			} catch (Exception e) {
+    				logger.logException(e);
+    			}
+			}
+			if (br != null) {
+    			try {
+    				br.close();
+    			} catch (Exception e) {
+    				logger.logException(e);
+    			}
+			}
+			if (is != null) {
+    			try {
+    				is.close();
+    			} catch (Exception e) {
+    				logger.logException(e);
+    			}
+			}
+			if (fi != null) {
+    			try {
+    				fi.close();
+    			} catch (Exception e) {
+    				logger.logException(e);
+    			}
 			}
 		}
 		

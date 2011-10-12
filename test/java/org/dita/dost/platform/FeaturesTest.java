@@ -1,3 +1,12 @@
+/*
+ * This file is part of the DITA Open Toolkit project hosted on
+ * Sourceforge.net. See the accompanying license.txt file for 
+ * applicable licenses.
+ */
+
+/*
+ * (c) Copyright IBM Corp. 2011 All Rights Reserved.
+ */
 package org.dita.dost.platform;
 
 import static org.junit.Assert.assertArrayEquals;
@@ -52,7 +61,7 @@ public class FeaturesTest {
 		f.addFeature("bar", "qux", null);
 		
 		final Map<String, String> exp = new HashMap<String,String>();
-		exp.put("foo", "baz");
+		exp.put("foo", "bar,baz");
 		exp.put("bar", "qux");
 		
 		assertEquals(exp.entrySet(), f.getAllFeatures());
@@ -68,7 +77,7 @@ public class FeaturesTest {
 		f.addFeature("foo", " bar, baz ", null);
 		assertEquals("bar,baz", f.getFeature("foo"));
 		f.addFeature("foo", "bar, baz", "file");
-		assertEquals("base/bar,base/baz", f.getFeature("foo"));
+		assertEquals("bar,baz,base/bar,base/baz", f.getFeature("foo"));
 	}
 
 	@Test

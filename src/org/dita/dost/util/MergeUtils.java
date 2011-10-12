@@ -16,7 +16,6 @@ import java.util.Set;
 
 import org.dita.dost.log.DITAOTJavaLogger;
 import org.xml.sax.XMLReader;
-import org.xml.sax.helpers.XMLReaderFactory;
 
 /**
  * Utility that topic merge utilize. 
@@ -25,9 +24,9 @@ import org.xml.sax.helpers.XMLReaderFactory;
 public class MergeUtils {
 
 	private static MergeUtils instance = null;
-	private Hashtable idMap;
+	private Hashtable<String, String> idMap;
 	private int index;
-	private Set visitSet;
+	private Set<String> visitSet;
 	private DITAOTJavaLogger logger = null;
 	
 	/**
@@ -36,8 +35,8 @@ public class MergeUtils {
 	private MergeUtils() {
 		super();
 		// TODO Auto-generated constructor stub
-		idMap = new Hashtable();
-		visitSet = new HashSet(Constants.INT_256);
+		idMap = new Hashtable<String, String>();
+		visitSet = new HashSet<String>(Constants.INT_256);
 		logger = new DITAOTJavaLogger();
 		index = 0;
 	}
@@ -46,7 +45,7 @@ public class MergeUtils {
 	 * Return the MergeUtils instance. Singleton.
 	 * @return MergeUtils
 	 */
-	public static MergeUtils getInstance(){
+	public static synchronized MergeUtils getInstance(){
 		if(instance == null){
 			instance = new MergeUtils();
 		}
@@ -173,12 +172,7 @@ public class MergeUtils {
 		}
 		parser = new TopicIdParser(firstTopicId);
 		try{
-            if (System.getProperty(Constants.SAX_DRIVER_PROPERTY) == null){
-                //The default sax driver is set to xerces's sax driver
-            	StringUtils.initSaxDriver();
-            }
-            
-            reader = XMLReaderFactory.createXMLReader();
+            reader = StringUtils.getXMLReader();
             reader.setContentHandler(parser);
             
             if(useCatalog){

@@ -48,7 +48,6 @@ import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.XMLReader;
-import org.xml.sax.helpers.XMLReaderFactory;
 
 
 /**
@@ -312,17 +311,13 @@ public class GenListModuleReader extends AbstractXMLReader {
      */
 	public static void initXMLReader(String ditaDir,boolean validate,String rootFile, boolean arg_setSystemid) throws SAXException {
 		DITAOTJavaLogger javaLogger=new DITAOTJavaLogger();
-		if (System.getProperty(Constants.SAX_DRIVER_PROPERTY) == null) {
-			// The default sax driver is set to xerces's sax driver
-			StringUtils.initSaxDriver();
-		}
 		
 		//to check whether the current parsing file's href value is out of inputmap.dir
 		rootDir=new File(rootFile).getAbsoluteFile().getParent();
 		rootDir = FileUtils.removeRedundantNames(rootDir);
 		rootFilePath=new File(rootFile).getAbsolutePath();
 		rootFilePath = FileUtils.removeRedundantNames(rootFilePath);
-		reader = XMLReaderFactory.createXMLReader();
+		reader = StringUtils.getXMLReader();
 		reader.setFeature(Constants.FEATURE_NAMESPACE_PREFIX, true);
 		if(validate==true){
 			reader.setFeature(Constants.FEATURE_VALIDATION, true);
@@ -1435,7 +1430,7 @@ public class GenListModuleReader extends AbstractXMLReader {
 						(atts.getValue(Constants.ATTRIBUTE_NAME_CHUNK)!=null && atts.getValue(Constants.ATTRIBUTE_NAME_CHUNK).contains("to-content")) )
 				&& !Constants.ATTRIBUTE_NAME_CONREF.equals(attrName)
 				&& !Constants.ATTRIBUTE_NAME_COPY_TO.equals(attrName) && 
-				(canResolved() || FileUtils.isSupportedImageFile(filename))) {
+				(canResolved() || FileUtils.isSupportedImageFile(filename.toLowerCase()))) {
 			//edited by william on 2009-08-06 for bug:2832696 start
 			if(attrFormat!=null){
 				nonConrefCopytoTargets.add(filename + Constants.STICK + attrFormat);

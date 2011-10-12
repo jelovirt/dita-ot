@@ -29,7 +29,6 @@ import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
-import org.xml.sax.helpers.XMLReaderFactory;
 
 
 /**
@@ -64,23 +63,22 @@ public class MapIndexReader extends AbstractXMLReader {
         }
         return false;
     }
-    private List ancestorList;
+    private List<String> ancestorList;
     private String filePath = null;
-    private String filePathName = null;
     private String firstMatchElement;
     private StringBuffer indexEntries;
     private File inputFile;
     private String lastMatchElement;
     private int level;
     private DITAOTJavaLogger logger;
-    private HashMap map;
+    private HashMap<String, String> map;
     private boolean match;
 
     /*
      * meta shows whether the event is in metadata when using sax to parse
      * ditmap file.
      */
-    private List matchList;
+    private List<String> matchList;
     private boolean needResolveEntity;
     private XMLReader reader;
     private String topicPath;
@@ -92,9 +90,9 @@ public class MapIndexReader extends AbstractXMLReader {
      */
     public MapIndexReader() {
         super();
-        map = new HashMap();
-        ancestorList = new ArrayList(Constants.INT_16);
-        matchList = new ArrayList(Constants.INT_16);
+        map = new HashMap<String, String>();
+        ancestorList = new ArrayList<String>(Constants.INT_16);
+        matchList = new ArrayList<String>(Constants.INT_16);
         indexEntries = new StringBuffer(Constants.INT_1024);
         firstMatchElement = null;
         lastMatchElement = null;
@@ -108,11 +106,7 @@ public class MapIndexReader extends AbstractXMLReader {
         
         
         try {
-            if (System.getProperty(Constants.SAX_DRIVER_PROPERTY) == null){
-                //The default sax driver is set to xerces's sax driver
-            	StringUtils.initSaxDriver();
-            }
-            reader = XMLReaderFactory.createXMLReader();
+            reader = StringUtils.getXMLReader();
             reader.setContentHandler(this);
             reader.setProperty(Constants.LEXICAL_HANDLER_PROPERTY,this);
             //Edited by william on 2009-11-8 for ampbug:2893664 start
@@ -144,14 +138,14 @@ public class MapIndexReader extends AbstractXMLReader {
     private boolean checkMatch() {
         int matchSize = matchList.size();
         int ancestorSize = ancestorList.size();
-        ListIterator matchIterator = matchList.listIterator();
-        ListIterator ancestorIterator = ancestorList.listIterator(ancestorSize
+        ListIterator<String> matchIterator = matchList.listIterator();
+        ListIterator<String> ancestorIterator = ancestorList.listIterator(ancestorSize
                 - matchSize);
         String currentMatchString;
         String ancestor;
         while (matchIterator.hasNext()) {
-            currentMatchString = (String) matchIterator.next();
-            ancestor = (String) ancestorIterator.next();
+            currentMatchString = matchIterator.next();
+            ancestor = ancestorIterator.next();
             if (!currentMatchString.equals(ancestor)) {
                 return false;
             }
@@ -260,7 +254,6 @@ public class MapIndexReader extends AbstractXMLReader {
             needResolveEntity = true;
             inputFile = new File(filename);
             filePath = inputFile.getParent();
-            filePathName = inputFile.getPath();
             if(indexEntries.length() != 0){
 				//delete all the content in indexEntries
 				indexEntries = new StringBuffer(Constants.INT_1024);

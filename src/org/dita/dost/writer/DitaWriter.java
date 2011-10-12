@@ -13,6 +13,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.net.URLDecoder;
 import java.util.ArrayList;
@@ -38,14 +39,12 @@ import org.dita.dost.util.FileUtils;
 import org.dita.dost.util.FilterUtils;
 import org.dita.dost.util.OutputUtils;
 import org.dita.dost.util.StringUtils;
-import org.w3c.dom.Document;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.XMLReader;
-import org.xml.sax.helpers.XMLReaderFactory;
 
 
 
@@ -70,8 +69,6 @@ public class DitaWriter extends AbstractXMLWriter {
     //To check whether the attribute of XTRC and XTRF have existed
     private static final String ATTRIBUTE_XTRC = "xtrc";
     private static final String ATTRIBUTE_XTRF = "xtrf";
-    
-    private Document root = null;
     
   //Added on 2010-08-24 for bug:3086552 start
     private static boolean setSystemid = true;
@@ -272,7 +269,7 @@ public class DitaWriter extends AbstractXMLWriter {
     private int columnNumberEnd; //columnNumberEnd is the end value for current entry
     //Added by William on 2009-11-27 for bug:1846993 embedded table bug start
     //stack to store colspec list
-    private Stack<List> colSpecStack; 
+    private Stack<List<String>> colSpecStack; 
     //Added by William on 2009-11-27 for bug:1846993 embedded table bug end
     
     //Added by William on 2010-07-01 for bug:3023642 start
@@ -359,7 +356,7 @@ public class DitaWriter extends AbstractXMLWriter {
         tempDir = null;
         colSpec = null;
         //initial the stack
-        colSpecStack = new Stack<List>();
+        colSpecStack = new Stack<List<String>>();
         //added by William on 20100701 for bug:3023642 start
         rowNumStack = new Stack<Integer>();
         columnNumberStack = new Stack<Integer>();
@@ -396,14 +393,10 @@ public class DitaWriter extends AbstractXMLWriter {
      */
 	public static void initXMLReader(String ditaDir,boolean validate, boolean arg_setSystemid) throws SAXException {
 		DITAOTJavaLogger logger=new DITAOTJavaLogger();
-		if (System.getProperty(Constants.SAX_DRIVER_PROPERTY) == null) {
-			// The default sax driver is set to xerces's sax driver
-			StringUtils.initSaxDriver();
-		}
 		
 		try {
 			
-			reader = XMLReaderFactory.createXMLReader();
+			reader = StringUtils.getXMLReader();
 			AbstractXMLReader.setGrammarPool(reader, null);
  			
             reader.setFeature(Constants.FEATURE_NAMESPACE_PREFIX, true);
@@ -424,7 +417,6 @@ public class DitaWriter extends AbstractXMLWriter {
 	@Override
     public void characters(char[] ch, int start, int length)
             throws SAXException {
-    	String test = new String(ch, start, length);
         if (!exclude && needResolveEntity) { 
         	// exclude shows whether it's excluded by filtering
         	// isEntity shows whether it's an entity.
@@ -858,7 +850,6 @@ public class DitaWriter extends AbstractXMLWriter {
     }
 
     
-	@SuppressWarnings("unchecked")
 	@Override
     public void endElement(String uri, String localName, String qName)
             throws SAXException {
@@ -1103,13 +1094,12 @@ public class DitaWriter extends AbstractXMLWriter {
         this.validateAttributeValues(qName, atts);
         
         if (counterMap.containsKey(qName)) {
-            value = (Integer) counterMap.get(qName);
-            nextValue = new Integer(value.intValue()+1);
-            counterMap.put(qName, nextValue);
+            value = counterMap.get(qName);
+            nextValue = value + 1;
         } else {
-            nextValue = new Integer(Constants.INT_1);
-            counterMap.put(qName, nextValue);
+            nextValue = 1;
         }
+        counterMap.put(qName, nextValue);
 
         if (exclude) {
             // If it is the start of a child of an excluded tag, level increase
@@ -1176,17 +1166,28 @@ public class DitaWriter extends AbstractXMLWriter {
     		File ditafile = new File(tempDir, Constants.FILE_NAME_DITA_LIST);
     		File ditaxmlfile = new File(tempDir, Constants.FILE_NAME_DITA_LIST_XML);
     		
+    		InputStream in = null;
     		try{
     		if(ditaxmlfile.exists()){
-    			prop.loadFromXML(new FileInputStream(ditaxmlfile));
+    			in = new FileInputStream(ditaxmlfile);
+    			prop.loadFromXML(in);
     		}else{
-    			prop.load(new FileInputStream(ditafile));
+    			in = new FileInputStream(ditafile);
+    			prop.load(in);
     		}
     		}catch (Exception e) {
     			logger.logException(e);
+    		} finally {
+    			if (in != null) {
+    				try {
+    	                in.close();
+                    } catch (IOException e) {
+                    	logger.logException(e);
+                    }
+    			}
     		}
     		
-    		if(prop.getProperty(Constants.KEY_LIST) != ""){
+    		if(prop.getProperty(Constants.KEY_LIST).length()!=0){
 	    		String[] keylist = prop.getProperty(Constants.KEY_LIST).split(Constants.COMMA);
 	    		String key;
 	    		String value;
@@ -1409,8 +1410,8 @@ public class DitaWriter extends AbstractXMLWriter {
 	 * Set extension name.
 	 * @param extName extension name
 	 */
-	public void setExtName(String extName) {
-		this.extName = extName;
+	public synchronized void setExtName(String extName) {
+		DitaWriter.extName = extName;
 	}
 	//Added by Alan Date:2009-08-04 --end
 	

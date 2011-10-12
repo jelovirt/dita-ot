@@ -3,6 +3,10 @@
  * Sourceforge.net. See the accompanying license.txt file for 
  * applicable licenses.
  */
+
+/*
+ * (c) Copyright IBM Corp. 2008 All Rights Reserved.
+ */
 package org.dita.dost.platform;
 
 import org.dita.dost.util.Constants;
@@ -14,20 +18,13 @@ import org.dita.dost.util.StringUtils;
  */
 public class ImportAntLibAction extends ImportAction {
 
-	private final StringBuffer retBuf;
-	/**
-	 * Constructor.
-	 */
-	public ImportAntLibAction() {
-		super();
-		retBuf = new StringBuffer(Constants.INT_1024);
-	}
 	/**
 	 * get result.
 	 * @return result
 	 */
 	@Override
 	public String getResult() {
+		final StringBuilder retBuf = new StringBuilder();
 		final String templateFilePath = paramTable.get(FileGenerator.PARAM_TEMPLATE);
 		for (final String value: valueSet) {
 			retBuf.append(Constants.LINE_SEPARATOR);

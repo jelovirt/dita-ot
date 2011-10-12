@@ -10,7 +10,6 @@
 package org.dita.dost.platform;
 
 import java.util.Hashtable;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -21,16 +20,14 @@ import org.dita.dost.util.StringUtils;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
-import org.xml.sax.ext.LexicalHandler;
-import org.xml.sax.helpers.DefaultHandler;
-import org.xml.sax.helpers.XMLReaderFactory;
+import org.xml.sax.ext.DefaultHandler2;
 
 /**
  * InsertAction implements IAction and insert the resource 
  * provided by plug-ins into the xsl files, ant scripts and xml catalog.
  * @author Zhang, Yuan Peng
  */
-public class InsertAction extends DefaultHandler implements IAction, LexicalHandler {
+public class InsertAction extends DefaultHandler2 implements IAction {
 
 	protected final XMLReader reader;
 	protected final DITAOTJavaLogger logger;
@@ -38,6 +35,9 @@ public class InsertAction extends DefaultHandler implements IAction, LexicalHand
 	protected final StringBuffer retBuf;
 	protected final Hashtable<String,String> paramTable;
 	protected int elemLevel = 0;
+	protected boolean inCdataSection = false;
+	/** Current processing file. */
+	protected String currentFile;
 	
 	/**
 	 * Default Constructor.
@@ -48,11 +48,7 @@ public class InsertAction extends DefaultHandler implements IAction, LexicalHand
 		retBuf = new StringBuffer(Constants.INT_4096);
 		paramTable = new Hashtable<String,String>();
 		try {
-            if (System.getProperty(Constants.SAX_DRIVER_PROPERTY) == null){
-                //The default sax driver is set to xerces's sax driver
-            	StringUtils.initSaxDriver();
-            }
-            reader = XMLReaderFactory.createXMLReader();
+            reader = StringUtils.getXMLReader();
             reader.setContentHandler(this);
             reader.setFeature(Constants.FEATURE_NAMESPACE_PREFIX, true);
             //added by Alan for bug: #2893316 on Date: 2009-11-09 begin
@@ -76,27 +72,24 @@ public class InsertAction extends DefaultHandler implements IAction, LexicalHand
 		}
 	}
 
-	public void setParam(final String param) {
-		final StringTokenizer paramTokenizer = new StringTokenizer(param, Integrator.PARAM_VALUE_SEPARATOR);
-		while(paramTokenizer.hasMoreElements()){
-			final String paramExpression = paramTokenizer.nextToken();
-			final int index = paramExpression.indexOf(Integrator.PARAM_NAME_SEPARATOR);
-			if(index > 0){
-				paramTable.put(paramExpression.substring(0,index),
-						paramExpression.substring(index+1));
-			}
-		}		
+	public void addParam(final String name, final String value) {
+		paramTable.put(name, value);
 	}
 
 	public String getResult() {
 		try{
 			for (final String fileName: fileNameSet) {
-				reader.parse(fileName);
+				currentFile = fileName;
+				reader.parse(currentFile);
 			}
 		} catch (final Exception e) {
 	       	logger.logException(e);
 		}
 		return retBuf.toString();
+	}
+
+	public void setFeatures(final Hashtable<String,String> h) {
+		// NOOP
 	}
 
 	@Override
@@ -125,8 +118,12 @@ public class InsertAction extends DefaultHandler implements IAction, LexicalHand
 
 	@Override
 	public void characters(final char[] ch, final int start, final int length) throws SAXException {
-		final char[] esc = StringUtils.escapeXML(ch, start, length).toCharArray();
-		retBuf.append(esc, 0, esc.length);
+		if (inCdataSection) {
+			retBuf.append(ch, start, length);
+		} else {
+    		final char[] esc = StringUtils.escapeXML(ch, start, length).toCharArray();
+    		retBuf.append(esc, 0, esc.length);
+		}
 	}
 
 	@Override
@@ -155,39 +152,23 @@ public class InsertAction extends DefaultHandler implements IAction, LexicalHand
 		elemLevel = 0;
 	}
 
-	public void setFeatures(final Hashtable<String,String> h) {
-		
+	@Override
+	public void comment(final char[] ch, final int start, final int length) throws SAXException {
+		retBuf.append("<!--").append(ch, start, length).append("-->");
 	}
 	
 	//added by Alan for bug: #2893316 on Date: 2009-11-09 begin
+	@Override
 	public void startCDATA() throws SAXException {
+		inCdataSection = true;
 		retBuf.append(Constants.CDATA_HEAD);
 
 	}
 
+	@Override
 	public void endCDATA() throws SAXException {
 		retBuf.append(Constants.CDATA_END);
-	}
-
-	public void startDTD(final String name, final String publicId, final String systemId)
-			throws SAXException {
-		// nop;
-	}
-
-	public void endDTD() throws SAXException {
-		// nop;
-	}
-
-	public void startEntity(final String name) throws SAXException {
-		// nop;
-	}
-
-	public void endEntity(final String name) throws SAXException {
-		// nop;
-	}
-
-	public void comment(final char[] ch, final int start, final int length) throws SAXException {
-		// nop;
+		inCdataSection = false;
 	}
 	//added by Alan for bug: #2893316 on Date: 2009-11-09 end
 }

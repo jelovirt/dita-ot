@@ -18,7 +18,6 @@ import org.apache.xml.resolver.CatalogManager;
 import org.apache.xml.resolver.tools.CatalogResolver;
 import org.dita.dost.log.DITAOTJavaLogger;
 import org.xml.sax.XMLReader;
-import org.xml.sax.helpers.XMLReaderFactory;
 
 
 
@@ -34,7 +33,7 @@ public class CatalogUtils {
     /**logger to log informations.*/
     private static DITAOTJavaLogger logger = new DITAOTJavaLogger();
     /**apache catalogResolver.*/
-    public static CatalogResolver catalogResolver = null;
+    private static CatalogResolver catalogResolver = null;
     /**directory to find catalog-dita.xml.*/
 	private static String ditaDir;
     /**
@@ -50,7 +49,7 @@ public class CatalogUtils {
      * @return catalog map
      * 
      */
-    public static HashMap<String, String> getCatalog(String ditaDir) {
+    public static synchronized HashMap<String, String> getCatalog(String ditaDir) {
 		if (map != null) {
 			return map;
 		}
@@ -59,12 +58,8 @@ public class CatalogUtils {
 		
 		map = new HashMap<String, String>();
 		CatalogParser parser = new CatalogParser(map, ditaDir);
-		if (System.getProperty(Constants.SAX_DRIVER_PROPERTY) == null) {
-			// The default sax driver is set to xerces's sax driver
-			StringUtils.initSaxDriver();
-		}	
 		try {
-			XMLReader reader = XMLReaderFactory.createXMLReader();
+			XMLReader reader = StringUtils.getXMLReader();
 			reader.setContentHandler(parser);
 			reader.parse(catalogFilePath);
 		} catch (Exception e) {
@@ -78,7 +73,7 @@ public class CatalogUtils {
      * Set directory to find catalog-dita.xml.
      * @param ditaDir ditaDir
      */
-    public static void setDitaDir(String ditaDir){
+    public static synchronized void setDitaDir(String ditaDir){
     	catalogResolver=null;
     	CatalogUtils.ditaDir=ditaDir;
     }
@@ -96,7 +91,7 @@ public class CatalogUtils {
      * Get CatalogResolver.
      * @return CatalogResolver
      */
-    public static CatalogResolver getCatalogResolver() {
+    public static synchronized CatalogResolver getCatalogResolver() {
         if (catalogResolver == null) {
             CatalogManager manager = new CatalogManager();
             manager.setIgnoreMissingProperties(true);
