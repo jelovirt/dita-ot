@@ -179,9 +179,17 @@ public final class MergeMapParser extends AbstractXMLReader {
                         .append(StringUtils.escapeXML(ohref)).append(QUOTATION);
 
                         //parse the topic
-                        final String fileId = topicParser.parse(attValue,dirPath);
                         util.visit(attValue);
-                        attValue = new StringBuffer(SHARP).append(fileId).toString();
+                        if (new File(dirPath, attValue.indexOf(SHARP) != -1 ? attValue.substring(0, attValue.indexOf(SHARP)) : attValue).exists()) {
+                            topicParser.parse(attValue,dirPath);
+                            //attValue = new StringBuffer(SHARP).append(fileId).toString();
+                            attValue = new StringBuffer(SHARP).append(util.getIdValue(attValue)).toString();
+                        } else {
+                            final String fileName = new File(dirPath, attValue).getAbsolutePath();
+                            final Properties prop = new Properties();
+                            prop.put("%1", fileName);
+                            logger.logError(MessageUtils.getMessage("DOTX008E", prop).toString());
+                        }
                     }
                 }
 
@@ -246,7 +254,7 @@ public final class MergeMapParser extends AbstractXMLReader {
                             final String fileName = new File(dirPath, element).getAbsolutePath();
                             final Properties prop = new Properties();
                             prop.put("%1", fileName);
-                            logger.logWarn(MessageUtils.getMessage("DOTX008W", prop).toString());
+                            logger.logError(MessageUtils.getMessage("DOTX008E", prop).toString());
                         }
                     }
 

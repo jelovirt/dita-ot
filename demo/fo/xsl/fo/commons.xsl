@@ -338,11 +338,9 @@ See the accompanying license.txt file for applicable licenses.
 
                     <xsl:choose>
                       <xsl:when test="$chapterLayout='BASIC'">
-                          <fo:block>
-                            <xsl:apply-templates select="*[not(contains(@class, ' topic/topic ') or contains(@class, ' topic/title ') or
-                                                               contains(@class, ' topic/prolog '))]"/>
-                            <xsl:call-template name="buildRelationships"/>
-                          </fo:block>
+                          <xsl:apply-templates select="*[not(contains(@class, ' topic/topic ') or contains(@class, ' topic/title ') or
+                                                             contains(@class, ' topic/prolog '))]"/>
+                          <xsl:call-template name="buildRelationships"/>
                       </xsl:when>
                       <xsl:otherwise>
                           <xsl:call-template name="createMiniToc"/>
@@ -390,11 +388,9 @@ See the accompanying license.txt file for applicable licenses.
 
                     <xsl:choose>
                       <xsl:when test="$appendixLayout='BASIC'">
-                          <fo:block>
-                            <xsl:apply-templates select="*[not(contains(@class, ' topic/topic ') or contains(@class, ' topic/title ') or
-                                                               contains(@class, ' topic/prolog '))]"/>
-                            <xsl:call-template name="buildRelationships"/>
-                          </fo:block>
+                          <xsl:apply-templates select="*[not(contains(@class, ' topic/topic ') or contains(@class, ' topic/title ') or
+                                                             contains(@class, ' topic/prolog '))]"/>
+                          <xsl:call-template name="buildRelationships"/>
                       </xsl:when>
                       <xsl:otherwise>
                           <xsl:call-template name="createMiniToc"/>
@@ -443,11 +439,9 @@ See the accompanying license.txt file for applicable licenses.
 
                     <xsl:choose>
                       <xsl:when test="$partLayout='BASIC'">
-                          <fo:block>
-                            <xsl:apply-templates select="*[not(contains(@class, ' topic/topic ') or contains(@class, ' topic/title ') or
-                                                               contains(@class, ' topic/prolog '))]"/>
-                            <xsl:call-template name="buildRelationships"/>
-                          </fo:block>
+                          <xsl:apply-templates select="*[not(contains(@class, ' topic/topic ') or contains(@class, ' topic/title ') or
+                                                             contains(@class, ' topic/prolog '))]"/>
+                          <xsl:call-template name="buildRelationships"/>
                       </xsl:when>
                       <xsl:otherwise>
                           <xsl:call-template name="createMiniToc"/>
@@ -511,11 +505,9 @@ See the accompanying license.txt file for applicable licenses.
 
                     <xsl:choose>
                       <xsl:when test="$noticesLayout='BASIC'">
-                          <fo:block>
-                            <xsl:apply-templates select="*[not(contains(@class, ' topic/topic ') or contains(@class, ' topic/title ') or
-                                                               contains(@class, ' topic/prolog '))]"/>
-                            <xsl:call-template name="buildRelationships"/>
-                          </fo:block>
+                          <xsl:apply-templates select="*[not(contains(@class, ' topic/topic ') or contains(@class, ' topic/title ') or
+                                                             contains(@class, ' topic/prolog '))]"/>
+                          <xsl:call-template name="buildRelationships"/>
                       </xsl:when>
                       <xsl:otherwise>
                           <xsl:call-template name="createMiniToc"/>
@@ -542,15 +534,10 @@ See the accompanying license.txt file for applicable licenses.
                             <xsl:with-param name="theVariableID" select="'Chapter with number'"/>
                             <xsl:with-param name="theParameters">
                                 <number>
-                                    <xsl:variable name="id" select="@id"/>
-                                    <xsl:variable name="topicChapters">
-                                        <xsl:copy-of select="$map//*[contains(@class, ' bookmap/chapter ')]"/>
-                                    </xsl:variable>
-                                    <xsl:variable name="chapterNumber">
-                                        <xsl:number format="1" value="count($topicChapters/*[@id = $id]/preceding-sibling::*) + 1"/>
-                                    </xsl:variable>
                                     <fo:block xsl:use-attribute-sets="__chapter__frontmatter__number__container">
-                                        <xsl:value-of select="$chapterNumber"/>
+                                        <xsl:for-each select="key('map-id', @id)[1]">
+                                          <xsl:number format="1" count="*[contains(@class, ' bookmap/chapter ')]"/>
+                                        </xsl:for-each>
                                     </fo:block>
                                 </number>
                             </xsl:with-param>
@@ -563,15 +550,10 @@ See the accompanying license.txt file for applicable licenses.
                                 <xsl:with-param name="theVariableID" select="'Appendix with number'"/>
                                 <xsl:with-param name="theParameters">
                                     <number>
-                                        <xsl:variable name="id" select="@id"/>
-                                        <xsl:variable name="topicAppendixes">
-                                            <xsl:copy-of select="$map//*[contains(@class, ' bookmap/appendix ')]"/>
-                                        </xsl:variable>
-                                        <xsl:variable name="appendixNumber">
-                                            <xsl:number format="A" value="count($topicAppendixes/*[@id = $id]/preceding-sibling::*) + 1"/>
-                                        </xsl:variable>
                                         <fo:block xsl:use-attribute-sets="__chapter__frontmatter__number__container">
-                                            <xsl:value-of select="$appendixNumber"/>
+                                            <xsl:for-each select="key('map-id', @id)[1]">
+                                              <xsl:number format="A" count="*[contains(@class, ' bookmap/appendix ')]"/>
+                                            </xsl:for-each>
                                         </fo:block>
                                     </number>
                                 </xsl:with-param>
@@ -585,15 +567,10 @@ See the accompanying license.txt file for applicable licenses.
                                 <xsl:with-param name="theVariableID" select="'Part with number'"/>
                                 <xsl:with-param name="theParameters">
                                     <number>
-                                        <xsl:variable name="id" select="@id"/>
-                                        <xsl:variable name="topicParts">
-                                            <xsl:copy-of select="$map//*[contains(@class, ' bookmap/part ')]"/>
-                                        </xsl:variable>
-                                        <xsl:variable name="partNumber">
-                                            <xsl:number format="I" value="count($topicParts/*[@id = $id]/preceding-sibling::*) + 1"/>
-                                        </xsl:variable>
                                         <fo:block xsl:use-attribute-sets="__chapter__frontmatter__number__container">
-                                            <xsl:value-of select="$partNumber"/>
+                                            <xsl:for-each select="key('map-id', @id)[1]">
+                                              <xsl:number format="I" count="*[contains(@class, ' bookmap/part ')]"/>
+                                            </xsl:for-each>
                                         </fo:block>
                                     </number>
                                 </xsl:with-param>
@@ -1213,8 +1190,7 @@ See the accompanying license.txt file for applicable licenses.
         <!-- topicNumber = the # of times this topic has appeared. When topicNumber=3,
              this copy of the topic is based on its third appearance in the map. -->
         <xsl:param name="topicNumber" select="number('NaN')"/>
-        <xsl:variable name="id" select="@id"/>
-        <xsl:variable name="topicref" select="$map//*[@id = $id]"/>
+        <xsl:variable name="topicref" select="key('map-id', @id)"/>
         <xsl:variable name="numTopicref" select="$topicref[position()=$topicNumber]"/>
         <xsl:choose>
             <xsl:when test="not(string(number($topicNumber)) = 'NaN') and 
@@ -1423,6 +1399,7 @@ See the accompanying license.txt file for applicable licenses.
     <xsl:template match="*[contains(@class,' topic/body ')]">
         <xsl:variable name="level" select="count(ancestor::*[contains(@class,' topic/topic ')])"/>
         <xsl:choose>
+                <xsl:when test="not(node())"/>
                 <xsl:when test="$level = 1">
                     <fo:block xsl:use-attribute-sets="body__toplevel">
                         <xsl:apply-templates/>
@@ -1554,6 +1531,13 @@ See the accompanying license.txt file for applicable licenses.
                             </xsl:call-template>
                         </fo:inline>
                     </xsl:when>
+                    <xsl:when test="@type='notice'">
+                        <fo:inline xsl:use-attribute-sets="note__label__notice">
+                            <xsl:call-template name="insertVariable">
+                                <xsl:with-param name="theVariableID" select="'Notice'"/>
+                            </xsl:call-template>
+                        </fo:inline>
+                    </xsl:when>
                     <xsl:when test="@type='tip'">
                         <fo:inline xsl:use-attribute-sets="note__label__tip">
                             <xsl:call-template name="insertVariable">
@@ -1607,6 +1591,13 @@ See the accompanying license.txt file for applicable licenses.
                         <fo:inline xsl:use-attribute-sets="note__label__danger">
                             <xsl:call-template name="insertVariable">
                                 <xsl:with-param name="theVariableID" select="'Danger'"/>
+                            </xsl:call-template>
+                        </fo:inline>
+                    </xsl:when>
+                    <xsl:when test="@type='warning'">
+                        <fo:inline xsl:use-attribute-sets="note__label__danger">
+                            <xsl:call-template name="insertVariable">
+                                <xsl:with-param name="theVariableID" select="'Warning'"/>
                             </xsl:call-template>
                         </fo:inline>
                     </xsl:when>
@@ -1920,7 +1911,7 @@ See the accompanying license.txt file for applicable licenses.
                         <xsl:call-template name="commonattributes"/>
                         <xsl:call-template name="placeImage">
                             <xsl:with-param name="imageAlign" select="@align"/>
-                            <xsl:with-param name="href" select="@href"/>
+                            <xsl:with-param name="href" select="concat($input.dir.url, @href)"/>
                             <xsl:with-param name="height" select="@height"/>
                             <xsl:with-param name="width" select="@width"/>
                         </xsl:call-template>
@@ -1932,7 +1923,7 @@ See the accompanying license.txt file for applicable licenses.
                     <xsl:call-template name="commonattributes"/>
                     <xsl:call-template name="placeImage">
                         <xsl:with-param name="imageAlign" select="@align"/>
-                        <xsl:with-param name="href" select="@href"/>
+                        <xsl:with-param name="href" select="concat($input.dir.url, @href)"/>
                         <xsl:with-param name="height" select="@height"/>
                         <xsl:with-param name="width" select="@width"/>
                     </xsl:call-template>
@@ -1985,27 +1976,33 @@ See the accompanying license.txt file for applicable licenses.
                  surprising.  It used to force images with a number specified for the dimensions
                  *but no units* to act as a measure of pixels, *if* you were printing at 72 DPI.
                  Uncomment if you really want it. -->
-                    <!--<xsl:choose>
-                        <xsl:when test="not(string(number($height)) = 'NaN')">
-                            <xsl:value-of select="concat($height div 72,'in')"/>
-                        </xsl:when>
-                        <xsl:when test="$height">-->
-                            <xsl:value-of select="$height"/>
-                        <!--</xsl:when>
-                    </xsl:choose>-->
+                    <xsl:choose>
+                      <!--xsl:when test="not(string(number($height)) = 'NaN')">
+                        <xsl:value-of select="concat($height div 72,'in')"/>
+                      </xsl:when-->
+                      <xsl:when test="not(string(number($height)) = 'NaN')">
+                        <xsl:value-of select="concat($height, 'px')"/>
+                      </xsl:when>
+                      <xsl:otherwise>
+                        <xsl:value-of select="$height"/>
+                      </xsl:otherwise>
+                    </xsl:choose>
                 </xsl:attribute>
             </xsl:if>
             <!--Setting image width if defined-->
             <xsl:if test="$width">
                 <xsl:attribute name="content-width">
-                    <!--<xsl:choose>
-                        <xsl:when test="not(string(number($width)) = 'NaN')">
-                            <xsl:value-of select="concat($width div 72,'in')"/>
-                        </xsl:when>
-                        <xsl:when test="$width">-->
-                            <xsl:value-of select="$width"/>
-                        <!--</xsl:when>
-                    </xsl:choose>-->
+                    <xsl:choose>
+                      <!--xsl:when test="not(string(number($width)) = 'NaN')">
+                        <xsl:value-of select="concat($width div 72,'in')"/>
+                      </xsl:when-->
+                      <xsl:when test="not(string(number($width)) = 'NaN')">
+                        <xsl:value-of select="concat($width, 'px')"/>
+                      </xsl:when>
+                      <xsl:otherwise>
+                        <xsl:value-of select="$width"/>
+                      </xsl:otherwise>
+                    </xsl:choose>
                 </xsl:attribute>
             </xsl:if>
             <xsl:if test="not($width) and not($height) and @scale">

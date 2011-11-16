@@ -377,7 +377,12 @@
     <reason>File '%1' does not exist.</reason>
     <response>Be sure the file '%1' exists or change the href to reference an existing file. Note:'%1' might be changed to use standard dita topic file extension name '.dita' or '.xml'.</response>
   </message>
-  
+
+  <message id="DOTX008E" type="ERROR">
+    <reason>File '%1' does not exist.</reason>
+    <response>Be sure the file '%1' exists or change the href to reference an existing file. Note:'%1' might be changed to use standard dita topic file extension name '.dita' or '.xml'.</response>
+  </message>
+
   <message id="DOTX009W" type="WARN">
     <reason>Could not retrieve a title from '%1'. Using '%2' instead.</reason>
     <response>Add a title in the target topic file.</response>
@@ -677,6 +682,16 @@
     <response>Please provide the correct stylesheet using Ant parameter 'args.xsl.pdf'.</response>
   </message>
   <!-- Added by William on 2010-06-21 for bug:3012392 start -->
+    
+  <message id="DOTA067W" type="WARN">
+    <reason>Ignoring index-see '%1' for '%2' because parent indexterm contains indexterm children.</reason>
+    <response/>
+  </message>
+  
+  <message id="DOTA068W" type="WARN">
+    <reason>Ignoring index-see-also '%1' for '%2' because parent indexterm contains indexterm children.</reason>
+    <response/>
+  </message>
     
   <!-- Add any messages defined by plugins. -->
   <dita:extension xmlns:dita="http://dita-ot.sourceforge.net"

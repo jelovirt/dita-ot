@@ -96,13 +96,13 @@ See the accompanying license.txt file for applicable licenses.
 
     <!-- Parameters in the following group are always passed in from Ant. -->
     <xsl:param name="locale"/>
-    <xsl:param name="customizationDir"/>
+    <xsl:param name="customizationDir.url"/>
     <xsl:param name="artworkPrefix"/>
-    <xsl:param name="fileProtocolPrefix"/>
     <xsl:param name="publishRequiredCleanup"/>
     <xsl:param name="DRAFT"/>
     <xsl:param name="output.dir.url"/>
     <xsl:param name="work.dir.url"/>
+    <xsl:param name="input.dir.url"/>
     <xsl:param name="disableRelatedLinks" select="'yes'"/>
     <xsl:param name="pdfFormatter" select="'fop'"/>
 

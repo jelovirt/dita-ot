@@ -344,6 +344,11 @@ final class GenMapAndTopicListModule implements AbstractPipelineModule {
         if (!inFile.isAbsolute()) {
             inFile = new File(basedir, ditaInput);
         }
+        try {
+			inFile = inFile.getCanonicalFile();
+		} catch (IOException e1) {
+			 logger.logException(e1);
+		}
         if (!new File(tempDir).isAbsolute()) {
             tempDir = new File(basedir, tempDir).getAbsolutePath();
         } else {
@@ -363,7 +368,7 @@ final class GenMapAndTopicListModule implements AbstractPipelineModule {
 
         rootFile = inFile.getAbsolutePath();
         rootFile = FileUtils.removeRedundantNames(rootFile);
-
+       
         inputFile = inFile.getName();
         try {
             keydef = XMLSerializer.newInstance(new FileOutputStream(new File(tempDir, "keydef.xml")));
@@ -422,6 +427,10 @@ final class GenMapAndTopicListModule implements AbstractPipelineModule {
         final Properties params = new Properties();
         params.put("%1", currentFile);
 
+        if (!fileToParse.exists()) {
+            logger.logError(MessageUtils.getMessage("DOTX008E", params).toString());
+            return;
+        }
         try {
             fileToParse = fileToParse.getCanonicalFile();
             if (FileUtils.isValidTarget(currentFile.toLowerCase())) {

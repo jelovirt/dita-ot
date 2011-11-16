@@ -130,6 +130,8 @@
 
 <!-- Name of the keyref file that contains key definitions -->
 <xsl:param name="KEYREF-FILE" select="concat($WORKDIR,$PATH2PROJ,'keydef.xml')"/>
+<xsl:variable name="keydefs" select="document($KEYREF-FILE)"/>
+  
 <!-- added by William on 2009-09-03 for keyref bug:2849078 start-->
 <xsl:param name="BASEDIR"/>
   
@@ -1287,10 +1289,13 @@
 <!-- DL term -->
 <xsl:template match="*[contains(@class,' topic/dt ')]" name="topic.dt">
   <xsl:variable name="keys" select="@keyref"/>
+  <xsl:variable name="keydef" select="$keydefs//*[contains(@keys, $keys)]"/>
   <xsl:choose>
-    <xsl:when test="@keyref and document($KEYREF-FILE)//*[contains(@keys, $keys)]">
+    <xsl:when test="@keyref and $keydef">
       <xsl:variable name="updatedTarget">
-        <xsl:apply-templates select="." mode="find-keyref-target"/>
+        <xsl:apply-templates select="." mode="find-keyref-target">
+          <!--xsl:with-param name="target" select="$keydef/@href"/-->
+        </xsl:apply-templates>
       </xsl:variable>
       <xsl:choose>
         <xsl:when test="normalize-space($updatedTarget)!=$OUTEXT">
@@ -1648,28 +1653,29 @@
 </xsl:template>
 
 <!-- Templates for internal usage in terms/abbreviation resolving -->
-<xsl:template name="getMatchingTarget" xmlns:exsl="http://exslt.org/common">
+<xsl:template name="getMatchingTarget">
   <xsl:param name="m_glossid" select="''"/>
   <xsl:param name="m_entry-file-contents"/>
   <xsl:param name="m_reflang" select="en_US"/>
+  <xsl:variable name="glossentries" select="$m_entry-file-contents//*[contains(@class, ' glossentry/glossentry ')]"/>
   <xsl:choose>
-    <xsl:when test="$m_glossid='' and $m_entry-file-contents//*[contains(@class, ' glossentry/glossentry ')][lang($m_reflang)]">
-      <xsl:copy-of select="$m_entry-file-contents//*[contains(@class, ' glossentry/glossentry ')][lang($m_reflang)]"/>
+    <xsl:when test="$m_glossid='' and $glossentries[lang($m_reflang)]">
+      <xsl:copy-of select="$glossentries[lang($m_reflang)]"/>
     </xsl:when>
-    <xsl:when test="not($m_glossid='') and $m_entry-file-contents//*[contains(@class, ' glossentry/glossentry ')][@id=$m_glossid][lang($m_reflang)]">
-      <xsl:copy-of select="$m_entry-file-contents//*[contains(@class, ' glossentry/glossentry ')][@id=$m_glossid][lang($m_reflang)]"/>
+    <xsl:when test="not($m_glossid='') and $glossentries[@id=$m_glossid][lang($m_reflang)]">
+      <xsl:copy-of select="$glossentries[@id=$m_glossid][lang($m_reflang)]"/>
     </xsl:when>
-    <xsl:when test="$m_glossid='' and $m_entry-file-contents//*[contains(@class, ' glossentry/glossentry ')][lang($DEFAULTLANG)]">
-      <xsl:copy-of select="$m_entry-file-contents//*[contains(@class, ' glossentry/glossentry ')][lang($DEFAULTLANG)]"/>
+    <xsl:when test="$m_glossid='' and $glossentries[lang($DEFAULTLANG)]">
+      <xsl:copy-of select="$glossentries[lang($DEFAULTLANG)]"/>
     </xsl:when>
-    <xsl:when test="not($m_glossid='') and $m_entry-file-contents//*[contains(@class, ' glossentry/glossentry ')][@id=$m_glossid][lang($DEFAULTLANG)]">
-      <xsl:copy-of select="$m_entry-file-contents//*[contains(@class, ' glossentry/glossentry ')][@id=$m_glossid][lang($DEFAULTLANG)]"/>
+    <xsl:when test="not($m_glossid='') and $glossentries[@id=$m_glossid][lang($DEFAULTLANG)]">
+      <xsl:copy-of select="$glossentries[@id=$m_glossid][lang($DEFAULTLANG)]"/>
     </xsl:when>
-    <xsl:when test="$m_glossid='' and $m_entry-file-contents//*[contains(@class, ' glossentry/glossentry ')][not(@xml:lang) or normalize-space(@xml:lang)='']">
-      <xsl:copy-of select="$m_entry-file-contents//*[contains(@class, ' glossentry/glossentry ')][not(@xml:lang) or normalize-space(@xml:lang)=''][1]"/>
+    <xsl:when test="$m_glossid='' and $glossentries[not(@xml:lang) or normalize-space(@xml:lang)='']">
+      <xsl:copy-of select="$glossentries[not(@xml:lang) or normalize-space(@xml:lang)=''][1]"/>
     </xsl:when>
-    <xsl:when test="not($m_glossid='') and $m_entry-file-contents//*[contains(@class, ' glossentry/glossentry ')][@id=$m_glossid][not(@xml:lang) or normalize-space(@xml:lang)='']">
-      <xsl:copy-of select="$m_entry-file-contents//*[contains(@class, ' glossentry/glossentry ')][@id=$m_glossid][not(@xml:lang) or normalize-space(@xml:lang)=''][1]"/>
+    <xsl:when test="not($m_glossid='') and $glossentries[@id=$m_glossid][not(@xml:lang) or normalize-space(@xml:lang)='']">
+      <xsl:copy-of select="$glossentries[@id=$m_glossid][not(@xml:lang) or normalize-space(@xml:lang)=''][1]"/>
     </xsl:when>
     <xsl:otherwise>
       <xsl:value-of select="'#none#'"/>
@@ -1677,17 +1683,18 @@
   </xsl:choose>
 </xsl:template>
 
-<xsl:template match="*" mode="getMatchingSurfaceForm" xmlns:exsl="http://exslt.org/common">
+<xsl:template match="*" mode="getMatchingSurfaceForm">
   <xsl:param name="m_matched-target"/>
   <xsl:param name="m_keys"/>
   <xsl:choose>
     <xsl:when test="not($m_matched-target='#none#')">
+      <xsl:variable name="glossentry" select="exsl:node-set($m_matched-target)/*[contains(@class, ' glossentry/glossentry ')][1]"/>
       <xsl:choose>
-        <xsl:when test="exsl:node-set($m_matched-target)/*[contains(@class, ' glossentry/glossentry ')][1]//*[contains(@class, ' glossentry/glossSurfaceForm ')][normalize-space(text())!='']">
-          <xsl:value-of select="exsl:node-set($m_matched-target)/*[contains(@class, ' glossentry/glossentry ')][1]//*[contains(@class, ' glossentry/glossSurfaceForm ')][normalize-space(text())!='']"/>
+        <xsl:when test="$glossentry//*[contains(@class, ' glossentry/glossSurfaceForm ')][normalize-space(text())!='']">
+          <xsl:value-of select="$glossentry//*[contains(@class, ' glossentry/glossSurfaceForm ')][normalize-space(text())!='']"/>
         </xsl:when>
         <xsl:otherwise>
-          <xsl:value-of select="exsl:node-set($m_matched-target)/*[contains(@class, ' glossentry/glossentry ')][1]//*[contains(@class, ' glossentry/glossterm ')][normalize-space(text())!='']"/>
+          <xsl:value-of select="$glossentry//*[contains(@class, ' glossentry/glossterm ')][normalize-space(text())!='']"/>
         </xsl:otherwise>
       </xsl:choose>
     </xsl:when>
@@ -1699,23 +1706,24 @@
   </xsl:choose>
 </xsl:template>
 
-<xsl:template match="*" mode="getMatchingAcronym" xmlns:exsl="http://exslt.org/common">
+<xsl:template match="*" mode="getMatchingAcronym">
   <xsl:param name="m_matched-target"/>
   <xsl:param name="m_keys"/>
   <xsl:choose>
     <xsl:when test="not($m_matched-target='#none#')">
+      <xsl:variable name="glossentry" select="exsl:node-set($m_matched-target)/*[contains(@class, ' glossentry/glossentry ')][1]"/>
       <xsl:choose>
-        <xsl:when test="exsl:node-set($m_matched-target)/*[contains(@class, ' glossentry/glossentry ')][1]//*[contains(@class, ' glossentry/glossStatus ')][@value='preferred'][1]/preceding-sibling::*[contains(@class, ' glossentry/glossAcronym ') or contains(@class, ' glossentry/glossAbbreviation ')][normalize-space(text())!='']">
-          <xsl:value-of select="exsl:node-set($m_matched-target)/*[contains(@class, ' glossentry/glossentry ')][1]//*[contains(@class, ' glossentry/glossStatus ')][@value='preferred'][1]/preceding-sibling::*[contains(@class, ' glossentry/glossAcronym ') or contains(@class, ' glossentry/glossAbbreviation ')][normalize-space(text())!='']"/>
+        <xsl:when test="$glossentry//*[contains(@class, ' glossentry/glossStatus ')][@value='preferred'][1]/preceding-sibling::*[contains(@class, ' glossentry/glossAcronym ') or contains(@class, ' glossentry/glossAbbreviation ')][normalize-space(text())!='']">
+          <xsl:value-of select="$glossentry//*[contains(@class, ' glossentry/glossStatus ')][@value='preferred'][1]/preceding-sibling::*[contains(@class, ' glossentry/glossAcronym ') or contains(@class, ' glossentry/glossAbbreviation ')][normalize-space(text())!='']"/>
         </xsl:when>
-        <xsl:when test="exsl:node-set($m_matched-target)/*[contains(@class, ' glossentry/glossentry ')][1]//*[contains(@class, ' glossentry/glossStatus ')][@value!='prohibited'][@value!='obsolete'][1]/preceding-sibling::*[contains(@class, ' glossentry/glossAcronym ') or contains(@class, ' glossentry/glossAbbreviation ')][normalize-space(text())!='']">
-          <xsl:value-of select="exsl:node-set($m_matched-target)/*[contains(@class, ' glossentry/glossentry ')][1]//*[contains(@class, ' glossentry/glossStatus ')][@value!='prohibited'][@value!='obsolete'][1]/preceding-sibling::*[contains(@class, ' glossentry/glossAcronym ') or contains(@class, ' glossentry/glossAbbreviation ')][normalize-space(text())!='']"/>
+        <xsl:when test="$glossentry//*[contains(@class, ' glossentry/glossStatus ')][@value!='prohibited' and @value!='obsolete'][1]/preceding-sibling::*[contains(@class, ' glossentry/glossAcronym ') or contains(@class, ' glossentry/glossAbbreviation ')][normalize-space(text())!='']">
+          <xsl:value-of select="$glossentry//*[contains(@class, ' glossentry/glossStatus ')][@value!='prohibited' and @value!='obsolete'][1]/preceding-sibling::*[contains(@class, ' glossentry/glossAcronym ') or contains(@class, ' glossentry/glossAbbreviation ')][normalize-space(text())!='']"/>
         </xsl:when>
-        <xsl:when test="exsl:node-set($m_matched-target)/*[contains(@class, ' glossentry/glossentry ')][1]//*[contains(@class, ' glossentry/glossAlt ')][1]/*[contains(@class, ' glossentry/glossAcronym ') or contains(@class, ' glossentry/glossAbbreviation ')][count(following-sibling::glossStatus)=0][normalize-space(text())!='']">
-          <xsl:value-of select="exsl:node-set($m_matched-target)/*[contains(@class, ' glossentry/glossentry ')][1]//*[contains(@class, ' glossentry/glossAlt ')][1]/*[contains(@class, ' glossentry/glossAcronym ') or contains(@class, ' glossentry/glossAbbreviation ')][count(following-sibling::glossStatus)=0][normalize-space(text())!='']"/>
+        <xsl:when test="$glossentry//*[contains(@class, ' glossentry/glossAlt ')][1]/*[contains(@class, ' glossentry/glossAcronym ') or contains(@class, ' glossentry/glossAbbreviation ')][not(following-sibling::glossStatus)][normalize-space(text())!='']">
+          <xsl:value-of select="$glossentry//*[contains(@class, ' glossentry/glossAlt ')][1]/*[contains(@class, ' glossentry/glossAcronym ') or contains(@class, ' glossentry/glossAbbreviation ')][count(following-sibling::glossStatus)=0][normalize-space(text())!='']"/>
         </xsl:when>
         <xsl:otherwise>
-          <xsl:value-of select="exsl:node-set($m_matched-target)/*[contains(@class, ' glossentry/glossentry ')][1]/*[contains(@class, ' glossentry/glossterm ')][normalize-space(text())!='']"/>
+          <xsl:value-of select="$glossentry/*[contains(@class, ' glossentry/glossterm ')][normalize-space(text())!='']"/>
         </xsl:otherwise>
       </xsl:choose>
     </xsl:when>
@@ -1733,13 +1741,14 @@
 <!-- terms and abbreviated-forms -->
 <xsl:template match="*[contains(@class,' topic/term ')]" name="topic.term">
   <xsl:variable name="keys" select="@keyref"/>
+  <xsl:variable name="keydef" select="$keydefs//*[@keys = $keys][normalize-space(@href)]"/>
   <xsl:choose>
-    <xsl:when test="@keyref and document($KEYREF-FILE)//*[@keys=$keys][normalize-space(@href)!='']/@href">
-      <xsl:variable name="target">
-        <xsl:value-of select="document($KEYREF-FILE)//*[@keys=$keys][normalize-space(@href)!='']/@href"/>
-      </xsl:variable>
+    <xsl:when test="@keyref and $keydef/@href">
+      <xsl:variable name="target" select="$keydef/@href"/>
       <xsl:variable name="updatedTarget">
-        <xsl:apply-templates select="." mode="find-keyref-target"/>
+        <xsl:apply-templates select="." mode="find-keyref-target">
+          <xsl:with-param name="target" select="$target"/>
+        </xsl:apply-templates>
       </xsl:variable>
 
       <xsl:variable name="entry-file" select="concat($WORKDIR, $PATH2PROJ, substring-before($target, '.'), $DITAEXT)"/>
@@ -1748,9 +1757,7 @@
       <!-- Save glossary entry file contents into a variable to workaround the infamous putDocumentCache error in Xalan -->
       <xsl:variable name="entry-file-contents" select="document($entry-file-uri, /)"/>
       <!-- Glossary id defined in <glossentry> -->
-      <xsl:variable name="glossid">
-        <xsl:value-of select="substring-after($updatedTarget, '#')"/>
-      </xsl:variable>
+      <xsl:variable name="glossid" select="substring-after($updatedTarget, '#')"/>
       <!--
           Language preference.
           NOTE: glossid overrides language preference.
@@ -2155,7 +2162,7 @@
       <xsl:when test="$isSVG">
         <!--<object data="file.svg" type="image/svg+xml" width="500" height="200">-->
         <!-- now invoke the actual content and its alt text -->
-        <xsl:element name="embed">
+        <embed>
           <xsl:call-template name="commonattributes">
             <xsl:with-param name="default-output-class">
               <xsl:if test="@placement='break'">
@@ -2171,10 +2178,10 @@
           <xsl:call-template name="setid"/>
           <xsl:attribute name="src"><xsl:value-of select="@href"/></xsl:attribute>
           <xsl:apply-templates select="@height|@width"/>
-        </xsl:element>
+        </embed>
       </xsl:when>
 <xsl:otherwise>
-  <xsl:element name="img">
+  <img>
     <xsl:call-template name="commonattributes">
       <xsl:with-param name="default-output-class">
         <xsl:if test="@placement='break'"><!--Align only works for break-->
@@ -2208,7 +2215,7 @@
         <xsl:attribute name="alt"><xsl:value-of select="@alt"/></xsl:attribute>
       </xsl:when>
     </xsl:choose>
-  </xsl:element>
+  </img>
 </xsl:otherwise>
 </xsl:choose>
 </xsl:template>
@@ -2328,63 +2335,45 @@
 
 <!-- object, desc, & param -->
 <xsl:template match="*[contains(@class,' topic/object ')]" name="topic.object">
- <xsl:element name="object">
-  <xsl:if test="@id"><xsl:attribute name="id"><xsl:value-of select="@id"/></xsl:attribute></xsl:if>
-  <xsl:if test="@declare"><xsl:attribute name="declare"><xsl:value-of select="@declare"/></xsl:attribute></xsl:if>
-  <xsl:if test="@codebase"><xsl:attribute name="codebase"><xsl:value-of select="@codebase"/></xsl:attribute></xsl:if>
-  <xsl:if test="@type"><xsl:attribute name="type"><xsl:value-of select="@type"/></xsl:attribute></xsl:if>
-  <xsl:if test="@archive"><xsl:attribute name="archive"><xsl:value-of select="@archive"/></xsl:attribute></xsl:if>
-  <xsl:if test="@height"><xsl:attribute name="height"><xsl:value-of select="@height"/></xsl:attribute></xsl:if>
-  <xsl:if test="@usemap"><xsl:attribute name="usemap"><xsl:value-of select="@usemap"/></xsl:attribute></xsl:if>
-  <xsl:if test="@tabindex"><xsl:attribute name="tabindex"><xsl:value-of select="@tabindex"/></xsl:attribute></xsl:if>
-  <xsl:if test="@classid"><xsl:attribute name="classid"><xsl:value-of select="@classid"/></xsl:attribute></xsl:if>
-  <xsl:if test="@data"><xsl:attribute name="data"><xsl:value-of select="@data"/></xsl:attribute></xsl:if>
-  <xsl:if test="@codetype"><xsl:attribute name="codetype"><xsl:value-of select="@codetype"/></xsl:attribute></xsl:if>
-  <xsl:if test="@standby"><xsl:attribute name="standby"><xsl:value-of select="@standby"/></xsl:attribute></xsl:if>
-  <xsl:if test="@width"><xsl:attribute name="width"><xsl:value-of select="@width"/></xsl:attribute></xsl:if>
-  <xsl:if test="@name"><xsl:attribute name="name"><xsl:value-of select="@name"/></xsl:attribute></xsl:if>
+ <object>
+  <xsl:copy-of select="@id | @declare | @codebase | @type | @archive | @height | @usemap | @tabindex | @classid | @data | @codetype | @standby | @width | @name"/>
   <xsl:if test="@longdescref or *[contains(@class, ' topic/longdescref ')]">
     <xsl:apply-templates select="." mode="ditamsg:longdescref-on-object"/>
   </xsl:if>
   <xsl:apply-templates/>
  <!-- Test for Flash movie; include EMBED statement for non-IE browsers -->
  <xsl:if test="contains(@codebase,'swflash.cab')">
-  <xsl:element name="embed">
+  <embed>
    <xsl:if test="@id"><xsl:attribute name="name"><xsl:value-of select="@id"/></xsl:attribute></xsl:if>
-   <xsl:if test="@height"><xsl:attribute name="height"><xsl:value-of select="@height"/></xsl:attribute></xsl:if>
-   <xsl:if test="@width"><xsl:attribute name="width"><xsl:value-of select="@width"/></xsl:attribute></xsl:if>
+   <xsl:copy-of select="@height | @width"/>
    <xsl:attribute name="type"><xsl:text>application/x-shockwave-flash</xsl:text></xsl:attribute>
    <xsl:attribute name="pluginspage"><xsl:text>http://www.macromedia.com/go/getflashplayer</xsl:text></xsl:attribute>
-   <xsl:if test="./*[contains(@class,' topic/param ')]/@name='movie'">
-    <xsl:attribute name="src"><xsl:value-of select="./*[contains(@class,' topic/param ')][@name='movie']/@value"/></xsl:attribute>
+   <xsl:if test="*[contains(@class,' topic/param ')]/@name='movie'">
+    <xsl:attribute name="src"><xsl:value-of select="*[contains(@class,' topic/param ')][@name='movie']/@value"/></xsl:attribute>
    </xsl:if>
-   <xsl:if test="./*[contains(@class,' topic/param ')]/@name='quality'">
-    <xsl:attribute name="quality"><xsl:value-of select="./*[contains(@class,' topic/param ')][@name='quality']/@value"/></xsl:attribute>
+   <xsl:if test="*[contains(@class,' topic/param ')]/@name='quality'">
+    <xsl:attribute name="quality"><xsl:value-of select="*[contains(@class,' topic/param ')][@name='quality']/@value"/></xsl:attribute>
    </xsl:if>
-   <xsl:if test="./*[contains(@class,' topic/param ')]/@name='bgcolor'">
-    <xsl:attribute name="bgcolor"><xsl:value-of select="./*[contains(@class,' topic/param ')][@name='bgcolor']/@value"/></xsl:attribute>
+   <xsl:if test="*[contains(@class,' topic/param ')]/@name='bgcolor'">
+    <xsl:attribute name="bgcolor"><xsl:value-of select="*[contains(@class,' topic/param ')][@name='bgcolor']/@value"/></xsl:attribute>
    </xsl:if>
-  </xsl:element>
+  </embed>
  </xsl:if>
- </xsl:element>
+ </object>
 </xsl:template>
 
 <xsl:template match="*[contains(@class,' topic/param ')]" name="topic.param">
- <xsl:element name="param">
-  <xsl:if test="@name"><xsl:attribute name="name"><xsl:value-of select="@name"/></xsl:attribute></xsl:if>
-  <xsl:if test="@id"><xsl:attribute name="id"><xsl:value-of select="@id"/></xsl:attribute></xsl:if>
-  <xsl:if test="@value"><xsl:attribute name="value"><xsl:value-of select="@value"/></xsl:attribute></xsl:if>
- </xsl:element>
+ <param>
+  <xsl:copy-of select="@name | @id | @value"/>
+ </param>
 </xsl:template>
 
 <!-- need to add test for object/desc to avoid conflicts -->
 <xsl:template match="*[contains(@class,' topic/object ')]/*[contains(@class,' topic/desc ')]" name="topic.object_desc">
- <xsl:element name="span">
-  <xsl:if test="@name"><xsl:attribute name="name"><xsl:value-of select="@name"/></xsl:attribute></xsl:if>
-  <xsl:if test="@id"><xsl:attribute name="id"><xsl:value-of select="@id"/></xsl:attribute></xsl:if>
-  <xsl:if test="@value"><xsl:attribute name="value"><xsl:value-of select="@value"/></xsl:attribute></xsl:if>
+ <span>
+  <xsl:copy-of select="@name | @id | value"/>
   <xsl:apply-templates/>
- </xsl:element>
+ </span>
 </xsl:template>
 
 <!-- ===================================================================== -->
@@ -3801,13 +3790,14 @@
      echoes the content back, indicating any nesting.  Useful view for authoring!-->
 <xsl:template match="*[contains(@class,' topic/indexterm ')]" name="topic.indexterm">
  <xsl:if test="$INDEXSHOW='yes'">
-   <xsl:variable name="keys">
-     <xsl:value-of select="@keyref"/>
-   </xsl:variable>
+   <xsl:variable name="keys" select="@keyref"/>
+   <xsl:variable name="keydef" select="$keydefs//*[contains(@keys, $keys)]"/>
    <xsl:choose>
-     <xsl:when test="@keyref and document($KEYREF-FILE)//*[contains(@keys, $keys)]">
+     <xsl:when test="@keyref and $keydef">
        <xsl:variable name="updatedTarget">
-         <xsl:apply-templates select="." mode="find-keyref-target"/>
+         <xsl:apply-templates select="." mode="find-keyref-target">
+           <!--xsl:with-param name="target" select="$keydef/@href"/-->
+         </xsl:apply-templates>
        </xsl:variable>
        <a href="{$updatedTarget}">
          <span style="margin: 1pt; background-color: #ffddff; border: 1pt black solid;">
@@ -4123,7 +4113,7 @@
   <xsl:choose>
     <xsl:when test="contains($sptext,'  ')">
        <xsl:value-of select="substring-before($sptext,'  ')"/>
-       <xsl:text disable-output-escaping="yes">&nbsp;&nbsp;</xsl:text>
+       <xsl:text>&#xA0;&#xA0;</xsl:text>
        <xsl:call-template name="sp-replace"> <!-- call again to get remaining spaces -->
          <xsl:with-param name="sptext" select="substring-after($sptext,'  ')"/>
        </xsl:call-template>
@@ -4440,13 +4430,13 @@
            </xsl:call-template><xsl:text> </xsl:text><xsl:value-of select="$tbl-count-actual"/><xsl:text>. </xsl:text>
           </xsl:otherwise>
          </xsl:choose>
-         <xsl:apply-templates select="./*[contains(@class,' topic/title ')]" mode="tabletitle"/>         
+         <xsl:apply-templates select="*[contains(@class,' topic/title ')]" mode="tabletitle"/>         
         </span>
        <xsl:if test="*[contains(@class,' topic/desc ')]"> 
         <xsl:text>. </xsl:text>
         <span class="tabledesc">
-          <xsl:for-each select="./*[contains(@class,' topic/desc ')]"><xsl:call-template name="commonattributes"/></xsl:for-each>
-          <xsl:apply-templates select="./*[contains(@class,' topic/desc ')]" mode="tabledesc"/>
+          <xsl:for-each select="*[contains(@class,' topic/desc ')]"><xsl:call-template name="commonattributes"/></xsl:for-each>
+          <xsl:apply-templates select="*[contains(@class,' topic/desc ')]" mode="tabledesc"/>
         </span>
        </xsl:if>
       </caption>
@@ -4454,8 +4444,8 @@
     <!-- desc -->
     <xsl:when test="*[contains(@class,' topic/desc ')]">
       <span class="tabledesc">
-        <xsl:for-each select="./*[contains(@class,' topic/desc ')]"><xsl:call-template name="commonattributes"/></xsl:for-each>
-        <xsl:apply-templates select="./*[contains(@class,' topic/desc ')]" mode="tabledesc"/>
+        <xsl:for-each select="*[contains(@class,' topic/desc ')]"><xsl:call-template name="commonattributes"/></xsl:for-each>
+        <xsl:apply-templates select="*[contains(@class,' topic/desc ')]" mode="tabledesc"/>
       </span>
     </xsl:when>
   </xsl:choose>
@@ -4503,21 +4493,21 @@
          </xsl:call-template><xsl:text> </xsl:text><xsl:value-of select="$fig-count-actual"/><xsl:text>. </xsl:text>
         </xsl:otherwise>
        </xsl:choose>
-       <xsl:apply-templates select="./*[contains(@class,' topic/title ')]" mode="figtitle"/>
+       <xsl:apply-templates select="*[contains(@class,' topic/title ')]" mode="figtitle"/>
       </span>
       <xsl:if test="*[contains(@class,' topic/desc ')]">
        <xsl:text>. </xsl:text>
        <span class="figdesc">
-         <xsl:for-each select="./*[contains(@class,' topic/desc ')]"><xsl:call-template name="commonattributes"/></xsl:for-each>
-         <xsl:apply-templates select="./*[contains(@class,' topic/desc ')]" mode="figdesc"/>
+         <xsl:for-each select="*[contains(@class,' topic/desc ')]"><xsl:call-template name="commonattributes"/></xsl:for-each>
+         <xsl:apply-templates select="*[contains(@class,' topic/desc ')]" mode="figdesc"/>
        </span>
       </xsl:if>
     </xsl:when>
     <!-- desc -->
     <xsl:when test="*[contains(@class, ' topic/desc ')]">
       <span class="figdesc">
-        <xsl:for-each select="./*[contains(@class,' topic/desc ')]"><xsl:call-template name="commonattributes"/></xsl:for-each>
-        <xsl:apply-templates select="./*[contains(@class,' topic/desc ')]" mode="figdesc"/>
+        <xsl:for-each select="*[contains(@class,' topic/desc ')]"><xsl:call-template name="commonattributes"/></xsl:for-each>
+        <xsl:apply-templates select="*[contains(@class,' topic/desc ')]" mode="figdesc"/>
       </span>
     </xsl:when>
   </xsl:choose>
@@ -4711,7 +4701,7 @@
     <xsl:if test="$genDefMeta='yes'">
       <meta name="security" content="public" /><xsl:value-of select="$newline"/>
       <meta name="Robots" content="index,follow" /><xsl:value-of select="$newline"/>
-      <xsl:text disable-output-escaping="yes">&lt;meta http-equiv="PICS-Label" content='(PICS-1.1 "http://www.icra.org/ratingsv02.html" l gen true r (cz 1 lz 1 nz 1 oz 1 vz 1) "http://www.rsac.org/ratingsv01.html" l gen true r (n 0 s 0 v 0 l 0) "http://www.classify.org/safesurf/" l gen true r (SS~~000 1))' /></xsl:text>
+      <meta http-equiv="PICS-Label" content="(PICS-1.1 'http://www.icra.org/ratingsv02.html' l gen true r (cz 1 lz 1 nz 1 oz 1 vz 1) 'http://www.rsac.org/ratingsv01.html' l gen true r (n 0 s 0 v 0 l 0) 'http://www.classify.org/safesurf/' l gen true r (SS~~000 1))" />
       <xsl:value-of select="$newline"/>
     </xsl:if>
   </xsl:template>
@@ -4961,10 +4951,9 @@
   <!-- Function to look up a target in the keyref file -->
   <xsl:template match="*" mode="find-keyref-target">
     <xsl:param name="keys" select="@keyref"/>
-    <xsl:variable name="target">
-      <!--<xsl:value-of select="document($KEYREF-FILE)//*[contains(@keys, $keys)]/@href"/>-->
-      <xsl:value-of select="document($KEYREF-FILE)//*[@keys=$keys]/@href"/>
-    </xsl:variable>
+    <xsl:param name="target">
+      <xsl:value-of select="$keydefs//*[@keys=$keys]/@href"/>
+    </xsl:param>
     <xsl:choose>
       <xsl:when test="contains($target,'://')">
         <xsl:value-of select="$target"/>
@@ -4994,13 +4983,14 @@
     <xsl:choose>
       <xsl:when test="$displaytext='' and $keys!=''">
         <xsl:variable name="target">
-          <xsl:if test="document($KEYREF-FILE)//*[@keys=$keys]">
+          <xsl:variable name="keydef" select="$keydefs//*[@keys=$keys]"/>
+          <xsl:if test="$keydef">
             <xsl:choose>
-              <xsl:when test="contains(document($KEYREF-FILE)//*[@keys=$keys]/@href, '#')">
-                <xsl:value-of select="concat(substring-before(substring-before(document($KEYREF-FILE)//*[@keys=$keys]/@href, '#'), '.'), $DITAEXT)"/>
+              <xsl:when test="contains($keydef/@href, '#')">
+                <xsl:value-of select="concat(substring-before(substring-before($keydef/@href, '#'), '.'), $DITAEXT)"/>
               </xsl:when>
-              <xsl:when test="document($KEYREF-FILE)//*[@keys=$keys]/@href">
-                <xsl:value-of select="concat(substring-before(document($KEYREF-FILE)//*[@keys=$keys]/@href, '.'), $DITAEXT)"/>
+              <xsl:when test="$keydef/@href">
+                <xsl:value-of select="concat(substring-before($keydef/@href, '.'), $DITAEXT)"/>
               </xsl:when>
             </xsl:choose>
           </xsl:if>
@@ -5027,10 +5017,13 @@
         <xsl:otherwise>span</xsl:otherwise>
       </xsl:choose>
     </xsl:variable>
+    <xsl:variable name="keydef" select="$keydefs//*[contains(@keys, $keys)]"/>
     <xsl:choose>
-      <xsl:when test="document($KEYREF-FILE)//*[contains(@keys, $keys)]">
+      <xsl:when test="$keydef">
         <xsl:variable name="updatedTarget">
-          <xsl:apply-templates select="." mode="find-keyref-target"/>
+          <xsl:apply-templates select="." mode="find-keyref-target">
+            <!--xsl:with-param name="target" select="$keydef"/-->
+          </xsl:apply-templates>
         </xsl:variable>
         <xsl:choose>
           <xsl:when test="normalize-space($updatedTarget)!=$OUTEXT">

@@ -4,6 +4,7 @@
      applicable licenses.-->
 <!-- (c) Copyright IBM Corp. 2006 All Rights Reserved. -->
 <project name="ditaot-init" basedir=".">
+    
   <!--<import file="catalog-ant.xml"/>-->
 
 	<!-- Default maximum memory to give to forked Java processes.
@@ -48,6 +49,10 @@
       <isset property="dita.dir" />
     </not>
   </condition>
+  
+  <!-- Read configuration properties -->
+  <property file="${dita.dir}/lib/org.dita.dost.platform/plugin.properties"/>
+  <property file="${dita.dir}/lib/configuration.properties"/>
 	
   <xmlcatalog id="dita.catalog">
     <catalogpath path="${dita.dir}/catalog-dita.xml"/>
