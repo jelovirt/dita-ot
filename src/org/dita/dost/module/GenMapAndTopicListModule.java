@@ -29,7 +29,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.Map.Entry;
 
 import javax.xml.parsers.ParserConfigurationException;
 
@@ -194,9 +193,9 @@ final class GenMapAndTopicListModule implements AbstractPipelineModule {
     private final Map<String, String> exKeyDefMap;
     // Added by William on 2010-06-09 for bug:3013079 end
 
-    private final String moduleStartMsg = "GenMapAndTopicListModule.execute(): Starting...";
+    private static final String moduleStartMsg = "GenMapAndTopicListModule.execute(): Starting...";
 
-    private final String moduleEndMsg = "GenMapAndTopicListModule.execute(): Execution time: ";
+    private static final String moduleEndMsg = "GenMapAndTopicListModule.execute(): Execution time: ";
 
     // Added on 2010-08-24 for bug:2994593 start
     /** use grammar pool cache */
@@ -422,6 +421,11 @@ final class GenMapAndTopicListModule implements AbstractPipelineModule {
         } else {
             fileToParse = new File(baseInputDir, currentFile);
         }
+        try {
+        	fileToParse = fileToParse.getCanonicalFile();
+		} catch (IOException e1) {
+			logger.logError(e1.toString());
+		}
         logger.logInfo("Processing " + fileToParse.getAbsolutePath());
         String msg = null;
         final Properties params = new Properties();
@@ -432,7 +436,6 @@ final class GenMapAndTopicListModule implements AbstractPipelineModule {
             return;
         }
         try {
-            fileToParse = fileToParse.getCanonicalFile();
             if (FileUtils.isValidTarget(currentFile.toLowerCase())) {
                 reader.setTranstype(transtype);
                 reader.setCurrentDir(new File(currentFile).getParent());

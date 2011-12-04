@@ -42,8 +42,6 @@ See the accompanying license.txt file for applicable licenses.
     exclude-result-prefixes="opentopic exsl opentopic-index exslf opentopic-func"
     version="2.0">
 
-    <xsl:key name="map-id" match="opentopic:map//*[@id]" use="@id"/>
-
     <!-- BS: Template owerwrited to define new topic types (List's),
     to create special processing for any of list you should use <template name="processUnknowTopic"/>
     example below.-->
@@ -170,6 +168,7 @@ See the accompanying license.txt file for applicable licenses.
         <xsl:apply-templates/>
       </xsl:template-->
     <xsl:template match="*[contains(@class, ' topic/data ')]"/>
+    <xsl:template match="*[contains(@class, ' topic/data ')]" mode="insert-text"/>
     <xsl:template match="*[contains(@class, ' topic/data-about ')]"/>
     <!-- edited by William on 2009-09-18 for output bug #2860168 end-->
 

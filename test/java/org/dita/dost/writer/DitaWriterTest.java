@@ -76,6 +76,7 @@ public class DitaWriterTest {
 
         OutputUtils.setInputMapPathName(new File(srcDir, "main.ditamap").getAbsolutePath());
         final DitaWriter writer = new DitaWriter();
+        writer.setLogger(new TestUtils.TestLogger());
         writer.initXMLReader(srcDir.getAbsolutePath(), false, true);
         writer.setExtName(".xml");
 
@@ -83,7 +84,7 @@ public class DitaWriterTest {
             final Content content = new ContentImpl();
             content.setValue(tempDir.getAbsolutePath());
             writer.setContent(content);
-            writer.write(srcDir.getAbsolutePath() + Constants.STICK + f);
+            writer.write(srcDir.getAbsolutePath(), f);
         }
 
         TestUtils.resetXMLUnit();
@@ -155,7 +156,7 @@ public class DitaWriterTest {
     }
 
 
-    private class TestHandler implements ContentHandler {
+    private static class TestHandler implements ContentHandler {
 
         private File source;
         private final Map<String, Integer> counter = new HashMap<String, Integer>();

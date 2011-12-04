@@ -9,7 +9,53 @@
  */
 package org.dita.dost.module;
 
-import static org.dita.dost.util.Constants.*;
+import static org.dita.dost.util.Constants.ANT_INVOKER_EXT_PARAM_DITADIR;
+import static org.dita.dost.util.Constants.ANT_INVOKER_EXT_PARAM_TRANSTYPE;
+import static org.dita.dost.util.Constants.ANT_INVOKER_EXT_PARAN_SETSYSTEMID;
+import static org.dita.dost.util.Constants.ANT_INVOKER_PARAM_BASEDIR;
+import static org.dita.dost.util.Constants.ANT_INVOKER_PARAM_DITAEXT;
+import static org.dita.dost.util.Constants.ANT_INVOKER_PARAM_DITAVAL;
+import static org.dita.dost.util.Constants.ANT_INVOKER_PARAM_TEMPDIR;
+import static org.dita.dost.util.Constants.ATTRIBUTE_NAME_CLASS;
+import static org.dita.dost.util.Constants.ATTRIBUTE_NAME_KEYREF;
+import static org.dita.dost.util.Constants.ATTRIBUTE_NAME_KEYS;
+import static org.dita.dost.util.Constants.CHUNK_TOPIC_LIST;
+import static org.dita.dost.util.Constants.CODEREF_LIST;
+import static org.dita.dost.util.Constants.COMMA;
+import static org.dita.dost.util.Constants.CONREF_LIST;
+import static org.dita.dost.util.Constants.CONREF_PUSH_LIST;
+import static org.dita.dost.util.Constants.CONREF_TARGET_LIST;
+import static org.dita.dost.util.Constants.COPYTO_SOURCE_LIST;
+import static org.dita.dost.util.Constants.COPYTO_TARGET_TO_SOURCE_MAP_LIST;
+import static org.dita.dost.util.Constants.DOT;
+import static org.dita.dost.util.Constants.EQUAL;
+import static org.dita.dost.util.Constants.FILE_EXTENSION_DITAMAP;
+import static org.dita.dost.util.Constants.FILE_NAME_DITA_LIST;
+import static org.dita.dost.util.Constants.FILE_NAME_DITA_LIST_XML;
+import static org.dita.dost.util.Constants.FILE_NAME_SUBJECT_DICTIONARY;
+import static org.dita.dost.util.Constants.FILE_NAME_SUBJECT_RELATION;
+import static org.dita.dost.util.Constants.FULL_DITAMAP_TOPIC_LIST;
+import static org.dita.dost.util.Constants.FULL_DITA_TOPIC_LIST;
+import static org.dita.dost.util.Constants.GREATER_THAN;
+import static org.dita.dost.util.Constants.HREF_DITA_TOPIC_LIST;
+import static org.dita.dost.util.Constants.HREF_TARGET_LIST;
+import static org.dita.dost.util.Constants.HREF_TOPIC_LIST;
+import static org.dita.dost.util.Constants.INT_0;
+import static org.dita.dost.util.Constants.INT_1;
+import static org.dita.dost.util.Constants.INT_1024;
+import static org.dita.dost.util.Constants.KEYREF_LIST;
+import static org.dita.dost.util.Constants.LESS_THAN;
+import static org.dita.dost.util.Constants.LINE_SEPARATOR;
+import static org.dita.dost.util.Constants.OS_NAME;
+import static org.dita.dost.util.Constants.OS_NAME_WINDOWS;
+import static org.dita.dost.util.Constants.OUT_DITA_FILES_LIST;
+import static org.dita.dost.util.Constants.QUESTION;
+import static org.dita.dost.util.Constants.RESOURCE_ONLY_LIST;
+import static org.dita.dost.util.Constants.STICK;
+import static org.dita.dost.util.Constants.STRING_BLANK;
+import static org.dita.dost.util.Constants.SUBJECTSCHEME_SUBJECTDEF;
+import static org.dita.dost.util.Constants.UNIX_SEPARATOR;
+import static org.dita.dost.util.Constants.UTF8;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -20,13 +66,14 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.io.PrintStream;
 import java.io.Writer;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Queue;
@@ -80,10 +127,10 @@ final class DebugAndFilterModule implements AbstractPipelineModule {
     /**
      * File extension of source file.
      */
-    private static String extName = null;
-    private static String tempDir = "";
+    private String extName = null;
+    private String tempDir = "";
 
-    private static void updateProperty (final String listName, final Properties property){
+    private void updateProperty (final String listName, final Properties property){
         final StringBuffer result = new StringBuffer(INT_1024);
         final String propValue = property.getProperty(listName);
 
@@ -184,27 +231,19 @@ final class DebugAndFilterModule implements AbstractPipelineModule {
             throw new IllegalStateException("Logger not set");
         }
         final Date executeStartTime = TimingUtils.getNowTime();
-        final String msg = "DebugAndFilterModule.execute(): Starting...";
-        logger.logInfo(msg);
+        logger.logInfo("DebugAndFilterModule.execute(): Starting...");
 
         try {
             final String baseDir = input.getAttribute(ANT_INVOKER_PARAM_BASEDIR);
-            String ditavalFile = input.getAttribute(ANT_INVOKER_PARAM_DITAVAL);
             tempDir = input.getAttribute(ANT_INVOKER_PARAM_TEMPDIR);
-            final String ext = input.getAttribute(ANT_INVOKER_PARAM_DITAEXT);
-            ditaDir=input.getAttribute(ANT_INVOKER_EXT_PARAM_DITADIR);
-            //Added by William on 2009-07-18 for req #12014 start
-            //get transtype
-            final String transtype = input.getAttribute(ANT_INVOKER_EXT_PARAM_TRANSTYPE);
-            //Added by William on 2009-07-18 for req #12014 start
-
-            inputDir = null;
-
-
-            extName = ext.startsWith(DOT) ? ext : (DOT + ext);
             if (!new File(tempDir).isAbsolute()) {
                 tempDir = new File(baseDir, tempDir).getAbsolutePath();
             }
+            ditaDir=input.getAttribute(ANT_INVOKER_EXT_PARAM_DITADIR);
+            final String transtype = input.getAttribute(ANT_INVOKER_EXT_PARAM_TRANSTYPE);
+            final String ext = input.getAttribute(ANT_INVOKER_PARAM_DITAEXT);
+            extName = ext.startsWith(DOT) ? ext : (DOT + ext);
+            String ditavalFile = input.getAttribute(ANT_INVOKER_PARAM_DITAVAL);
             if (ditavalFile != null && !new File(ditavalFile).isAbsolute()) {
                 ditavalFile = new File(baseDir, ditavalFile).getAbsolutePath();
             }
@@ -214,12 +253,12 @@ final class DebugAndFilterModule implements AbstractPipelineModule {
             //null means default path: tempdir/dita.xml.properties
             listReader.read(null);
 
-            final LinkedList<String> parseList = (LinkedList<String>) listReader.getContent().getCollection();
+            final List<String> parseList = (List<String>) listReader.getContent().getCollection();
             inputDir = (String) listReader.getContent().getValue();
             inputMap = new File(inputDir + File.separator + listReader.getInputMap()).getAbsolutePath();
 
             // Output subject schemas
-            this.outputSubjectScheme();
+            outputSubjectScheme();
 
             if (!new File(inputDir).isAbsolute()) {
                 inputDir = new File(baseDir, inputDir).getAbsolutePath();
@@ -237,6 +276,8 @@ final class DebugAndFilterModule implements AbstractPipelineModule {
                 content = new ContentImpl();
                 //FilterUtils.setFilterMap(null);
             }
+            content.setValue(tempDir);
+            
             final DitaWriter fileWriter = new DitaWriter();
             fileWriter.setLogger(logger);
             try{
@@ -245,36 +286,22 @@ final class DebugAndFilterModule implements AbstractPipelineModule {
             } catch (final SAXException e) {
                 throw new DITAOTException(e.getMessage(), e);
             }
-
-            content.setValue(tempDir);
             fileWriter.setContent(content);
-
-            //Added by Alan Date:2009-08-04 --begin
             fileWriter.setExtName(extName);
-
-            //added by William on 2009-07-18 for req #12014 start
-            //set transtype
             fileWriter.setTranstype(transtype);
-            //added by William on 2009-07-18 for req #12014 end
-            String filePathPrefix = null;
-            if(inputDir != null){
-                filePathPrefix = inputDir + STICK;
-            }
 
             final Map<String, Set<String>> dic = readMapFromXML(FILE_NAME_SUBJECT_DICTIONARY);
 
-            while (!parseList.isEmpty()) {
-                final String filename = parseList.removeLast();
+            for (final String filename: parseList) {
                 final File currentFile = new File(inputDir, filename);
                 logger.logInfo("Processing " + currentFile.getAbsolutePath());
 
                 final Set<String> schemaSet = dic.get(filename);
                 filterReader.reset();
                 if (schemaSet != null) {
-                    final Iterator<String> iter = schemaSet.iterator();
-                    while (iter.hasNext()) {
+                    for (final String schema: schemaSet) {
                         filterReader.loadSubjectScheme(FileUtils.resolveFile(
-                                DebugAndFilterModule.tempDir, iter.next())+".subm");
+                                tempDir, schema)+".subm");
                     }
                     if (ditavalFile!=null){
                         filterReader.filterReset();
@@ -300,17 +327,7 @@ final class DebugAndFilterModule implements AbstractPipelineModule {
                     continue;
                 }
 
-                /*
-                 * Usually the writer's argument for write() is used to pass in the
-                 * ouput file name. But in this case, the input file name is same as
-                 * output file name so we can use this argument to pass in the input
-                 * file name. "|" is used to separate the path information that is
-                 * not necessary to be kept (baseDir) and the path information that
-                 * need to be kept in the temp directory.
-                 */
-                fileWriter.write(
-                        new StringBuffer().append(filePathPrefix)
-                        .append(filename).toString());
+                fileWriter.write(inputDir, filename);
             }
 
             updateList(tempDir);
@@ -326,7 +343,7 @@ final class DebugAndFilterModule implements AbstractPipelineModule {
             } else {
                 listReader.read(new File(tempDir, FILE_NAME_DITA_LIST).getAbsolutePath());
             }
-            performCopytoTask(tempDir,  listReader );
+            performCopytoTask(tempDir, listReader);
         } catch (final Exception e) {
             e.printStackTrace();
             throw new DITAOTException("Exception doing debug and filter module processing: " + e.getMessage(), e);
@@ -384,14 +401,13 @@ final class DebugAndFilterModule implements AbstractPipelineModule {
             }
         }
 
-        final Iterator<Object> it = prop.keySet().iterator();
-        while (it.hasNext()) {
-            final String key = (String)it.next();
-            final String value = prop.getProperty(key);
+        for (final Map.Entry<Object, Object> entry: prop.entrySet()) {
+            final String key = (String) entry.getKey();
+            final String value = (String) entry.getValue();
             graph.put(key, StringUtils.restoreSet(value, COMMA));
         }
 
-        return graph;
+        return Collections.unmodifiableMap(graph);
     }
 
     private void outputSubjectScheme() throws DITAOTException {
@@ -400,9 +416,8 @@ final class DebugAndFilterModule implements AbstractPipelineModule {
 
         final Queue<String> queue = new LinkedList<String>();
         final Set<String> visitedSet = new HashSet<String>();
-        final Iterator<Map.Entry<String, Set<String>>> graphIter = graph.entrySet().iterator();
-        if (graphIter.hasNext()) {
-            final Map.Entry<String, Set<String>> entry = graphIter.next();
+        
+        for (final Map.Entry<String, Set<String>> entry: graph.entrySet()) {
             queue.offer(entry.getKey());
         }
 
@@ -424,7 +439,7 @@ final class DebugAndFilterModule implements AbstractPipelineModule {
                 }
                 visitedSet.add(parent);
                 String tmprel = FileUtils.getRelativePathFromMap(inputMap, parent);
-                tmprel = FileUtils.resolveFile(DebugAndFilterModule.tempDir, tmprel)+".subm";
+                tmprel = FileUtils.resolveFile(tempDir, tmprel)+".subm";
                 Document parentRoot = null;
                 if (!FileUtils.fileExists(tmprel)) {
                     parentRoot = builder.parse(new InputSource(new FileInputStream(parent)));
@@ -432,20 +447,18 @@ final class DebugAndFilterModule implements AbstractPipelineModule {
                     parentRoot = builder.parse(new InputSource(new FileInputStream(tmprel)));
                 }
                 if (children != null) {
-                    final Iterator<String> child = children.iterator();
-                    while (child.hasNext()) {
-                        final String childpath = child.next();
+                    for (final String childpath: children) {
                         final Document childRoot = builder.parse(new InputSource(new FileInputStream(childpath)));
                         mergeScheme(parentRoot, childRoot);
                         String rel = FileUtils.getRelativePathFromMap(inputMap, childpath);
-                        rel = FileUtils.resolveFile(DebugAndFilterModule.tempDir, rel)+".subm";
+                        rel = FileUtils.resolveFile(tempDir, rel)+".subm";
                         generateScheme(rel, childRoot);
                     }
                 }
 
                 //Output parent scheme
                 String rel = FileUtils.getRelativePathFromMap(inputMap, parent);
-                rel = FileUtils.resolveFile(DebugAndFilterModule.tempDir, rel)+".subm";
+                rel = FileUtils.resolveFile(tempDir, rel)+".subm";
                 generateScheme(rel, parentRoot);
             }
         } catch (final Exception e) {
@@ -583,9 +596,8 @@ final class DebugAndFilterModule implements AbstractPipelineModule {
      */
     private void performCopytoTask(final String tempDir, final ListReader listReader) {
     	Map<String, String> copytoMap  = listReader.getCopytoMap();
-        final Iterator<Map.Entry<String, String>> iter = copytoMap.entrySet().iterator();
-        while (iter.hasNext()) {
-            final Map.Entry<String, String> entry = iter.next();
+    	
+    	for (final Map.Entry<String, String> entry: copytoMap.entrySet()) {
             final String copytoTarget = entry.getKey();
             final String copytoSource = entry.getValue();
             final File srcFile = new File(tempDir, copytoSource);
@@ -620,7 +632,7 @@ final class DebugAndFilterModule implements AbstractPipelineModule {
             String workdir = null;
             String path2project = null;  
         	DitaWriter dw = new DitaWriter();
-        	path2project = dw.getPathtoProject(copytoTargetFilename, target.getAbsolutePath(), inputMapInTemp);
+        	path2project = dw.getPathtoProject(copytoTargetFilename, target, inputMapInTemp);
         	workdir = target.getParentFile().getCanonicalPath();
             
             bfis = new BufferedReader(new InputStreamReader(new FileInputStream(src),UTF8));
@@ -630,8 +642,13 @@ final class DebugAndFilterModule implements AbstractPipelineModule {
             	if(line.indexOf(DitaWriter.PI_WORKDIR_TARGET)!=-1) {
             		bfos.write(LESS_THAN + QUESTION);
             		bfos.write(DitaWriter.PI_WORKDIR_TARGET);
+            		 
                     if (workdir != null) {
-                    	bfos.write(STRING_BLANK + workdir);
+                    	if (OS_NAME.toLowerCase().indexOf(OS_NAME_WINDOWS) == -1) {
+							bfos.write(STRING_BLANK + workdir);
+						} else {
+							bfos.write(STRING_BLANK + UNIX_SEPARATOR + workdir);
+						}                    	
                     }
                     bfos.write(QUESTION + GREATER_THAN);
         
@@ -724,9 +741,7 @@ final class DebugAndFilterModule implements AbstractPipelineModule {
         //result map
         final Map<String, Set<String>> resultMap = new HashMap<String, Set<String>>();
         //Iterate the orignal map
-        final Iterator<Map.Entry<String, Set<String>>> itr = dic.entrySet().iterator();
-        while (itr.hasNext()) {
-            final Map.Entry<String, java.util.Set<String>> entry =  itr.next();
+        for (final Map.Entry<String, java.util.Set<String>> entry: dic.entrySet()) {
             //filename will be checked.
             String filename = entry.getKey();
             if(FileUtils.isTopicFile(filename)){
@@ -748,9 +763,7 @@ final class DebugAndFilterModule implements AbstractPipelineModule {
             return;
         }
         final Properties prop = new Properties();
-        final Iterator<Map.Entry<String, Set<String>>> iter = m.entrySet().iterator();
-        while (iter.hasNext()) {
-            final Map.Entry<String, Set<String>> entry = iter.next();
+        for (final Map.Entry<String, Set<String>> entry: m.entrySet()) {
             final String key = entry.getKey();
             final String value = StringUtils.assembleString(entry.getValue(), COMMA);
             prop.setProperty(key, value);
