@@ -10,6 +10,7 @@
 package org.dita.dost.module;
 
 import static org.dita.dost.util.Constants.*;
+import static org.dita.dost.util.Job.*;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -19,6 +20,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -44,11 +46,11 @@ import org.dita.dost.reader.GrammarPoolManager;
 import org.dita.dost.util.DelayConrefUtils;
 import org.dita.dost.util.FileUtils;
 import org.dita.dost.util.FilterUtils;
+import org.dita.dost.util.Job;
 import org.dita.dost.util.OutputUtils;
 import org.dita.dost.util.StringUtils;
 import org.dita.dost.util.TimingUtils;
 import org.dita.dost.util.XMLSerializer;
-import org.dita.dost.writer.PropertiesWriter;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
@@ -60,7 +62,7 @@ import org.xml.sax.SAXParseException;
  * 
  * @author Wu, Zhi Qiang
  */
-final class GenMapAndTopicListModule implements AbstractPipelineModule {
+public final class GenMapAndTopicListModule implements AbstractPipelineModule {
 
     /** Set of all dita files */
     private final Set<String> ditaSet;
@@ -141,7 +143,7 @@ final class GenMapAndTopicListModule implements AbstractPipelineModule {
     private final Set<String> resourceOnlySet;
 
     /** Map of all key definitions */
-    private final Map<String, String> keysDefMap;
+    private final Map<String, KeyDef> keysDefMap;
 
     /** Basedir for processing */
     private String baseInputDir;
@@ -237,7 +239,7 @@ final class GenMapAndTopicListModule implements AbstractPipelineModule {
         outDitaFilesSet = new HashSet<String>(INT_128);
         relFlagImagesSet = new LinkedHashSet<String>(INT_128);
         conrefpushSet = new HashSet<String>(INT_128);
-        keysDefMap = new HashMap<String, String>();
+        keysDefMap = new HashMap<String, KeyDef>();
         exKeyDefMap = new HashMap<String, String>();
         keyrefSet = new HashSet<String>(INT_128);
         coderefSet = new HashSet<String>(INT_128);
@@ -268,9 +270,8 @@ final class GenMapAndTopicListModule implements AbstractPipelineModule {
             reader = new GenListModuleReader();
             reader.setLogger(logger);
             reader.initXMLReader(ditaDir, xmlValidate, rootFile, setSystemid);
-
-            // first parse filter file for later use
-            parseFilterFile();
+            final FilterUtils filterUtils = parseFilterFile();
+            reader.setFilterUtils(filterUtils);
 
             addToWaitList(inputFile);
             processWaitList();
@@ -515,7 +516,7 @@ final class GenMapAndTopicListModule implements AbstractPipelineModule {
 
     private void processParseResult(String currentFile) {
         final Map<String, String> cpMap = reader.getCopytoMap();
-        final Map<String, String> kdMap = reader.getKeysDMap();
+        final Map<String, KeyDef> kdMap = reader.getKeysDMap();
         // Added by William on 2010-06-09 for bug:3013079 start
         // the reader's reset method will clear the map.
         final Map<String, String> exKdMap = reader.getExKeysDefMap();
@@ -559,7 +560,7 @@ final class GenMapAndTopicListModule implements AbstractPipelineModule {
 
         // collect key definitions
         for (final String key: kdMap.keySet()) {
-            final String value = kdMap.get(key);
+            final KeyDef value = kdMap.get(key);
             if (keysDefMap.containsKey(key)) {
                 // if there already exists duplicated key definition in
                 // different map files.
@@ -583,7 +584,7 @@ final class GenMapAndTopicListModule implements AbstractPipelineModule {
                  * logger.logException(e); }
                  */
 
-                keysDefMap.put(key, value + "(" + currentFile + ")");
+                keysDefMap.put(key, new KeyDef(value.keys, value.href, currentFile));
             }
             // TODO Added by William on 2009-06-09 for scheme key bug(532-547)
             // if the current file is also a schema file
@@ -592,7 +593,9 @@ final class GenMapAndTopicListModule implements AbstractPipelineModule {
                 try {
                     schemekeydef.writeStartElement("keydef");
                     schemekeydef.writeAttribute("keys", key);
-                    schemekeydef.writeAttribute("href", value);
+                    if (value.href != null) {
+                        schemekeydef.writeAttribute("href", value.href);
+                    }
                     schemekeydef.writeAttribute("source", currentFile);
                     schemekeydef.writeEndElement();
                 } catch (final SAXException e) {
@@ -712,7 +715,18 @@ final class GenMapAndTopicListModule implements AbstractPipelineModule {
         }
         // edited by william on 2009-08-06 for bug:2832696 end
         if (FileUtils.isSupportedImageFile(lcasefn)) {
-            imageSet.add(file);
+        	imageSet.add(file);        	      	
+			try {
+				File image = new File (baseInputDir + File.separator + file).getCanonicalFile(); 
+				if (!image.exists()){
+	            	Properties prop = new Properties();
+					prop.put("%1", image.getAbsolutePath());
+					logger.logWarn(MessageUtils.getMessage(
+							"DOTX008W", prop).toString());
+	            }
+			} catch (IOException e) {
+				logger.logError(e.getMessage());
+			}
         }
 
         if (FileUtils.isHTMLFile(lcasefn) || FileUtils.isResourceFile(lcasefn)) {
@@ -837,7 +851,9 @@ final class GenMapAndTopicListModule implements AbstractPipelineModule {
         return buff.toString();
     }
 
-    private void parseFilterFile() {
+    private FilterUtils parseFilterFile() {
+        final FilterUtils filterUtils = new FilterUtils();
+        filterUtils.setLogger(logger);
         if (ditavalFile != null) {
             final DitaValReader ditaValReader = new DitaValReader();
             ditaValReader.setLogger(logger);
@@ -845,13 +861,14 @@ final class GenMapAndTopicListModule implements AbstractPipelineModule {
 
             ditaValReader.read(ditavalFile);
             // Store filter map for later use
-            FilterUtils.setFilterMap(ditaValReader.getFilterMap());
+            filterUtils.setFilterMap(ditaValReader.getFilterMap());
             // Store flagging image used for image copying
             flagImageSet.addAll(ditaValReader.getImageList());
             relFlagImagesSet.addAll(ditaValReader.getRelFlagImageList());
         } else {
-            FilterUtils.setFilterMap(null);
+            filterUtils.setFilterMap(null);
         }
+        return filterUtils;
     }
 
     private void refactoringResult() {
@@ -915,24 +932,23 @@ final class GenMapAndTopicListModule implements AbstractPipelineModule {
     }
 
     private void outputResult() throws DITAOTException {
-        final Properties prop = new Properties();
-        final PropertiesWriter writer = new PropertiesWriter();
-        final Content content = new ContentImpl();
-        final File outputFile = new File(tempDir, FILE_NAME_DITA_LIST);
-        final File xmlDitalist = new File(tempDir, FILE_NAME_DITA_LIST_XML);
         final File dir = new File(tempDir);
-        final Set<String> copytoSet = new HashSet<String>(INT_128);
-        final Set<String> keysDefSet = new HashSet<String>(INT_128);
-
         if (!dir.exists()) {
             dir.mkdirs();
         }
+        
+        Job prop = null;
+        try {
+            prop = new Job(dir);
+        } catch (final IOException e) {
+            throw new DITAOTException("Failed to create empty job: " + e.getMessage(), e);
+        }
+        
+        prop.setProperty(INPUT_DIR, baseInputDir);
+        prop.setProperty(INPUT_DITAMAP, prefix + inputFile);
 
-        prop.put("user.input.dir", baseInputDir);
-        prop.put("user.input.file", prefix + inputFile);
-
-        prop.put("user.input.file.listfile", "usr.input.file.list");
-        final File inputfile = new File(tempDir, "usr.input.file.list");
+        prop.setProperty(INPUT_DITAMAP_LIST_FILE_LIST, USER_INPUT_FILE_LIST_FILE);
+        final File inputfile = new File(tempDir, USER_INPUT_FILE_LIST_FILE);
         Writer bufferedWriter = null;
         try {
             bufferedWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(inputfile)));
@@ -956,9 +972,9 @@ final class GenMapAndTopicListModule implements AbstractPipelineModule {
         // output problem
         relativeValue = prefix;
         formatRelativeValue = formatRelativeValue(relativeValue);
-        prop.put("tempdirToinputmapdir.relative.value", formatRelativeValue);
+        prop.setProperty("tempdirToinputmapdir.relative.value", formatRelativeValue);
 
-        prop.put("uplevels", getUpdateLevels());
+        prop.setProperty("uplevels", getUpdateLevels());
         addSetToProperties(prop, OUT_DITA_FILES_LIST, outDitaFilesSet);
 
         addSetToProperties(prop, FULL_DITAMAP_TOPIC_LIST, ditaSet);
@@ -986,20 +1002,20 @@ final class GenMapAndTopicListModule implements AbstractPipelineModule {
         addFlagImagesSetToProperties(prop, REL_FLAGIMAGE_LIST, relFlagImagesSet);
 
         // Convert copyto map into set and output
+        final Set<String> copytoSet = new HashSet<String>(INT_128);
         for (final Map.Entry<String, String> entry: copytoMap.entrySet()) {
             copytoSet.add(entry.toString());
         }
-        for (final Map.Entry<String, String> entry: keysDefMap.entrySet()) {
-            keysDefSet.add(entry.toString());
-        }
         addSetToProperties(prop, COPYTO_TARGET_TO_SOURCE_MAP_LIST, copytoSet);
-        addSetToProperties(prop, KEY_LIST, keysDefSet);
-        content.setValue(prop);
-        writer.setContent(content);
+        addKeyDefSetToProperties(prop, KEY_LIST, keysDefMap.values());
 
-        writer.write(outputFile.getAbsolutePath());
-        writer.writeToXML(xmlDitalist.getAbsolutePath());
-
+        try {
+            logger.logInfo("Serializing job specification");
+            prop.write();
+        } catch (final IOException e) {
+            throw new DITAOTException("Failed to serialize job configuration files: " + e.getMessage(), e);
+        }
+        
         // Output relation-graph
         writeMapToXML(reader.getRelationshipGrap(), FILE_NAME_SUBJECT_RELATION);
         // Output topic-scheme dictionary
@@ -1051,8 +1067,8 @@ final class GenMapAndTopicListModule implements AbstractPipelineModule {
         }
     }
 
-    private void addSetToProperties(final Properties prop, final String key, final Set<String> set) {
-        String value = null;
+    private void addSetToProperties(final Job prop, final String key, final Set<String> set) {
+        // update value
         final Set<String> newSet = new LinkedHashSet<String>(INT_128);
         for (final String file: set) {
             if (new File(file).isAbsolute()) {
@@ -1066,112 +1082,63 @@ final class GenMapAndTopicListModule implements AbstractPipelineModule {
                     // keyname
                     final String to = file.substring(0, index);
                     final String source = file.substring(index + 1);
-
-                    // TODO Added by William on 2009-05-14 for keyref bug start
-                    // When generating key.list
-                    if (KEY_LIST.equals(key)) {
-                        final StringBuilder repStr = new StringBuilder();
-                        repStr.append(FileUtils.removeRedundantNames(prefix + to)
-                                .replace(WINDOWS_SEPARATOR, UNIX_SEPARATOR));
-                        repStr.append(EQUAL);
-                        // cases where keymap is in map ancestor folder
-                        if (source.substring(0, 1).equals(LEFT_BRACKET)) {
-                            repStr.append(FileUtils.removeRedundantNames(prefix)
-                                    .replace(WINDOWS_SEPARATOR, UNIX_SEPARATOR));
-                            repStr.append(LEFT_BRACKET);
-                            repStr.append(FileUtils.removeRedundantNames(source.substring(1, source.length() - 1))
-                                    .replace(WINDOWS_SEPARATOR, UNIX_SEPARATOR));
-                            repStr.append(RIGHT_BRACKET);
-                        } else {
-                            repStr.append(FileUtils.removeRedundantNames(prefix + source)
-                                    .replace(WINDOWS_SEPARATOR, UNIX_SEPARATOR));
-                        }
-
-                        StringBuffer result = new StringBuffer(repStr);
-
-                        // move the prefix position
-                        // maps/target_topic_1=topics/target-topic-a.xml(root-map-01.ditamap)-->
-                        // target_topic_1=topics/target-topic-a.xml(maps/root-map-01.ditamap)
-                        if (!"".equals(prefix)) {
-                            final String prefix1 = prefix.replace(WINDOWS_SEPARATOR, UNIX_SEPARATOR);
-                            if (repStr.indexOf(prefix1) != -1) {
-                                result = new StringBuffer();
-                                result.append(repStr.substring(prefix1.length()));
-                                result.insert(result.lastIndexOf(LEFT_BRACKET) + 1, prefix1);
-                                // Added by William on 2010-06-08 for bug:3013079 start
-                                // if this key definition refer to a external resource
-                                if (exKeyDefMap.containsKey(to)) {
-                                    final int pos = result.indexOf(prefix1);
-                                    result.delete(pos, pos + prefix1.length());
-                                }
-                                // Added by William on 2010-06-08 for bug:3013079 end
-
-                                newSet.add(result.toString());
-                            }
-                        } else {
-                            // no prefix
-                            newSet.add(result.toString());
-                        }
-                        // TODO Added by William on 2009-05-14 for keyref bug end
-
-                        // Added by William on 2010-06-10 for bug:3013545 start
-                        writeKeyDef(to, result);
-                        // Added by William on 2010-06-10 for bug:3013545 end
-
-                    } else {
-                        // other case do nothing
-                        newSet.add(FileUtils.removeRedundantNames(new StringBuffer(prefix).append(to).toString())
-                                .replace(WINDOWS_SEPARATOR, UNIX_SEPARATOR)
-                                + EQUAL
-                                + FileUtils.removeRedundantNames(new StringBuffer(prefix).append(source).toString())
-                                .replace(WINDOWS_SEPARATOR, UNIX_SEPARATOR));
-                    }
+                    
+                    newSet.add(FileUtils.removeRedundantNames(new StringBuffer(prefix).append(to).toString())
+                                  .replace(WINDOWS_SEPARATOR, UNIX_SEPARATOR)
+                            + EQUAL
+                            + FileUtils.removeRedundantNames(new StringBuffer(prefix).append(source).toString())
+                                  .replace(WINDOWS_SEPARATOR, UNIX_SEPARATOR));
                 } else {
                     newSet.add(FileUtils.removeRedundantNames(new StringBuffer(prefix).append(file).toString())
-                            .replace(WINDOWS_SEPARATOR, UNIX_SEPARATOR));
+                                  .replace(WINDOWS_SEPARATOR, UNIX_SEPARATOR));
                 }
             }
         }
-
-        /*
-         * write filename in the list to a file, in order to use the
-         * includesfile attribute in ant script
-         */
+        prop.setSet(key, newSet);
+        // write list file
         final String fileKey = key.substring(0, key.lastIndexOf("list")) + "file";
-        prop.put(fileKey, key.substring(0, key.lastIndexOf("list")) + ".list");
-        final File list = new File(tempDir, prop.getProperty(fileKey));
-        Writer bufferedWriter = null;
+        prop.setProperty(fileKey, key.substring(0, key.lastIndexOf("list")) + ".list");
         try {
-            bufferedWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(list)));
-            final Iterator<String> it = newSet.iterator();
-            while (it.hasNext()) {
-                bufferedWriter.write(it.next());
-                if (it.hasNext()) {
-                    bufferedWriter.write("\n");
-                }
-            }
-            bufferedWriter.flush();
-            bufferedWriter.close();
-        } catch (final FileNotFoundException e) {
-            logger.logException(e);
+            prop.writeList(key);
         } catch (final IOException e) {
-            logger.logException(e);
-        } finally {
-            if (bufferedWriter != null) {
-                try {
-                    bufferedWriter.close();
-                } catch (final IOException e) {
-                    logger.logException(e);
+            logger.logError("Failed to write list file: " + e.getMessage(), e);
+        }
+    }
+    
+    private void addKeyDefSetToProperties(final Job prop, final String key, final Collection<KeyDef> set) {
+        // update value
+        final Set<String> newSet = new LinkedHashSet<String>(set.size());
+        for (final KeyDef file: set) {
+            String keys = FileUtils.removeRedundantNames(prefix + file.keys).replace(WINDOWS_SEPARATOR, UNIX_SEPARATOR);
+            String href = file.href;
+            String source = file.source;
+            if (prefix.length() != 0) {
+                // cases where keymap is in map ancestor folder
+                keys = keys.substring(prefix.length());
+                if (href == null) {
+                    href = FileUtils.removeRedundantNames(prefix).replace(WINDOWS_SEPARATOR, UNIX_SEPARATOR);
+                    source = FileUtils.removeRedundantNames(source).replace(WINDOWS_SEPARATOR, UNIX_SEPARATOR);
+                } else {
+                    if (!exKeyDefMap.containsKey(file.keys)) {
+                        href = FileUtils.removeRedundantNames(prefix + href).replace(WINDOWS_SEPARATOR, UNIX_SEPARATOR);
+                    }
+                    source = FileUtils.removeRedundantNames(prefix + source).replace(WINDOWS_SEPARATOR, UNIX_SEPARATOR);
                 }
             }
+            final KeyDef keyDef = new KeyDef(keys, href, source);
+            newSet.add(keyDef.toString());
+
+            writeKeyDef(keyDef);
         }
-
-        value = StringUtils.assembleString(newSet, COMMA);
-        prop.put(key, value);
-
-        // clear set
-        set.clear();
-        newSet.clear();
+        prop.setSet(key, newSet);
+        // write list file
+        final String fileKey = key.substring(0, key.lastIndexOf("list")) + "file";
+        prop.setProperty(fileKey, key.substring(0, key.lastIndexOf("list")) + ".list");
+        try {
+            prop.writeList(key);
+        } catch (final IOException e) {
+            logger.logError("Failed to write key list file: " + e.getMessage(), e);
+        }
     }
 
     // Added by William on 2010-06-10 for bug:3013545 start
@@ -1181,19 +1148,16 @@ final class GenMapAndTopicListModule implements AbstractPipelineModule {
      * @param keyName key name.
      * @param result keydef.
      */
-    private void writeKeyDef(final String keyName, final StringBuffer result) {
+    private void writeKeyDef(final KeyDef keyDef) {
         try {
-            final int equalIndex = result.indexOf(EQUAL);
-            final int leftBracketIndex = result.lastIndexOf(LEFT_BRACKET);
-            final int rightBracketIndex = result.lastIndexOf(RIGHT_BRACKET);
-            // get href
-            final String href = result.substring(equalIndex + 1, leftBracketIndex);
-            // get source file
-            final String sourcefile = result.substring(leftBracketIndex + 1, rightBracketIndex);
             keydef.writeStartElement("keydef");
-            keydef.writeAttribute("keys", keyName);
-            keydef.writeAttribute("href", href);
-            keydef.writeAttribute("source", sourcefile);
+            keydef.writeAttribute("keys", keyDef.keys);
+            if (keyDef.href != null) {
+                keydef.writeAttribute("href", keyDef.href);
+            }
+            if (keyDef.source != null) {
+                keydef.writeAttribute("source", keyDef.source);
+            }
             keydef.writeEndElement();
         } catch (final SAXException e) {
             logger.logException(e);
@@ -1210,7 +1174,7 @@ final class GenMapAndTopicListModule implements AbstractPipelineModule {
      * @param key
      * @param set
      */
-    private void addFlagImagesSetToProperties(final Properties prop, final String key, final Set<String> set) {
+    private void addFlagImagesSetToProperties(final Job prop, final String key, final Set<String> set) {
         String value = null;
         final Set<String> newSet = new LinkedHashSet<String>(INT_128);
         for (final String file: set) {
@@ -1227,7 +1191,7 @@ final class GenMapAndTopicListModule implements AbstractPipelineModule {
 
         // write list attribute to file
         final String fileKey = key.substring(0, key.lastIndexOf("list")) + "file";
-        prop.put(fileKey, key.substring(0, key.lastIndexOf("list")) + ".list");
+        prop.setProperty(fileKey, key.substring(0, key.lastIndexOf("list")) + ".list");
         final File list = new File(tempDir, prop.getProperty(fileKey));
         Writer bufferedWriter = null;
         try {
@@ -1257,11 +1221,40 @@ final class GenMapAndTopicListModule implements AbstractPipelineModule {
 
         value = StringUtils.assembleString(newSet, COMMA);
 
-        prop.put(key, value);
+        prop.setProperty(key, value);
 
         // clear set
         set.clear();
         newSet.clear();
     }
 
+    // Nested classes ----------------------------------------------------------
+    
+    public static class KeyDef {
+        public final String keys;
+        public final String href;
+        public final String source;
+        public KeyDef(final String keys, final String href, final String source) {
+            this.keys = keys;
+            this.href = href;
+            this.source = source;
+        }
+        public KeyDef(final String result) {
+            final int equalIndex = result.indexOf(EQUAL);
+            final int leftBracketIndex = result.lastIndexOf(LEFT_BRACKET);
+            final int rightBracketIndex = result.lastIndexOf(RIGHT_BRACKET);
+            this.keys = result.substring(0, equalIndex);
+            this.href = result.substring(equalIndex + 1, leftBracketIndex);
+            this.source = result.substring(leftBracketIndex + 1, rightBracketIndex);
+        }
+        @Override
+        public String toString() {
+            final StringBuilder buf = new StringBuilder().append(keys).append(EQUAL).append(href);
+            if (source != null) {
+                buf.append(LEFT_BRACKET).append(source).append(RIGHT_BRACKET);
+            }
+            return buf.toString();
+        }
+    }
+    
 }

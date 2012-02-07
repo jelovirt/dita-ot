@@ -24,11 +24,9 @@ import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.StringTokenizer;
 import java.util.Map.Entry;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -654,7 +652,7 @@ public final class DitaMapMetaWriter extends AbstractXMLWriter {
             output = ditaFileOutput;
 
             topicIdList.clear();
-            reader.parse(file);
+            reader.parse(inputFile.toURI().toString());
 
             output.close();
             if(!inputFile.delete()){

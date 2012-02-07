@@ -12,10 +12,8 @@ package org.dita.dost.writer;
 import static org.dita.dost.util.Constants.*;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.net.URLDecoder;
 import java.util.ArrayList;
@@ -33,13 +31,13 @@ import org.dita.dost.log.DITAOTJavaLogger;
 import org.dita.dost.log.DITAOTLogger;
 import org.dita.dost.log.MessageUtils;
 import org.dita.dost.module.Content;
-import org.dita.dost.reader.AbstractXMLReader;
 import org.dita.dost.reader.GrammarPoolManager;
 import org.dita.dost.util.CatalogUtils;
 import org.dita.dost.util.DITAAttrUtils;
 import org.dita.dost.util.DelayConrefUtils;
 import org.dita.dost.util.FileUtils;
 import org.dita.dost.util.FilterUtils;
+import org.dita.dost.util.Job;
 import org.dita.dost.util.OutputUtils;
 import org.dita.dost.util.StringUtils;
 import org.xml.sax.Attributes;
@@ -97,7 +95,8 @@ public final class DitaWriter extends AbstractXMLWriter {
         if (classValue == null
                 || (!TOPIC_XREF.matches(classValue)
                         && !TOPIC_LINK.matches(classValue)
-                        && !MAP_TOPICREF.matches(classValue)))
+                        && !MAP_TOPICREF.matches(classValue))
+                        && !TOPIC_LONGDESCREF.matches(classValue))
         {
             return false;
         }
@@ -208,6 +207,14 @@ public final class DitaWriter extends AbstractXMLWriter {
                    : null;
         }
     }
+    
+    /**
+     * Normalize href attribute.
+     * 
+     * @param attName attribute name
+     * @param atts attributes
+     * @return attribute value
+     */
     private String replaceHREF (final String attName, final Attributes atts){
         if (attName == null){
             return null;
@@ -317,7 +324,8 @@ public final class DitaWriter extends AbstractXMLWriter {
     private boolean needResolveEntity; //check whether the entity need resolve.
     private OutputStreamWriter output;
     private String path2Project;
-    private String props; // contains the attribution specialization from props
+    /** Contains the attribution specialization paths for {@code props} attribute */
+    private String[][] props;
 
     private String tempDir;
     private File traceFilename;
@@ -336,9 +344,11 @@ public final class DitaWriter extends AbstractXMLWriter {
 
     private Map<String, Map<String, Set<String>>> validateMap = null;
     private Map<String, Map<String, String>> defaultValueMap = null;
-
+    /** Filter utils */
+    private FilterUtils filterUtils;
     /** XMLReader instance for parsing dita file */
     private XMLReader reader = null;
+    
     /**
      * Default constructor of DitaWriter class.
      * 
@@ -385,6 +395,15 @@ public final class DitaWriter extends AbstractXMLWriter {
         validateMap = null;
     }
 
+    /**
+     * Set content filter.
+     * 
+     * @param filterUtils filter utils
+     */
+    public void setFilterUtils(final FilterUtils filterUtils) {
+        this.filterUtils = filterUtils;
+    }
+    
     /**
      * Initialize XML reader used for pipeline parsing.
      * @param ditaDir ditaDir
@@ -449,9 +468,11 @@ public final class DitaWriter extends AbstractXMLWriter {
     }
 
     /**
-     * @param attQName
-     * @param attValue
-     * @throws IOException
+     * Write attribute to output. The method does not escape XML delimiter chacters in the value.
+     * 
+     * @param attQName attribute name
+     * @param attValue attribute value
+     * @throws IOException if writing to output failed
      */
     private void copyAttribute(final String attQName, final String attValue) throws IOException{
         output.write(STRING_BLANK);
@@ -463,12 +484,11 @@ public final class DitaWriter extends AbstractXMLWriter {
     }
 
     /**
+     * Process all attributes and write them to output
      * 
-     */
-
-    /**
-     * @param atts
-     * @throws IOException
+     * @param qName element name
+     * @param atts attributes
+     * @throws IOException if writing to output failed
      */
     private void copyElementAttribute(final String qName, final Attributes atts) throws IOException {
         // copy the element's attributes
@@ -805,7 +825,7 @@ public final class DitaWriter extends AbstractXMLWriter {
                         int previous_offset=offset;
                         //search from first row
                         for(int row=1;row<rowNumber;row++){
-                            final String pos = String.valueOf(row) + String.valueOf(currentCol);
+                            final String pos = String.valueOf(row) +"-"+ String.valueOf(currentCol);
                             if(rowsMap.containsKey(pos)){
                                 //get total span rows
                                 final int totalSpanRows = rowsMap.get(pos).intValue();
@@ -827,7 +847,7 @@ public final class DitaWriter extends AbstractXMLWriter {
                     columnNumber = columnNumber+offset;
                     //if has morerows attribute
                     if(atts.getValue(ATTRIBUTE_NAME_MOREROWS)!=null){
-                        final String pos = String.valueOf(rowNumber) + String.valueOf(columnNumber);
+                        final String pos = String.valueOf(rowNumber) + "-" + String.valueOf(columnNumber);
                         //total span rows
                         final int total = Integer.parseInt(atts.getValue(ATTRIBUTE_NAME_MOREROWS))+
                                 rowNumber;
@@ -1044,14 +1064,12 @@ public final class DitaWriter extends AbstractXMLWriter {
     }
 
     /**
-     * @param content value {@code String}
+     * Set temporary directory
+     * 
+     * @param tempDir temporary directory
      */
-    @Override
-    public void setContent(final Content content) {
-        tempDir = (String) content.getValue();
-        if (tempDir == null) {
-            throw new IllegalArgumentException("Content value must be non-null String");
-        }
+    public void setTempDir(final String tempDir) {
+        this.tempDir = tempDir;
     }
 
     @Override
@@ -1158,7 +1176,7 @@ public final class DitaWriter extends AbstractXMLWriter {
             // If it is the start of a child of an excluded tag, level increase
             level++;
         } else { // exclude shows whether it's excluded by filtering
-            if (foreignLevel <= 1 && FilterUtils.needExclude(atts, props)){
+            if (foreignLevel <= 1 && filterUtils.needExclude(atts, props)){
                 exclude = true;
                 level = 0;
             }else{
@@ -1225,50 +1243,28 @@ public final class DitaWriter extends AbstractXMLWriter {
 
         if(null == keys){
             keys = new HashMap<String, String>();
-            final Properties prop = new Properties();
             if (! new File(tempDir).isAbsolute()){
                 tempDir = new File(tempDir).getAbsolutePath();
             }
 
-            final File ditafile = new File(tempDir, FILE_NAME_DITA_LIST);
-            final File ditaxmlfile = new File(tempDir, FILE_NAME_DITA_LIST_XML);
-
-            InputStream in = null;
+            Job job = null;
             try{
-                if(ditaxmlfile.exists()){
-                    in = new FileInputStream(ditaxmlfile);
-                    prop.loadFromXML(in);
-                }else{
-                    in = new FileInputStream(ditafile);
-                    prop.load(in);
-                }
-            }catch (final Exception e) {
-                logger.logException(e);
-            } finally {
-                if (in != null) {
-                    try {
-                        in.close();
-                    } catch (final IOException e) {
-                        logger.logException(e);
-                    }
-                }
+                job = new Job(new File(tempDir));
+            }catch (final IOException e) {
+                logger.logException(new Exception("Failed to read job configuration file: " + e.getMessage(), e));
             }
 
-            if(prop.getProperty(KEY_LIST).length()!=0){
-                final String[] keylist = prop.getProperty(KEY_LIST).split(COMMA);
-                for(final String keyinfo: keylist){
-                    //get the key name
-                    final String key = keyinfo.substring(0, keyinfo.indexOf(EQUAL));
+            for(final String keyinfo: job.getSet(KEY_LIST)){
+                //get the key name
+                final String key = keyinfo.substring(0, keyinfo.indexOf(EQUAL));
 
-                    //Edited by William on 2010-02-25 for bug:2957456 start
-                    //value = keyinfo.substring(keyinfo.indexOf(EQUAL)+1, keyinfo.indexOf("("));
-                    //get the href value and source file name
-                    //e.g topics/target-topic-a.xml(maps/root-map-01.ditamap)
-                    final String value = keyinfo.substring(keyinfo.indexOf(EQUAL)+1);
-                    //Edited by William on 2010-02-25 for bug:2957456 end
-                    keys.put(key, value);
-                }
-
+                //Edited by William on 2010-02-25 for bug:2957456 start
+                //value = keyinfo.substring(keyinfo.indexOf(EQUAL)+1, keyinfo.indexOf("("));
+                //get the href value and source file name
+                //e.g topics/target-topic-a.xml(maps/root-map-01.ditamap)
+                final String value = keyinfo.substring(keyinfo.indexOf(EQUAL)+1);
+                //Edited by William on 2010-02-25 for bug:2957456 end
+                keys.put(key, value);
             }
         }
 
@@ -1381,6 +1377,12 @@ public final class DitaWriter extends AbstractXMLWriter {
         return true;
     }
 
+    /**
+     * Validate attribute values
+     * 
+     * @param qName element name
+     * @param atts attributes
+     */
     private void validateAttributeValues(final String qName, final Attributes atts) {
         if (validateMap == null) {
             return;

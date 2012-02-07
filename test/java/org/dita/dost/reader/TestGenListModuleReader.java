@@ -22,6 +22,8 @@ import org.junit.Test;
 
 import org.dita.dost.TestUtils;
 import org.dita.dost.module.Content;
+import org.dita.dost.module.GenMapAndTopicListModule.KeyDef;
+import org.dita.dost.util.FilterUtils;
 
 /**
  * @author william
@@ -30,22 +32,24 @@ import org.dita.dost.module.Content;
 public class TestGenListModuleReader {
 
     public static GenListModuleReader reader;
-    private static File baseDir = new File("test-stub", "DITA-OT1.5");
-
-    private static File inputDir = new File("keyrefs" + File.separator + "maps_parallel_to_topics" + File.separator + "maps");
-    private static File rootFile = new File(inputDir, "root-map-01.ditamap");
+    
+    private static final File baseDir = new File("test-stub", TestGenListModuleReader.class.getSimpleName());
+    private static final File srcDir = new File(baseDir, "src");
+    private static final File inputDir = new File(srcDir, "maps");
+    private static final File rootFile = new File(inputDir, "root-map-01.ditamap");
 
     @BeforeClass
     public static void setUp() throws Exception{
         //parser = new ConrefPushParser();
         String ditaDir = "";
         //get absolute path
-        ditaDir = new File(baseDir, "").getAbsolutePath();
+        ditaDir = new File("").getAbsolutePath();
 
         final boolean validate = false;
         reader = new GenListModuleReader();
         reader.setLogger(new TestUtils.TestLogger());
-        reader.initXMLReader(ditaDir, validate, new File(baseDir, rootFile.getPath()).getCanonicalPath(), true);
+        reader.initXMLReader(ditaDir, validate, new File(rootFile.getPath()).getCanonicalPath(), true);
+        reader.setFilterUtils(new FilterUtils());
     }
 
     @Test
@@ -54,7 +58,7 @@ public class TestGenListModuleReader {
         //inputDir = baseDir;
         //String inputMap = inputDir + "/root-map-01.ditamap";
 
-        reader.parse(new File(baseDir, rootFile.getPath()));
+        reader.parse(new File(rootFile.getPath()));
         reader.getContent();
         final Set<String> conref = reader.getConrefTargets();
         final Set<String> chunk = reader.getChunkTopicSet();
@@ -62,7 +66,7 @@ public class TestGenListModuleReader {
         final Set<String> hrefTargets = reader.getHrefTargets();
         final Set<String> hrefTopic =reader.getHrefTopicSet();
         final Set<String> copytoSet = reader.getIgnoredCopytoSourceSet();
-        final Map<String, String> keyDMap = reader.getKeysDMap();
+        final Map<String, KeyDef> keyDMap = reader.getKeysDMap();
         final Set<String> nonConref = reader.getNonConrefCopytoTargets();
         final Set<String> nonCopyTo = reader.getNonCopytoResult();
         final Set<String> outDita = reader.getOutDitaFilesSet();
@@ -86,8 +90,8 @@ public class TestGenListModuleReader {
 
         assertEquals(0, copytoSet.size());
 
-        assertEquals(".." + File.separator + "topics" + File.separator + "target-topic-c.xml",keyDMap.get("target_topic_2"));
-        assertEquals(".." + File.separator + "topics" + File.separator + "target-topic-a.xml",keyDMap.get("target_topic_1"));
+        assertEquals(".." + File.separator + "topics" + File.separator + "target-topic-c.xml",keyDMap.get("target_topic_2").href);
+        assertEquals(".." + File.separator + "topics" + File.separator + "target-topic-a.xml",keyDMap.get("target_topic_1").href);
 
         assertTrue(nonConref.contains(".." + File.separator + "topics" + File.separator + "xreffin-topic-1.xml"));
         assertTrue(nonConref.contains(".." + File.separator + "topics" + File.separator + "target-topic-c.xml"));

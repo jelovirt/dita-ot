@@ -33,6 +33,18 @@ with those set forth herein.
   <import file="${dita.plugin.org.dita.pdf2.dir}/build_xep.xml"/>
 
   <target name="dita2pdf2.init">
+    <dita-ot-fail id="DOTA066F">
+      <condition>
+        <and>
+          <isset property="args.xsl.pdf" />
+          <not>
+            <available file="${args.xsl.pdf}" type="file" />
+          </not>
+        </and>
+      </condition>
+      <param name="1" location="${args.xsl.pdf}"/>
+    </dita-ot-fail>
+    
     <condition property="preprocess.copy-image.skip" value="true">
       <isfalse value="${org.dita.pdf2.use-out-temp}"/>
     </condition>
@@ -42,6 +54,23 @@ with those set forth herein.
     <!-- Legacy: pass empty input directory -->
     <condition property="user.input.dir.url" value="">
       <istrue value="${org.dita.pdf2.use-out-temp}"/>
+    </condition>
+    
+    <condition property="args.rellinks" value="none">
+      <or>
+        <equals arg1="${args.fo.include.rellinks}" arg2="none"/>
+        <not><isset property="args.fo.include.rellinks"/></not>
+        <istrue value="${disableRelatedLinks}"/>
+      </or>
+    </condition>
+    <condition property="args.rellinks" value="all">
+      <equals arg1="${args.fo.include.rellinks}" arg2="all"/>
+    </condition>
+    <condition property="args.rellinks" value="nofamily">
+      <equals arg1="${args.fo.include.rellinks}" arg2="nofamily"/>
+    </condition>
+    <condition property="args.rellinks" value="none">
+      <not><isset property="args.rellinks"/></not>
     </condition>
   </target>
 
@@ -62,7 +91,14 @@ with those set forth herein.
       </and>
     </condition>
     
-    <property name="default.locale" value="en_US"/>
+    <loadfile property="default.locale">
+      <string>${default.language}</string>
+      <filterchain>
+        <tokenfilter>
+          <replaceregex pattern="-" replace="_" flags="gi"/>
+        </tokenfilter>
+      </filterchain>
+    </loadfile>
     
     <!-- legacy property -->
     <property name="ot.dir" location="${dita.dir}"/>
@@ -161,14 +197,10 @@ with those set forth herein.
                    transform.topic2fo.i18n"/>
     
   <target name="transform.topic2fo.init">
-    <taskdef name="dita-version" classname="com.idiominc.ws.opentopic.xsl.extension.DitaVersion"
-             classpathref="project.class.path"/>
     <taskdef name="detect-lang" classname="com.suite.sol.ditaot.DetectLang"
              classpathref="project.class.path"/>
 
     <makeurl file="${inputFile}" property="inputFile.url" validate="true"/>
-
-    <dita-version documentPath="${inputFile.url}"/>
 
     <!-- Set document.locale from xml:lang -->
     <!-- The map takes precedence, followed by the first topic -->
@@ -252,19 +284,7 @@ with those set forth herein.
       <not><isset property="args.bookmap-order"/></not>
     </condition>
 
-    <condition property="temp.transformation.file" value="${xsl.fo.dir}/topic2fo_shell_1.0${formatter.specific.ext}.xsl">
-      <and>
-        <not><isset property="temp.transformation.file"/></not>
-        <or>
-          <equals arg1="${ws.runtime.publishing.map.dita.version}" arg2="1.0"/>
-          <equals arg1="${ws.runtime.publishing.map.dita.version}" arg2="1.1"/>
-          <equals arg1="${ws.runtime.publishing.map.dita.version}" arg2="1.2"/>
-        </or>
-      </and>
-    </condition>
-    <condition property="temp.transformation.file" value="${xsl.fo.dir}/topic2fo_shell${formatter.specific.ext}.xsl">
-      <not><isset property="temp.transformation.file"/></not>
-    </condition>
+    <property name="temp.transformation.file" location="${xsl.fo.dir}/topic2fo_shell${formatter.specific.ext}.xsl"/>
   </target>
 
   <target name="transform.topic2fo.index">
@@ -338,7 +358,7 @@ with those set forth herein.
     <property name="fo.saxon.classname" value="com.icl.saxon.StyleSheet"/>
     
     <makeurl property="customization.dir.url" file="${customization.dir}"/>
-    <makeurl property="user.input.dir.url" file="${user.input.dir}"/>
+    <makeurl property="user.input.dir.url" file="${dita.input.dirname}"/>
     <!-- must fork or catalog resolution will fail due to sharing of -->
     <!-- resolver and catalogs with the Open Toolkit -->
     <echo level="info" message="Java maximum memory=${maxJavaMemory}"/>
@@ -363,6 +383,7 @@ with those set forth herein.
       <arg line='"antArgsBookmarkStyle=${args.bookmark.style}"'/>
       <arg line='"antArgsChapterLayout=${args.chapter.layout}"'/>
       <arg line='"antArgsIncludeRelatedLinks=${args.fo.include.rellinks}"'/>
+      <arg line='"include.rellinks=${include.rellinks}"'/>
       <arg line='"antArgsGenerateTaskLabels=${args.gen.task.lbl}"'/>
       <arg line='"pdfFormatter=${pdf.formatter}"'/>
       <arg line='"useFrameIndexMarkup=${org.dita.pdf2.index.frame-markup}"'/>

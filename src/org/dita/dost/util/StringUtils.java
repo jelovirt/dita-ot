@@ -11,10 +11,12 @@ package org.dita.dost.util;
 
 import static org.dita.dost.util.Constants.*;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
@@ -38,6 +40,9 @@ public final class StringUtils {
     private static final String NOT_RESOLVE_ENTITY_CHAR = "|#38|";
     //Edited by william on 2009-11-8 for ampbug:2893664 end
 
+    /**
+     * Private default constructor to make class uninstantiable.
+     */
     private StringUtils() {
     }
 
@@ -69,6 +74,29 @@ public final class StringUtils {
         }
 
         return buff.toString();
+    }
+    
+    /**
+     * Assemble all elements in map to a string.
+     * 
+     * @param value map to serializer
+     * @param delim entry delimiter
+     * @return concatenated map
+     */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    public static String assembleString(final Map value, final String delim) {
+        if (value == null || value.isEmpty()) {
+            return "";
+        }
+        final StringBuilder buf = new StringBuilder();
+        for (Iterator<Map.Entry<String, String>> i = value.entrySet().iterator(); i.hasNext();) {
+            final Map.Entry<String, String> e = i.next();
+            buf.append(e.getKey().toString()).append(EQUAL).append(e.getValue().toString());
+            if (i.hasNext()) {
+                buf.append(delim);
+            }
+        }
+        return buf.toString();
     }
 
     /**
@@ -217,21 +245,27 @@ public final class StringUtils {
     }
 
     /**
-     * Get the props.
+     * Parse {@code props} attribute specializations
+     * 
      * @param domains input domain
-     * @return prop
+     * @return list of {@code props} attribute specializations
      */
-    public static String getExtProps (final String domains){
-        final StringBuffer propsBuffer = new StringBuffer();
+    public static String[][] getExtProps (final String domains){
+        final List<String[]> propsBuffer = new ArrayList<String[]>();
         int propsStart = domains.indexOf("a(props");
         int propsEnd = domains.indexOf(")",propsStart);
         while (propsStart != -1 && propsEnd != -1){
-            propsBuffer.append(COMMA);
-            propsBuffer.append(domains.substring(propsStart+2,propsEnd).trim());
+            final String propPath = domains.substring(propsStart+2,propsEnd).trim();
+            final StringTokenizer propPathTokenizer = new StringTokenizer(propPath, STRING_BLANK);
+            final List<String> propList = new ArrayList<String>(INT_128);
+            while(propPathTokenizer.hasMoreTokens()){
+                propList.add(propPathTokenizer.nextToken());
+            }
+            propsBuffer.add(propList.toArray(new String[propList.size()]));
             propsStart = domains.indexOf("a(props", propsEnd);
             propsEnd = domains.indexOf(")",propsStart);
         }
-        return (propsBuffer.length() > 0) ? propsBuffer.substring(INT_1) : null;
+        return propsBuffer.toArray(new String[propsBuffer.size()][]);
     }
 
 

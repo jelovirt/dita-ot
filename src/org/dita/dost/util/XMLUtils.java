@@ -12,11 +12,10 @@ package org.dita.dost.util;
 import static javax.xml.XMLConstants.NULL_NS_URI;
 
 import org.w3c.dom.NodeList;
-
 import org.w3c.dom.Element;
-
 import org.w3c.dom.Attr;
 import org.w3c.dom.Node;
+
 import org.xml.sax.helpers.AttributesImpl;
 
 /**
@@ -73,7 +72,7 @@ public final class XMLUtils {
         final Attr a = (Attr) att;
         addOrSetAttribute(atts,
                 a.getNamespaceURI() != null ? a.getNamespaceURI() : NULL_NS_URI,
-                        a.getLocalName() != null ? a.getLocalName() : "",
+                        a.getLocalName() != null ? a.getLocalName() : (a.getName() != null ? a.getName() : ""),
                                 a.getName() != null ? a.getName() : "",
                                         a.isId() ? "ID" : "CDATA",
                                                 a.getValue());

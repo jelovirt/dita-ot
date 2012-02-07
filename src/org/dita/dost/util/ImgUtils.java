@@ -37,13 +37,13 @@ import org.dita.dost.log.MessageUtils;
 public final class ImgUtils {
 	
     /**
-     * Default Constructor
-     *
+     * Private default constructor to make class uninstantiable.
      */
     private ImgUtils(){
     }
     
     private static String getImageOutPutPath(String fileName) {
+    	final DITAOTJavaLogger logger = new DITAOTJavaLogger();
 		String uplevelPath = null;
 		String outDir = OutputUtils.getOutputDir();
 		String imgoutDir= null;
@@ -65,8 +65,13 @@ public final class ImgUtils {
 						+ e.getMessage(), e);
 			}
 		}
-				
-		return imgoutDir+File.separator+filename;
+		String imagePath = null;
+		try {
+			imagePath =new File(imgoutDir+File.separator+filename).getCanonicalPath();
+		} catch (IOException e) {
+			logger.logException(e);
+		}			
+		return imagePath;
 	}
     
     private static boolean checkDirName(String dirName) {
@@ -94,9 +99,9 @@ public final class ImgUtils {
      */
     public static int getWidth (final String dirName, final String fileName){
         final DITAOTJavaLogger logger = new DITAOTJavaLogger();
-		File imgInput = new File(dirName + File.separatorChar + fileName);
+		File imgInput = new File(dirName + File.separatorChar + fileName);		
 		if (checkDirName(dirName))
-			imgInput = new File(getImageOutPutPath(fileName));      
+			imgInput = new File(getImageOutPutPath(fileName));    
         try {
             final BufferedImage img = ImageIO.read(imgInput);
             return img.getWidth();

@@ -14,10 +14,8 @@ import static org.dita.dost.writer.DitaWriter.*;
 
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -25,7 +23,6 @@ import java.io.Writer;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -39,6 +36,7 @@ import org.dita.dost.log.MessageUtils;
 import org.dita.dost.module.Content;
 import org.dita.dost.util.DITAAttrUtils;
 import org.dita.dost.util.FileUtils;
+import org.dita.dost.util.Job;
 import org.dita.dost.util.StringUtils;
 import org.dita.dost.util.TopicIdParser;
 import org.w3c.dom.Element;
@@ -99,8 +97,6 @@ public final class ChunkTopicParser extends AbstractXMLWriter {
 
     private final XMLReader reader;
     private Writer output = null;
-
-    private StringBuffer temp = null;
 
     private final Stack<Writer> fileWriterStack;
     private final Stack<Element> stubStack;
@@ -588,20 +584,14 @@ public final class ChunkTopicParser extends AbstractXMLWriter {
         //in the special case of the concurrence of copy-to and chunk='to-content', @copy-to is handled in chunk module
         //instead of genlist module and debugandfilter module, so the list should be updated.
         //and this method is used to update the list file.
-        final Properties property = new Properties();
-        InputStream in = null;
-        FileOutputStream output = null;
-        FileOutputStream xmlDitaList = null;
         String key = null;
         String filename = null;
         BufferedWriter bufferedWriter = null;
         try{
-            in = new FileInputStream(new File(FileUtils.resolveFile(filePath,FILE_NAME_DITA_LIST_XML)));
-            property.loadFromXML(in);
-            output = new FileOutputStream(new File(FileUtils.resolveFile(filePath, FILE_NAME_DITA_LIST)));
-            xmlDitaList = new FileOutputStream(new File(FileUtils.resolveFile(filePath, FILE_NAME_DITA_LIST_XML)));
-            final String copytosourcelist[] = property.getProperty(COPYTO_SOURCE_LIST).split(COMMA);
-            final String copytotarget2sourcemaplist[] = property.getProperty(COPYTO_TARGET_TO_SOURCE_MAP_LIST).split(COMMA);
+            // XXX: This may have to use new File(FileUtils.resolveFile(filePath,FILE_NAME_DITA_LIST_XML)).getParent()
+            final Job job = new Job(new File(filePath));
+            final Set<String> copytosourcelist = job.getSet(COPYTO_SOURCE_LIST);
+            final Set<String> copytotarget2sourcemaplist = job.getSet(COPYTO_TARGET_TO_SOURCE_MAP_LIST);
             //in the following, all the 4 arrays are updated according to the set copyto and
             //map copytotarget2source.
 
@@ -619,83 +609,22 @@ public final class ChunkTopicParser extends AbstractXMLWriter {
             //the @href value are added in fullditatopic and fullditamapandtopic,
             //while they are not supposed to be contained, so should be be removed
 
-            temp = new StringBuffer();
-            Iterator<String> it = copytoSource.iterator();
-            filename = COPYTO_SOURCE_LIST.substring(INT_0, COPYTO_SOURCE_LIST
-                    .lastIndexOf("list"))
-                    + ".list";
+            job.setSet(COPYTO_SOURCE_LIST, copytoSource);
+            job.writeList(COPYTO_SOURCE_LIST);
 
-            try {
-                bufferedWriter = new BufferedWriter(
-                        new OutputStreamWriter(new FileOutputStream(new File(FileUtils.resolveFile(filePath, filename)
-                                ))));
-                while(it.hasNext()){
-                    key = it.next();
-                    temp.append(key);
-                    if(it.hasNext()) {
-                        temp.append(COMMA);
-                    }
-                    bufferedWriter.append("\n");
-                }
-                property.setProperty(COPYTO_SOURCE_LIST, temp.toString());
-                bufferedWriter.flush();
-            } finally {
-                if (bufferedWriter != null) {
-                    bufferedWriter.close();
-                }
-            }
+            job.setMap(COPYTO_TARGET_TO_SOURCE_MAP_LIST, copytotarget2source);
+            job.writeList(COPYTO_TARGET_TO_SOURCE_MAP_LIST);
 
-            temp = new StringBuffer();
-            it = copytotarget2source.keySet().iterator();
-            filename = COPYTO_TARGET_TO_SOURCE_MAP_LIST.substring(INT_0, COPYTO_TARGET_TO_SOURCE_MAP_LIST
-                    .lastIndexOf("list"))
-                    + ".list";
-            bufferedWriter = null;
-            try {
-                bufferedWriter = new BufferedWriter(
-                        new OutputStreamWriter(new FileOutputStream(new File(FileUtils.resolveFile(filePath, filename)
-                                ))));
-                while(it.hasNext()){
-                    key = it.next();
-                    temp.append(key).append(EQUAL).append(copytotarget2source.get(key));
-                    bufferedWriter.append(key).append(EQUAL).append(copytotarget2source.get(key));
-                    if(it.hasNext()) {
-                        temp.append(COMMA);
-                    }
-                    bufferedWriter.append("\n");
-                }
-                property.setProperty(COPYTO_TARGET_TO_SOURCE_MAP_LIST, temp.toString());
-                bufferedWriter.flush();
-            } finally {
-                bufferedWriter.close();
-            }
-
-            property.store(output, null);
-            property.storeToXML(xmlDitaList, null);
-
+            job.write();
         }catch (final Exception e){
             //edited by Alan on Date:2009-11-02 for Work Item:#1590 start
             /*logger.logWarn(e.toString());*/
             logger.logException(e);
             //edited by Alan on Date:2009-11-02 for Work Item:#1590 end
         } finally {
-            if (in != null) {
-                try {
-                    in.close();
-                } catch (final IOException e) {
-                    logger.logException(e);
-                }
-            }
             if (output != null) {
                 try {
                     output.close();
-                } catch (final IOException e) {
-                    logger.logException(e);
-                }
-            }
-            if (xmlDitaList != null) {
-                try {
-                    xmlDitaList.close();
                 } catch (final IOException e) {
                     logger.logException(e);
                 }
@@ -873,7 +802,7 @@ public final class ChunkTopicParser extends AbstractXMLWriter {
                 }
 
                 reader.setErrorHandler(new DITAOTXMLErrorHandler(currentParsingFile));
-                reader.parse(currentParsingFile);
+                reader.parse(new File(currentParsingFile).toURI().toString());
                 output.flush();
 
                 //remove stub and siblingStub
@@ -1085,7 +1014,7 @@ public final class ChunkTopicParser extends AbstractXMLWriter {
                         currentParsingFileTopicIDChangeTable = new HashMap<String, String>();
                         // Added on 2010-11-12 for bug 3090803 end
                         //TODO recursive point
-                        reader.parse(currentParsingFile);
+                        reader.parse(new File(currentParsingFile).toURI().toString());
                         // Added on 2010-11-12 for bug 3090803 start
                         if(currentParsingFileTopicIDChangeTable.size()>0) {
                             String href = element.getAttribute(ATTRIBUTE_NAME_HREF);
@@ -1364,7 +1293,7 @@ public final class ChunkTopicParser extends AbstractXMLWriter {
         try{
             reader = StringUtils.getXMLReader();
             reader.setContentHandler(parser);
-            reader.parse(absolutePathToFile);
+            reader.parse(new File(absolutePathToFile).toURI().toString());
         }catch (final Exception e){
             logger.logException(e);
         }

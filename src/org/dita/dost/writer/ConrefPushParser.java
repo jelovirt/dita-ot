@@ -10,13 +10,11 @@
 package org.dita.dost.writer;
 
 import static org.dita.dost.util.Constants.*;
+import static org.dita.dost.util.Job.*;
 
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.io.StringReader;
 import java.util.HashSet;
@@ -33,6 +31,7 @@ import org.dita.dost.exception.DITAOTException;
 import org.dita.dost.log.MessageUtils;
 import org.dita.dost.module.Content;
 import org.dita.dost.util.FileUtils;
+import org.dita.dost.util.Job;
 import org.dita.dost.util.StringUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -237,29 +236,12 @@ public final class ConrefPushParser extends AbstractXMLWriter {
      * @param filename filename
      */
     private void updateList(final String filename){
-        final Properties properties = new Properties();
-        // dita.list file in temp directory, it is used to store the list properties.
-        final File ditaFile = new File(tempDir, FILE_NAME_DITA_LIST);
-        // dita.xml.properties file in temp dicrectory,
-        // store the list properties as the dita.list in the form of xml.
-        final File ditaxmlFile = new File(tempDir, FILE_NAME_DITA_LIST_XML);
-        // use ditaFile as the OutputStream, rewrite the dita.list file
-        FileOutputStream output = null;
-        // use ditaxmlFile as the outputStream, rewrite the dita.xml.properties file
-        FileOutputStream xmloutput = null;
         // this is used to update the conref.list file.
         BufferedWriter bufferedWriter =null;
-        InputStream in = null;
         try{
-            if(ditaxmlFile.exists()) {
-                in = new FileInputStream(ditaxmlFile);
-                properties.loadFromXML(in);
-            } else {
-                in = new FileInputStream(ditaFile);
-                properties.load(in);
-            }
+            final Job job = new Job(new File(tempDir));
 
-            final String conreflist[] = properties.getProperty("conreflist").split(COMMA);
+            final Set<String> conreflist = job.getSet(CONREF_LIST);
             // get the reletivePath from tempDir
             final String reletivePath = filename.substring(FileUtils.removeRedundantNames(tempDir).length() + 1);
             for(final String str: conreflist){
@@ -267,27 +249,14 @@ public final class ConrefPushParser extends AbstractXMLWriter {
                     return;
                 }
             }
-            final StringBuffer stringBuffer = new StringBuffer();
-            stringBuffer.append(properties.getProperty("conreflist")).append(COMMA).append(reletivePath);
-            properties.setProperty("conreflist", stringBuffer.toString());
+            final Set<String> stringBuffer = new HashSet<String>(job.getSet(CONREF_LIST));
+            stringBuffer.add(reletivePath);
+            job.setSet(CONREF_LIST, stringBuffer);
+            
+            job.write();
+
             try {
-                output = new FileOutputStream (new File(tempDir, FILE_NAME_DITA_LIST));
-                properties.store(output, null);
-            } finally {
-                if (output != null) {
-                    output.close();
-                }
-            }
-            try {
-                xmloutput = new FileOutputStream(new File(tempDir, FILE_NAME_DITA_LIST_XML));
-                properties.storeToXML(xmloutput, null);
-            } finally {
-                if (xmloutput != null) {
-                    xmloutput.close();
-                }
-            }
-            try {
-                bufferedWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(new File(tempDir,"conref.list"))));
+                bufferedWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(new File(tempDir, CONREF_LIST_FILE))));
                 for(final String str: conreflist){
                     bufferedWriter.append(str).append("\n");
                 }
@@ -299,14 +268,6 @@ public final class ConrefPushParser extends AbstractXMLWriter {
             }
         }catch (final Exception e){
             logger.logException(e);
-        } finally {
-            if (in != null) {
-                try {
-                    in.close();
-                } catch (final IOException e) {
-                    logger.logException(e);
-                }
-            }
         }
 
     }

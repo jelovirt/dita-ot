@@ -9,69 +9,19 @@
  */
 package org.dita.dost.module;
 
-import static org.dita.dost.util.Constants.ANT_INVOKER_EXT_PARAM_DITADIR;
-import static org.dita.dost.util.Constants.ANT_INVOKER_EXT_PARAM_TRANSTYPE;
-import static org.dita.dost.util.Constants.ANT_INVOKER_EXT_PARAN_SETSYSTEMID;
-import static org.dita.dost.util.Constants.ANT_INVOKER_PARAM_BASEDIR;
-import static org.dita.dost.util.Constants.ANT_INVOKER_PARAM_DITAEXT;
-import static org.dita.dost.util.Constants.ANT_INVOKER_PARAM_DITAVAL;
-import static org.dita.dost.util.Constants.ANT_INVOKER_PARAM_TEMPDIR;
-import static org.dita.dost.util.Constants.ATTRIBUTE_NAME_CLASS;
-import static org.dita.dost.util.Constants.ATTRIBUTE_NAME_KEYREF;
-import static org.dita.dost.util.Constants.ATTRIBUTE_NAME_KEYS;
-import static org.dita.dost.util.Constants.CHUNK_TOPIC_LIST;
-import static org.dita.dost.util.Constants.CODEREF_LIST;
-import static org.dita.dost.util.Constants.COMMA;
-import static org.dita.dost.util.Constants.CONREF_LIST;
-import static org.dita.dost.util.Constants.CONREF_PUSH_LIST;
-import static org.dita.dost.util.Constants.CONREF_TARGET_LIST;
-import static org.dita.dost.util.Constants.COPYTO_SOURCE_LIST;
-import static org.dita.dost.util.Constants.COPYTO_TARGET_TO_SOURCE_MAP_LIST;
-import static org.dita.dost.util.Constants.DOT;
-import static org.dita.dost.util.Constants.EQUAL;
-import static org.dita.dost.util.Constants.FILE_EXTENSION_DITAMAP;
-import static org.dita.dost.util.Constants.FILE_NAME_DITA_LIST;
-import static org.dita.dost.util.Constants.FILE_NAME_DITA_LIST_XML;
-import static org.dita.dost.util.Constants.FILE_NAME_SUBJECT_DICTIONARY;
-import static org.dita.dost.util.Constants.FILE_NAME_SUBJECT_RELATION;
-import static org.dita.dost.util.Constants.FULL_DITAMAP_TOPIC_LIST;
-import static org.dita.dost.util.Constants.FULL_DITA_TOPIC_LIST;
-import static org.dita.dost.util.Constants.GREATER_THAN;
-import static org.dita.dost.util.Constants.HREF_DITA_TOPIC_LIST;
-import static org.dita.dost.util.Constants.HREF_TARGET_LIST;
-import static org.dita.dost.util.Constants.HREF_TOPIC_LIST;
-import static org.dita.dost.util.Constants.INT_0;
-import static org.dita.dost.util.Constants.INT_1;
-import static org.dita.dost.util.Constants.INT_1024;
-import static org.dita.dost.util.Constants.KEYREF_LIST;
-import static org.dita.dost.util.Constants.LESS_THAN;
-import static org.dita.dost.util.Constants.LINE_SEPARATOR;
-import static org.dita.dost.util.Constants.OS_NAME;
-import static org.dita.dost.util.Constants.OS_NAME_WINDOWS;
-import static org.dita.dost.util.Constants.OUT_DITA_FILES_LIST;
-import static org.dita.dost.util.Constants.QUESTION;
-import static org.dita.dost.util.Constants.RESOURCE_ONLY_LIST;
-import static org.dita.dost.util.Constants.STICK;
-import static org.dita.dost.util.Constants.STRING_BLANK;
-import static org.dita.dost.util.Constants.SUBJECTSCHEME_SUBJECTDEF;
-import static org.dita.dost.util.Constants.UNIX_SEPARATOR;
-import static org.dita.dost.util.Constants.UTF8;
+import static org.dita.dost.util.Constants.*;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.io.Writer;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -88,16 +38,17 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
 import org.dita.dost.exception.DITAOTException;
-import org.dita.dost.log.DITAOTJavaLogger;
 import org.dita.dost.log.DITAOTLogger;
 import org.dita.dost.log.MessageUtils;
 import org.dita.dost.pipeline.AbstractPipelineInput;
 import org.dita.dost.pipeline.AbstractPipelineOutput;
 import org.dita.dost.reader.DitaValReader;
-import org.dita.dost.reader.ListReader;
+import org.dita.dost.util.FilterUtils.Action;
+import org.dita.dost.util.FilterUtils.FilterKey;
 import org.dita.dost.util.CatalogUtils;
 import org.dita.dost.util.FileUtils;
 import org.dita.dost.util.FilterUtils;
+import org.dita.dost.util.Job;
 import org.dita.dost.util.StringUtils;
 import org.dita.dost.util.TimingUtils;
 import org.dita.dost.writer.DitaWriter;
@@ -118,7 +69,7 @@ import org.xml.sax.SAXException;
  * @author Zhang, Yuan Peng
  */
 final class DebugAndFilterModule implements AbstractPipelineModule {
-    private static final String [] PROPERTY_UPDATE_LIST = {"user.input.file",HREF_TARGET_LIST,
+    private static final String [] PROPERTY_UPDATE_LIST = {INPUT_DITAMAP,HREF_TARGET_LIST,
         CONREF_LIST,HREF_DITA_TOPIC_LIST,FULL_DITA_TOPIC_LIST,
         FULL_DITAMAP_TOPIC_LIST,CONREF_TARGET_LIST,COPYTO_SOURCE_LIST,
         COPYTO_TARGET_TO_SOURCE_MAP_LIST,OUT_DITA_FILES_LIST,CONREF_PUSH_LIST,
@@ -130,80 +81,53 @@ final class DebugAndFilterModule implements AbstractPipelineModule {
     private String extName = null;
     private String tempDir = "";
 
-    private void updateProperty (final String listName, final Properties property){
-        final StringBuffer result = new StringBuffer(INT_1024);
+    /**
+     * Update property value.
+     *
+     * - get property value
+     * - update value
+     * - set property value
+     * - write list file
+     * 
+     * @param listName name of list to update
+     * @param property property to update
+     */
+    private void updateProperty (final String listName, final Job property){
         final String propValue = property.getProperty(listName);
-
 
         if (propValue == null || propValue.trim().length() == 0){
             //if the propValue is null or empty
             return;
         }
 
-        final StringTokenizer tokenizer = new StringTokenizer(propValue,COMMA);
-
+        final StringTokenizer tokenizer = new StringTokenizer(propValue, COMMA);
+        final Set<String> result = new HashSet<String>();
         while (tokenizer.hasMoreElements()){
             final String file = (String)tokenizer.nextElement();
             final int equalIndex = file.indexOf(EQUAL);
             final int fileExtIndex = file.lastIndexOf(DOT);
-
-            if(fileExtIndex != -1 &&
-                    FILE_EXTENSION_DITAMAP.equalsIgnoreCase(file.substring(fileExtIndex))){
-                result.append(COMMA).append(file);
-            } else if (equalIndex == -1 ){
-                //append one more comma at the beginning of property value
-                result.append(COMMA).append(FileUtils.replaceExtName(file,extName));
+            // don't replace DITA map file extensions
+            if (fileExtIndex != -1 && FILE_EXTENSION_DITAMAP.equalsIgnoreCase(file.substring(fileExtIndex))){
+                result.add(file);
+            // replace file extension
+            } else if (equalIndex == -1){
+                result.add(FileUtils.replaceExtName(file,extName));
+            // replace file extension in both map key and value
             } else {
-                //append one more comma at the beginning of property value
-                result.append(COMMA);
-                result.append(FileUtils.replaceExtName(file.substring(0,equalIndex),extName));
-                result.append(EQUAL);
-                result.append(FileUtils.replaceExtName(file.substring(equalIndex+1),extName));
+                result.add(FileUtils.replaceExtName(file.substring(0, equalIndex), extName) +
+                           EQUAL +
+                           FileUtils.replaceExtName(file.substring(equalIndex+1), extName));
             }
-
         }
-        final String list = result.substring(INT_1);
-        property.setProperty(listName, list);
-
-        final String files[] = list.split(
-                COMMA);
-        String filename = "";
-        if (listName.equals("user.input.file")) {
-            filename = "user.input.file.list";
-        } else {
-            filename = listName.substring(INT_0, listName
-                    .lastIndexOf("list"))
-                    + ".list";
-        }
-        Writer bufferedWriter = null;
+        
+        property.setProperty(listName, StringUtils.assembleString(result, COMMA));
         try {
-            bufferedWriter = new BufferedWriter(
-                    new OutputStreamWriter(new FileOutputStream(new File(
-                            tempDir, filename))));
-            if(files.length>0){
-                for (int i = 0; i < files.length; i++) {
-                    bufferedWriter.write(files[i]);
-                    if (i < files.length - 1) {
-                        bufferedWriter.write("\n");
-                    }
-                    bufferedWriter.flush();
-                }
-            }
-        } catch (final FileNotFoundException e) {
-            e.printStackTrace();
+            property.writeList(listName);
         } catch (final IOException e) {
-            e.printStackTrace();
-        } finally {
-            if (bufferedWriter != null) {
-                try {
-                    bufferedWriter.close();
-                } catch (final IOException e) {
-                    final DITAOTLogger logger = new DITAOTJavaLogger();
-                    logger.logException(e);
-                }
-            }
+            logger.logError("Failed to write list file: " + e.getMessage(), e);
         }
     }
+    
     private DITAOTLogger logger;
 
     private String inputMap = null;
@@ -248,14 +172,11 @@ final class DebugAndFilterModule implements AbstractPipelineModule {
                 ditavalFile = new File(baseDir, ditavalFile).getAbsolutePath();
             }
 
-            final ListReader listReader = new ListReader();
-            listReader.setLogger(logger);
-            //null means default path: tempdir/dita.xml.properties
-            listReader.read(null);
+            final Job job = new Job(new File(tempDir));
 
-            final List<String> parseList = (List<String>) listReader.getContent().getCollection();
-            inputDir = (String) listReader.getContent().getValue();
-            inputMap = new File(inputDir + File.separator + listReader.getInputMap()).getAbsolutePath();
+            final List<String> parseList = (List<String>) job.getCollection();
+            inputDir = (String) job.getValue();
+            inputMap = new File(inputDir + File.separator + job.getInputMap()).getAbsolutePath();
 
             // Output subject schemas
             outputSubjectScheme();
@@ -267,16 +188,12 @@ final class DebugAndFilterModule implements AbstractPipelineModule {
             filterReader.setLogger(logger);
             filterReader.initXMLReader("yes".equals(input.getAttribute(ANT_INVOKER_EXT_PARAN_SETSYSTEMID)));
 
-            Content content;
+            final FilterUtils filterUtils = new FilterUtils();
+            filterUtils.setLogger(logger);
             if (ditavalFile!=null){
                 filterReader.read(ditavalFile);
-                content = filterReader.getContent();
-                FilterUtils.setFilterMap(filterReader.getFilterMap());
-            }else{
-                content = new ContentImpl();
-                //FilterUtils.setFilterMap(null);
+                filterUtils.setFilterMap(filterReader.getFilterMap());
             }
-            content.setValue(tempDir);
             
             final DitaWriter fileWriter = new DitaWriter();
             fileWriter.setLogger(logger);
@@ -286,9 +203,10 @@ final class DebugAndFilterModule implements AbstractPipelineModule {
             } catch (final SAXException e) {
                 throw new DITAOTException(e.getMessage(), e);
             }
-            fileWriter.setContent(content);
+            fileWriter.setTempDir(tempDir);
             fileWriter.setExtName(extName);
             fileWriter.setTranstype(transtype);
+            fileWriter.setFilterUtils(filterUtils);
 
             final Map<String, Set<String>> dic = readMapFromXML(FILE_NAME_SUBJECT_DICTIONARY);
 
@@ -299,6 +217,8 @@ final class DebugAndFilterModule implements AbstractPipelineModule {
                 final Set<String> schemaSet = dic.get(filename);
                 filterReader.reset();
                 if (schemaSet != null) {
+                    final FilterUtils fu = new FilterUtils();
+                    fu.setLogger(logger);
                     for (final String schema: schemaSet) {
                         filterReader.loadSubjectScheme(FileUtils.resolveFile(
                                 tempDir, schema)+".subm");
@@ -306,19 +226,19 @@ final class DebugAndFilterModule implements AbstractPipelineModule {
                     if (ditavalFile!=null){
                         filterReader.filterReset();
                         filterReader.read(ditavalFile);
-                        FilterUtils.setFilterMap(filterReader.getFilterMap());
+                        final Map<FilterKey, Action> fm = new HashMap<FilterKey, Action>();
+                        fm.putAll(filterReader.getSchemeFilterMap());
+                        fm.putAll(filterUtils.getFilterMap());
+                        fu.setFilterMap(Collections.unmodifiableMap(fm));
                     } else {
-                        FilterUtils.setFilterMap(null);
+                        fu.setFilterMap(null);
                     }
+                    fileWriter.setFilterUtils(fu);
 
                     fileWriter.setValidateMap(filterReader.getValidValuesMap());
                     fileWriter.setDefaultValueMap(filterReader.getDefaultValueMap());
                 } else {
-                    if (ditavalFile!=null){
-                        FilterUtils.setFilterMap(filterReader.getFilterMap());
-                    } else {
-                        FilterUtils.setFilterMap(null);
-                    }
+                    fileWriter.setFilterUtils(filterUtils);
                 }
 
                 if (!new File(inputDir, filename).exists()) {
@@ -337,13 +257,7 @@ final class DebugAndFilterModule implements AbstractPipelineModule {
             //Added by William on 2010-04-16 for cvf flag support end
 
             // reload the property for processing of copy-to
-            final File xmlListFile=new File(tempDir, FILE_NAME_DITA_LIST_XML);
-            if(xmlListFile.exists()) {
-                listReader.read(xmlListFile.getAbsolutePath());
-            } else {
-                listReader.read(new File(tempDir, FILE_NAME_DITA_LIST).getAbsolutePath());
-            }
-            performCopytoTask(tempDir, listReader);
+            performCopytoTask(tempDir, new Job(new File(tempDir)));
         } catch (final Exception e) {
             e.printStackTrace();
             throw new DITAOTException("Exception doing debug and filter module processing: " + e.getMessage(), e);
@@ -377,6 +291,11 @@ final class DebugAndFilterModule implements AbstractPipelineModule {
 
     }
 
+    /**
+     * Read XML properties file.
+     * 
+     * @param filename XML properties file path, relative to temporary directory
+     */
     private Map<String, Set<String>> readMapFromXML(final String filename) {
         final File inputFile = new File(tempDir, filename);
         final Map<String, Set<String>> graph = new HashMap<String, Set<String>>();
@@ -410,6 +329,11 @@ final class DebugAndFilterModule implements AbstractPipelineModule {
         return Collections.unmodifiableMap(graph);
     }
 
+    /**
+     * Output subject schema file.
+     * 
+     * @throws DITAOTException if generation files
+     */
     private void outputSubjectScheme() throws DITAOTException {
 
         final Map<String, Set<String>> graph = readMapFromXML(FILE_NAME_SUBJECT_RELATION);
@@ -570,6 +494,14 @@ final class DebugAndFilterModule implements AbstractPipelineModule {
         return null;
     }
 
+    /**
+     * Serialize subject scheme file.
+     * 
+     * @param filename output filepath
+     * @param root subject scheme document
+     * 
+     * @throws DITAOTException if generation fails
+     */
     private void generateScheme(final String filename, final Document root) throws DITAOTException {
         try {
             final FileOutputStream file = new FileOutputStream(new File(filename));
@@ -591,11 +523,11 @@ final class DebugAndFilterModule implements AbstractPipelineModule {
     }
 
 
-    /*
+    /**
      * Execute copy-to task, generate copy-to targets base on sources
      */
-    private void performCopytoTask(final String tempDir, final ListReader listReader) {
-    	Map<String, String> copytoMap  = listReader.getCopytoMap();
+    private void performCopytoTask(final String tempDir, final Job job) {
+    	Map<String, String> copytoMap  = job.getCopytoMap();
     	
     	for (final Map.Entry<String, String> entry: copytoMap.entrySet()) {
             final String copytoTarget = entry.getKey();
@@ -614,13 +546,21 @@ final class DebugAndFilterModule implements AbstractPipelineModule {
                 logger.logWarn(MessageUtils.getMessage("DOTX064W", prop).toString());
                 //edited by Alan on Date:2009-11-02 for Work Item:#1590 end
             }else{
-                String inputMapInTemp = new File(tempDir + File.separator + listReader.getInputMap()).getAbsolutePath();
+                String inputMapInTemp = new File(tempDir + File.separator + job.getInputMap()).getAbsolutePath();
                 copyFileWithPIReplaced(srcFile, targetFile, copytoTarget, inputMapInTemp);
             }
         }
     }
     
     
+    /**
+     * Copy files and replace workdir PI contents.
+     * 
+     * @param src
+     * @param target
+     * @param copytoTargetFilename
+     * @param inputMapInTemp
+     */
     public void copyFileWithPIReplaced(final File src, final File target, String copytoTargetFilename, String inputMapInTemp ) {
         BufferedReader bfis = null;
         OutputStreamWriter bfos = null;
@@ -687,54 +627,26 @@ final class DebugAndFilterModule implements AbstractPipelineModule {
         }
     }
 
-    private void updateList(final String tempDir){
-        final Properties property = new Properties();
-        FileInputStream in = null;
-        FileOutputStream output = null;
-        FileOutputStream xmlDitalist=null;
-        try{
-            in = new FileInputStream( new File(tempDir, FILE_NAME_DITA_LIST_XML));
-            //property.load(new FileInputStream( new File(tempDir, FILE_NAME_DITA_LIST)));
-            property.loadFromXML(in);
-            for (final String element : PROPERTY_UPDATE_LIST) {
-                updateProperty(element, property);
-            }
-
-            output = new FileOutputStream(new File(tempDir, FILE_NAME_DITA_LIST));
-            xmlDitalist=new FileOutputStream(new File(tempDir,FILE_NAME_DITA_LIST_XML));
-            property.store(output, null);
-            property.storeToXML(xmlDitalist, null);
-            output.flush();
-            xmlDitalist.flush();
-        } catch (final Exception e){
-            logger.logException(e);
-        } finally{
-            if (in != null) {
-                try{
-                    in.close();
-                }catch(final IOException e){
-                    logger.logException(e);
-                }
-            }
-            if (output != null) {
-                try{
-                    output.close();
-                }catch(final IOException e){
-                    logger.logException(e);
-                }
-            }
-            if (xmlDitalist != null) {
-                try{
-                    xmlDitalist.close();
-                }catch(final IOException e){
-                    logger.logException(e);
-                }
-            }
+    /**
+     * Read job configuration, update properties, and serialise.
+     * 
+     * @param tempDir temporary directory path
+     * @throws IOException 
+     */
+    private void updateList(final String tempDir) throws IOException{
+        final Job job = new Job(new File(tempDir));
+        for (final String element : PROPERTY_UPDATE_LIST) {
+            updateProperty(element, job);
         }
-
+        job.write();
     }
 
     //Added by William on 2010-04-16 for cvf flag support start
+    /**
+     * Update dictionary
+     * 
+     * @param tempDir temporary directory
+     */
     private void updateDictionary(final String tempDir){
         //orignal map
         final Map<String, Set<String>> dic = readMapFromXML(FILE_NAME_SUBJECT_DICTIONARY);
@@ -757,7 +669,9 @@ final class DebugAndFilterModule implements AbstractPipelineModule {
         //File inputFile = new File(tempDir, FILE_NAME_SUBJECT_DICTIONARY);
 
     }
-    //Method for writing a map into xml file.
+    /**
+     * Method for writing a map into xml file.
+     */
     private void writeMapToXML(final Map<String, Set<String>> m, final String filename) {
         if (m == null) {
             return;

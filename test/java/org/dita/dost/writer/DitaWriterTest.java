@@ -50,6 +50,7 @@ import org.dita.dost.TestUtils;
 import org.dita.dost.module.Content;
 import org.dita.dost.module.ContentImpl;
 import org.dita.dost.util.Constants;
+import org.dita.dost.util.FilterUtils;
 import org.dita.dost.util.OutputUtils;
 
 public class DitaWriterTest {
@@ -79,11 +80,12 @@ public class DitaWriterTest {
         writer.setLogger(new TestUtils.TestLogger());
         writer.initXMLReader(srcDir.getAbsolutePath(), false, true);
         writer.setExtName(".xml");
+        final FilterUtils fu = new FilterUtils();
+        fu.setLogger(new TestUtils.TestLogger());
+        writer.setFilterUtils(fu);
 
         for (final String f: new String[] {"main.ditamap", "keyword.dita"}) {
-            final Content content = new ContentImpl();
-            content.setValue(tempDir.getAbsolutePath());
-            writer.setContent(content);
+            writer.setTempDir(tempDir.getAbsolutePath());
             writer.write(srcDir.getAbsolutePath(), f);
         }
 
