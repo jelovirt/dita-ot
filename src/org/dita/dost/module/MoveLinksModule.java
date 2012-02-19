@@ -12,6 +12,8 @@ package org.dita.dost.module;
 import static org.dita.dost.util.Constants.*;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -20,6 +22,7 @@ import org.dita.dost.log.DITAOTLogger;
 import org.dita.dost.pipeline.AbstractPipelineInput;
 import org.dita.dost.pipeline.AbstractPipelineOutput;
 import org.dita.dost.reader.MapLinksReader;
+import org.dita.dost.util.ThreadUtils;
 import org.dita.dost.writer.DitaLinksWriter;
 
 /**
@@ -59,16 +62,22 @@ final class MoveLinksModule implements AbstractPipelineModule {
                 .toString());
         indexReader.read(maplinksFile.getAbsolutePath());
         final Set<Map.Entry<String, String>> mapSet = (Set<Map.Entry<String, String>>) indexReader.getContent().getCollection();
-        
-        final DitaLinksWriter indexInserter = new DitaLinksWriter();
-        indexInserter.setLogger(logger);
+                
+        final List<Runnable> rs = new ArrayList<Runnable>(mapSet.size());
         for (final Map.Entry<String, String> entry: mapSet) {
-            logger.logInfo("Processing " + entry.getKey());
-            final ContentImpl content = new ContentImpl();
-            content.setValue(entry.getValue());
-            indexInserter.setContent(content);
-            indexInserter.write(entry.getKey());
-        }
+          rs.add(new Runnable() {
+              public void run() {
+                  logger.logInfo("Processing " + entry.getKey());
+                  final DitaLinksWriter indexInserter = new DitaLinksWriter();
+                  indexInserter.setLogger(logger);
+                  final ContentImpl content = new ContentImpl();
+                  content.setValue(entry.getValue());
+                  indexInserter.setContent(content);
+                  indexInserter.write(entry.getKey());
+              }});
+        }        
+        ThreadUtils.run(rs);
+        
         return null;
     }
 

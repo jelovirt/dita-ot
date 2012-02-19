@@ -13,7 +13,9 @@ import static org.dita.dost.util.Constants.*;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -23,7 +25,9 @@ import org.dita.dost.pipeline.AbstractPipelineInput;
 import org.dita.dost.pipeline.AbstractPipelineOutput;
 import org.dita.dost.reader.ConrefPushReader;
 import org.dita.dost.util.Job;
+import org.dita.dost.util.ThreadUtils;
 import org.dita.dost.writer.ConrefPushParser;
+
 /**
  * Conref push module.
  * 
@@ -71,19 +75,26 @@ final class ConrefPushModule implements AbstractPipelineModule {
         }
 
         final Set<Map.Entry<String, Hashtable<String, String>>> pushSet = (Set<Map.Entry<String, Hashtable<String,String>>>) reader.getContent().getCollection();
-        
+                
+        final List<Runnable> rs = new ArrayList<Runnable>(pushSet.size());
         for (final Map.Entry<String, Hashtable<String,String>> entry: pushSet) {
-            logger.logInfo("Processing " + new File(tempDir, entry.getKey()).getAbsolutePath());
-            final ConrefPushParser parser = new ConrefPushParser();
-            parser.setLogger(logger);
-            final Content content = new ContentImpl();
-            content.setValue(entry.getValue());
-            parser.setContent(content);
-            //pass the tempdir to ConrefPushParser
-            parser.setTempDir(tempDir.getAbsolutePath());
-            //FIXME:This writer creates and renames files, have to
-            parser.write(entry.getKey());
+          rs.add(new Runnable() {
+              public void run() {
+                  logger.logInfo("Processing " + new File(tempDir, entry.getKey()).getAbsolutePath());
+                  final ConrefPushParser parser = new ConrefPushParser();
+                  parser.setLogger(logger);
+                  final Content content = new ContentImpl();
+                  content.setValue(entry.getValue());
+                  parser.setContent(content);
+                  parser.setTempDir(tempDir.getAbsolutePath());
+                  try {
+                      parser.write(entry.getKey());
+                  } catch (DITAOTException e) {
+                      logger.logException(e);
+                  }
+              }});
         }
+        ThreadUtils.run(rs);
 
         return null;
     }

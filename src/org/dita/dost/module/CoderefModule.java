@@ -13,6 +13,8 @@ import static org.dita.dost.util.Constants.*;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 import org.dita.dost.exception.DITAOTException;
@@ -20,7 +22,9 @@ import org.dita.dost.log.DITAOTLogger;
 import org.dita.dost.pipeline.AbstractPipelineInput;
 import org.dita.dost.pipeline.AbstractPipelineOutput;
 import org.dita.dost.util.Job;
+import org.dita.dost.util.ThreadUtils;
 import org.dita.dost.writer.CoderefResolver;
+
 /**
  * Coderef Module class.
  *
@@ -64,13 +68,23 @@ final class CoderefModule implements AbstractPipelineModule {
         }
 
         final Set<String> codereflist=job.getSet(CODEREF_LIST);
-        final CoderefResolver writer = new CoderefResolver();
-        writer.setLogger(logger);
-        for (final String fileName : codereflist) {
-            //FIXME:This writer deletes and renames files, have to
-            writer.write(new File(tempDir,fileName).getAbsolutePath());
+        
+        final List<Runnable> rs = new ArrayList<Runnable>(codereflist.size());
+        for (final String file: codereflist) {
+            rs.add(new Runnable() {
+                public void run() {
+                    logger.logInfo("Processing " + new File(tempDir, file).getAbsolutePath());
+                    final CoderefResolver writer = new CoderefResolver();
+                    writer.setLogger(logger);
+                    try {
+                        writer.write(new File(tempDir, file).getAbsolutePath());
+                    } catch (DITAOTException e) {
+                        logger.logException(e);
+                    }
+                }});
         }
-
+        ThreadUtils.run(rs);
+        
         return null;
     }
 

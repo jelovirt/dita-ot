@@ -19,12 +19,6 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.TimeUnit;
 
 import org.dita.dost.exception.DITAOTException;
 import org.dita.dost.log.DITAOTLogger;
@@ -32,8 +26,8 @@ import org.dita.dost.module.GenMapAndTopicListModule.KeyDef;
 import org.dita.dost.pipeline.AbstractPipelineInput;
 import org.dita.dost.pipeline.AbstractPipelineOutput;
 import org.dita.dost.reader.KeyrefReader;
-import org.dita.dost.util.Configuration;
 import org.dita.dost.util.Job;
+import org.dita.dost.util.ThreadUtils;
 import org.dita.dost.writer.KeyrefPaser;
 /**
  * Keyref Module.
@@ -116,23 +110,15 @@ final class KeyrefModule implements AbstractPipelineModule {
         final Set<String> conrefList = job.getSet(CONREF_LIST);
         parseList.addAll(conrefList);
         
-        final int count = Configuration.configuration.containsKey("parallel.thread_count")
-                          ? Integer.parseInt(Configuration.configuration.get("parallel.thread_count"))
-                          : Runtime.getRuntime().availableProcessors();
-        final int threshold = Configuration.configuration.containsKey("parallel.threshold")
-                              ? Integer.parseInt(Configuration.configuration.get("parallel.threshold"))
-                              : 10;
-
         final List<Runnable> rs = new ArrayList<Runnable>(parseList.size());
-        final File tmpDir = tempDir;
-        for(final String file: parseList){
+        for (final String file: parseList) {
             rs.add(new Runnable() {
                 public void run() {
-                    logger.logInfo("Processing " + new File(tmpDir, file).getAbsolutePath());
+                    logger.logInfo("Processing " + new File(tempDir, file).getAbsolutePath());
                     final KeyrefPaser parser = new KeyrefPaser();
                     parser.setLogger(logger);
                     parser.setContent(content);
-                    parser.setTempDir(tmpDir.getAbsolutePath());
+                    parser.setTempDir(tempDir.getAbsolutePath());
                     parser.setKeyMap(keymap);
                     parser.setExtName(extName);
                     try {
@@ -142,27 +128,7 @@ final class KeyrefModule implements AbstractPipelineModule {
                     }
                 }});
         }
-        
-        if (count == 1 || parseList.size() < threshold) {
-            for(final Runnable r: rs){
-                r.run();
-            }
-        } else {
-            final ExecutorService exec = Executors.newFixedThreadPool(count);
-            for(final Runnable r: rs){
-                exec.submit(r);
-            }
-            exec.shutdown();
-            try {
-                if (!exec.awaitTermination(60, TimeUnit.MINUTES)) {
-                    exec.shutdownNow();
-                    throw new DITAOTException("Timeout elepsed while waiting for keyref processing to finish");
-                }
-            } catch (final InterruptedException e) {
-                exec.shutdownNow();
-                Thread.currentThread().interrupt();
-            }
-        }
+        ThreadUtils.run(rs);
         
         return null;
     }
