@@ -508,7 +508,11 @@ public final class KeyrefPaser extends XMLFilterImpl {
                             target_output = normalizeHrefValue(target_output, tail);
                             XMLUtils.addOrSetAttribute(resAtts, currentElement.refAttr, target_output);
                         } else if ("".equals(scopeValue) || ATTR_SCOPE_VALUE_LOCAL.equals(scopeValue)){
-                            target = FileUtils.replaceExtName(target, extName);
+                        	if (!(MAPGROUP_D_MAPREF.matches(cls)
+									&& FileUtils.isDITAMapFile(target.toLowerCase()))){
+                        		target = FileUtils.replaceExtName(target,extName);
+							}
+                        	
                             final File topicFile = new File(FileUtils.resolveFile(tempDir, target));
                             if (topicFile.exists()) {  
                                 final String topicId = this.getFirstTopicId(topicFile);
@@ -566,9 +570,10 @@ public final class KeyrefPaser extends XMLFilterImpl {
                         XMLUtils.removeAttribute(resAtts, ATTRIBUTE_NAME_FORMAT);
                     } else {
                         // key does not exist
-                        final Properties prop = new Properties();
-                        prop.put("%1", atts.getValue(ATTRIBUTE_NAME_KEYREF));
-                        logger.logInfo(MessageUtils.getMessage("DOTJ047I", prop).toString());
+                        // Do not log error, key should not need a link
+                        //final Properties prop = new Properties();
+                        //prop.put("%1", atts.getValue(ATTRIBUTE_NAME_KEYREF));
+                        //logger.logInfo(MessageUtils.getMessage("DOTJ047I", prop).toString());
                     }
 
                 }

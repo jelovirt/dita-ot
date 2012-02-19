@@ -64,6 +64,12 @@ import org.xml.sax.SAXParseException;
  */
 public final class GenMapAndTopicListModule implements AbstractPipelineModule {
 
+    private static final String ELEMENT_STUB = "stub";
+    private static final String ATTRIUBTE_SOURCE = "source";
+    private static final String ATTRIBUTE_HREF = "href";
+    private static final String ATTRIBUTE_KEYS = "keys";
+    private static final String ELEMENT_KEYDEF = "keydef";
+
     /** Set of all dita files */
     private final Set<String> ditaSet;
 
@@ -331,17 +337,15 @@ public final class GenMapAndTopicListModule implements AbstractPipelineModule {
         // Set the OutputDir
         final File path = new File(input.getAttribute(ANT_INVOKER_EXT_PARAM_OUTPUTDIR));
         if (path.isAbsolute()) {
-            OutputUtils.setOutputDir(input.getAttribute(ANT_INVOKER_EXT_PARAM_OUTPUTDIR));
+            OutputUtils.setOutputDir(path.getAbsolutePath());
         } else {
-            final StringBuffer buff = new StringBuffer(input.getAttribute(ANT_INVOKER_PARAM_BASEDIR)).append(
-                    File.separator).append(path);
-            OutputUtils.setOutputDir(buff.toString());
-
+            throw new IllegalArgumentException("Output directory " + tempDir + " must be absolute");
         }
 
         // Resolve relative paths base on the basedir.
         File inFile = new File(ditaInput);
         if (!inFile.isAbsolute()) {
+            // XXX Shouldn't this be resolved to current directory, not Ant script base directory?
             inFile = new File(basedir, ditaInput);
         }
         try {
@@ -350,16 +354,17 @@ public final class GenMapAndTopicListModule implements AbstractPipelineModule {
 			 logger.logException(e1);
 		}
         if (!new File(tempDir).isAbsolute()) {
-            tempDir = new File(basedir, tempDir).getAbsolutePath();
+            throw new IllegalArgumentException("Temporary directory " + tempDir + " must be absolute");
         } else {
             tempDir = FileUtils.removeRedundantNames(tempDir);
         }
         if (!new File(ditaDir).isAbsolute()) {
-            ditaDir = new File(basedir, ditaDir).getAbsolutePath();
+            throw new IllegalArgumentException("DITA-OT installation directory " + tempDir + " must be absolute");
         } else {
             ditaDir = FileUtils.removeRedundantNames(ditaDir);
         }
         if (ditavalFile != null && !new File(ditavalFile).isAbsolute()) {
+            // XXX Shouldn't this be resolved to current directory, not Ant script base directory?
             ditavalFile = new File(basedir, ditavalFile).getAbsolutePath();
         }
 
@@ -373,12 +378,12 @@ public final class GenMapAndTopicListModule implements AbstractPipelineModule {
         try {
             keydef = XMLSerializer.newInstance(new FileOutputStream(new File(tempDir, "keydef.xml")));
             keydef.writeStartDocument();
-            keydef.writeStartElement("stub");
+            keydef.writeStartElement(ELEMENT_STUB);
             // Added by William on 2009-06-09 for scheme key bug
             // create the keydef file for scheme files
             schemekeydef = XMLSerializer.newInstance(new FileOutputStream(new File(tempDir, "schemekeydef.xml")));
             schemekeydef.writeStartDocument();
-            schemekeydef.writeStartElement("stub");
+            schemekeydef.writeStartElement(ELEMENT_STUB);
 
             // Added by William on 2009-06-25 for req #12014 start
             // create the export file for exportanchors
@@ -591,12 +596,12 @@ public final class GenMapAndTopicListModule implements AbstractPipelineModule {
             if (schemeSet.contains(currentFile)) {
                 // write the keydef into the scheme keydef file
                 try {
-                    schemekeydef.writeStartElement("keydef");
-                    schemekeydef.writeAttribute("keys", key);
+                    schemekeydef.writeStartElement(ELEMENT_KEYDEF);
+                    schemekeydef.writeAttribute(ATTRIBUTE_KEYS, key);
                     if (value.href != null) {
-                        schemekeydef.writeAttribute("href", value.href);
+                        schemekeydef.writeAttribute(ATTRIBUTE_HREF, value.href);
                     }
-                    schemekeydef.writeAttribute("source", currentFile);
+                    schemekeydef.writeAttribute(ATTRIUBTE_SOURCE, currentFile);
                     schemekeydef.writeEndElement();
                 } catch (final SAXException e) {
                     logger.logException(e);
@@ -1150,13 +1155,13 @@ public final class GenMapAndTopicListModule implements AbstractPipelineModule {
      */
     private void writeKeyDef(final KeyDef keyDef) {
         try {
-            keydef.writeStartElement("keydef");
-            keydef.writeAttribute("keys", keyDef.keys);
+            keydef.writeStartElement(ELEMENT_KEYDEF);
+            keydef.writeAttribute(ATTRIBUTE_KEYS, keyDef.keys);
             if (keyDef.href != null) {
-                keydef.writeAttribute("href", keyDef.href);
+                keydef.writeAttribute(ATTRIBUTE_HREF, keyDef.href);
             }
             if (keyDef.source != null) {
-                keydef.writeAttribute("source", keyDef.source);
+                keydef.writeAttribute(ATTRIUBTE_SOURCE, keyDef.source);
             }
             keydef.writeEndElement();
         } catch (final SAXException e) {
@@ -1234,22 +1239,45 @@ public final class GenMapAndTopicListModule implements AbstractPipelineModule {
         public final String keys;
         public final String href;
         public final String source;
+        /**
+         * Construct new key definition.
+         * 
+         * @param keys key name
+         * @param href href URI, may be {@code null}
+         * @param source key definition source, may be {@code null}
+         */
         public KeyDef(final String keys, final String href, final String source) {
             this.keys = keys;
             this.href = href;
             this.source = source;
         }
+        /**
+         * Parse key definition from serialized from.
+         * 
+         * @param result serialized key definition
+         */
         public KeyDef(final String result) {
             final int equalIndex = result.indexOf(EQUAL);
             final int leftBracketIndex = result.lastIndexOf(LEFT_BRACKET);
             final int rightBracketIndex = result.lastIndexOf(RIGHT_BRACKET);
             this.keys = result.substring(0, equalIndex);
-            this.href = result.substring(equalIndex + 1, leftBracketIndex);
-            this.source = result.substring(leftBracketIndex + 1, rightBracketIndex);
+            if (equalIndex + 1 < leftBracketIndex) {
+                this.href = result.substring(equalIndex + 1, leftBracketIndex);
+            } else {
+                this.href = null;
+            }
+            if (leftBracketIndex + 1 < rightBracketIndex) {
+                this.source = result.substring(leftBracketIndex + 1, rightBracketIndex);
+            } else {
+                this.source = null;
+            }
         }
         @Override
         public String toString() {
-            final StringBuilder buf = new StringBuilder().append(keys).append(EQUAL).append(href);
+            final StringBuilder buf = new StringBuilder().append(keys).append(EQUAL);
+            if (href != null) {
+                buf.append(href);
+            }
             if (source != null) {
                 buf.append(LEFT_BRACKET).append(source).append(RIGHT_BRACKET);
             }

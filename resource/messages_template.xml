@@ -56,7 +56,16 @@
     <reason>The FOP plug-in cannot be found in the default location.</reason>
     <response>Please install the required plug-ins into the dir demo/fo/fop or configure the build file to support your local configuration.</response>
   </message>
-  
+
+  <message id="DOTA011W" type="WARN">
+    <reason>Argument "%1" is deprecated.</reason>
+    <response/>
+  </message>
+  <message id="DOTA012W" type="WARN">
+    <reason>Argument "%1" is deprecated.</reason>
+    <response>Use "%2" instead.</response>
+  </message>
+
   <!-- Begin of Java Messages -->
   <message id="DOTJ001F" type="FATAL">
     <reason>Input argument error: no ':' found in the parameter '%1'.</reason>
@@ -672,6 +681,11 @@
   <message id="DOTX065W" type="WARN">
     <reason>The copy-to attribute [href="%1" copy-to="%2"] points to another copy-to target, so this attribute is ignored.</reason>
     <response>Please make sure that this attribute value is unique within your project.</response>
+  </message>
+  
+  <message id="DOTX066W" type="WARN">
+    <reason>Template "%1" is deprecated.</reason>
+    <response/>
   </message>
   
   <!-- added by Alan on Date:2009-11-02 for Work Item:#1590 end   -->

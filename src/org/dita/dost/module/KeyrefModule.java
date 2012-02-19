@@ -28,6 +28,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.dita.dost.exception.DITAOTException;
 import org.dita.dost.log.DITAOTLogger;
+import org.dita.dost.module.GenMapAndTopicListModule.KeyDef;
 import org.dita.dost.pipeline.AbstractPipelineInput;
 import org.dita.dost.pipeline.AbstractPipelineOutput;
 import org.dita.dost.reader.KeyrefReader;
@@ -58,15 +59,10 @@ final class KeyrefModule implements AbstractPipelineModule {
         if (logger == null) {
             throw new IllegalStateException("Logger not set");
         }
-        String tempDir = input.getAttribute(ANT_INVOKER_PARAM_TEMPDIR);
+        final File tempDir = new File(input.getAttribute(ANT_INVOKER_PARAM_TEMPDIR));
 
-        //Added by William on 2010-03-30 for bug:2978858 start
-        //get basedir
-        final String baseDir = input.getAttribute(ANT_INVOKER_PARAM_BASEDIR);
-        //Added by William on 2010-03-30 for bug:2978858 end
-
-        if (! new File(tempDir).isAbsolute()){
-            tempDir = new File(baseDir, tempDir).getAbsolutePath();
+        if (!tempDir.isAbsolute()){
+            throw new IllegalArgumentException("Temporary directory " + tempDir + " must be absolute");
         }
 
         //Added by Alan Date:2009-08-04 --begin
@@ -76,7 +72,7 @@ final class KeyrefModule implements AbstractPipelineModule {
 
         Job job = null;
         try{
-            job = new Job(new File(tempDir));
+            job = new Job(tempDir);
         }catch(final Exception e){
             logger.logException(e);
         }
@@ -89,23 +85,23 @@ final class KeyrefModule implements AbstractPipelineModule {
         // get the key definitions from the dita.list, and the ditamap where it is defined
         // are not handle yet.
         for(final String key: job.getSet(KEY_LIST)){
-            keymap.put(key.substring(0, key.indexOf(EQUAL)),
-                    key.substring(key.indexOf(EQUAL)+1, key.lastIndexOf("(")));
+            final KeyDef keyDef = new KeyDef(key);
+            keymap.put(keyDef.keys, keyDef.href);
             // map file which define the keys
-            final String map = key.substring(key.lastIndexOf("(") + 1, key.lastIndexOf(")"));
+            final String map = keyDef.source;
             // put the keyname into corresponding map which defines it.
             //a map file can define many keys
             if(maps.containsKey(map)){
-                maps.get(map).add(key.substring(0,key.indexOf(EQUAL)));
+                maps.get(map).add(keyDef.keys);
             }else{
                 final Set<String> set = new HashSet<String>();
-                set.add(key.substring(0, key.indexOf(EQUAL)));
+                set.add(keyDef.keys);
                 maps.put(map, set);
             }
         }
         final KeyrefReader reader = new KeyrefReader();
         reader.setLogger(logger);
-        reader.setTempDir(tempDir);
+        reader.setTempDir(tempDir.getAbsolutePath());
         for(final String mapFile: maps.keySet()){
             logger.logInfo("Reading " + new File(tempDir, mapFile).getAbsolutePath());
             reader.setKeys(maps.get(mapFile));
@@ -128,7 +124,7 @@ final class KeyrefModule implements AbstractPipelineModule {
                               : 10;
 
         final List<Runnable> rs = new ArrayList<Runnable>(parseList.size());
-        final String tmpDir = tempDir;
+        final File tmpDir = tempDir;
         for(final String file: parseList){
             rs.add(new Runnable() {
                 public void run() {
@@ -136,7 +132,7 @@ final class KeyrefModule implements AbstractPipelineModule {
                     final KeyrefPaser parser = new KeyrefPaser();
                     parser.setLogger(logger);
                     parser.setContent(content);
-                    parser.setTempDir(tmpDir);
+                    parser.setTempDir(tmpDir.getAbsolutePath());
                     parser.setKeyMap(keymap);
                     parser.setExtName(extName);
                     try {
@@ -152,7 +148,7 @@ final class KeyrefModule implements AbstractPipelineModule {
                 r.run();
             }
         } else {
-            final ExecutorService exec = Executors.newFixedThreadPool(count); //Executors.newSingleThreadExecutor();            
+            final ExecutorService exec = Executors.newFixedThreadPool(count);
             for(final Runnable r: rs){
                 exec.submit(r);
             }
