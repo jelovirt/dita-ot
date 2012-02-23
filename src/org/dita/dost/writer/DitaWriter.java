@@ -131,7 +131,7 @@ public final class DitaWriter extends AbstractXMLWriter {
                 String relativePath;
                 final File target = new File(path);
                 if(target.isAbsolute()){
-                    relativePath = FileUtils.getRelativePathFromMap(OutputUtils.getInputMapPathName(), path);
+                    relativePath = FileUtils.getRelativePathFromMap(outputUtils.getInputMapPathName(), path);
                     attValue = relativePath + topic;
                 }
 
@@ -139,7 +139,7 @@ public final class DitaWriter extends AbstractXMLWriter {
         }else{
             final File target = new File(attValue);
             if(target.isAbsolute()){
-                attValue = FileUtils.getRelativePathFromMap(OutputUtils.getInputMapPathName(), attValue);
+                attValue = FileUtils.getRelativePathFromMap(outputUtils.getInputMapPathName(), attValue);
             }
         }
         if (attValue != null){
@@ -240,7 +240,7 @@ public final class DitaWriter extends AbstractXMLWriter {
                     //Added by William on 2010-01-05 for bug:2926417 end
                     final File target = new File(path);
                     if(target.isAbsolute()){
-                        relativePath = FileUtils.getRelativePathFromMap(OutputUtils.getInputMapPathName(), path);
+                        relativePath = FileUtils.getRelativePathFromMap(outputUtils.getInputMapPathName(), path);
                         attValue = relativePath + topic;
                     }
 
@@ -257,7 +257,7 @@ public final class DitaWriter extends AbstractXMLWriter {
                 //Added by William on 2010-01-05 for bug:2926417 end
                 final File target = new File(attValue);
                 if(target.isAbsolute()){
-                    attValue = FileUtils.getRelativePathFromMap(OutputUtils.getInputMapPathName(), attValue);
+                    attValue = FileUtils.getRelativePathFromMap(outputUtils.getInputMapPathName(), attValue);
                 }
             }
 
@@ -346,6 +346,10 @@ public final class DitaWriter extends AbstractXMLWriter {
     private Map<String, Map<String, String>> defaultValueMap = null;
     /** Filter utils */
     private FilterUtils filterUtils;
+    /** Delayed conref utils. */
+    private DelayConrefUtils delayConrefUtils;
+    /** Output utilities */
+    private OutputUtils outputUtils;
     /** XMLReader instance for parsing dita file */
     private XMLReader reader = null;
     
@@ -402,6 +406,18 @@ public final class DitaWriter extends AbstractXMLWriter {
      */
     public void setFilterUtils(final FilterUtils filterUtils) {
         this.filterUtils = filterUtils;
+    }
+    
+    public void setDelayConrefUtils(final DelayConrefUtils delayConrefUtils) {
+        this.delayConrefUtils = delayConrefUtils;
+    }
+    
+    /**
+     * Set output utilities.
+     * @param outputUtils output utils
+     */
+    public void setOutputUtils(final OutputUtils outputUtils) {
+        this.outputUtils = outputUtils;
     }
     
     /**
@@ -580,7 +596,7 @@ public final class DitaWriter extends AbstractXMLWriter {
                             boolean keyrefExported = false;
                             List<Boolean> list = null;
                             if(transtype.equals(INDEX_TYPE_ECLIPSEHELP)){
-                                list = DelayConrefUtils.getInstance().checkExport(href, id, key, tempDir);
+                                list = delayConrefUtils.checkExport(href, id, key, tempDir);
                                 idExported = list.get(0).booleanValue();
                                 keyrefExported = list.get(1).booleanValue();
                             }
@@ -636,7 +652,7 @@ public final class DitaWriter extends AbstractXMLWriter {
                             //Added by William on 2009-06-25 for #12014 start
                             final String id = null;
 
-                            final List<Boolean> list = DelayConrefUtils.getInstance().checkExport(href, id, attValue, tempDir);
+                            final List<Boolean> list = delayConrefUtils.checkExport(href, id, attValue, tempDir);
                             final boolean keyrefExported = list.get(1).booleanValue();
                             //key is exported and transtype is eclipsehelp
                             if(keyrefExported && transtype.equals(INDEX_TYPE_ECLIPSEHELP)){
@@ -1278,11 +1294,11 @@ public final class DitaWriter extends AbstractXMLWriter {
             }
 
             //when it is not the old solution 3
-            if(OutputUtils.getGeneratecopyouter()!=OutputUtils.Generate.OLDSOLUTION){
+            if(outputUtils.getGeneratecopyouter()!=OutputUtils.Generate.OLDSOLUTION){
                 if(isOutFile(traceFilename)){
                     path2Project=getRelativePathFromOut(traceFilename.getAbsolutePath());
                 }else{
-                    path2Project=FileUtils.getRelativePathFromMap(traceFilename.getAbsolutePath(), OutputUtils.getInputMapPathName());
+                    path2Project=FileUtils.getRelativePathFromMap(traceFilename.getAbsolutePath(), outputUtils.getInputMapPathName());
                     path2Project=new File(path2Project).getParent();
                     if(path2Project!=null && path2Project.length()>0){
                         path2Project=path2Project+File.separator;
@@ -1302,7 +1318,7 @@ public final class DitaWriter extends AbstractXMLWriter {
 
             // start to parse the file and direct to output in the temp
             // directory
-            reader.setErrorHandler(new DITAOTXMLErrorHandler(traceFilename.getAbsolutePath()));
+            reader.setErrorHandler(new DITAOTXMLErrorHandler(traceFilename.getAbsolutePath(), logger));
             //Added on 2010-08-24 for bug:3086552 start
             final InputSource is = new InputSource(traceFilename.toURI().toString());
             //set system id bug:3086552
@@ -1329,7 +1345,7 @@ public final class DitaWriter extends AbstractXMLWriter {
 
     public String getPathtoProject (String filename, File traceFilename, String inputMap) {
     	String path2Project = null;
-    	 if(OutputUtils.getGeneratecopyouter()!=OutputUtils.Generate.OLDSOLUTION){
+    	 if(outputUtils.getGeneratecopyouter()!=OutputUtils.Generate.OLDSOLUTION){
              if(isOutFile(traceFilename)){
 
                  path2Project=getRelativePathFromOut(traceFilename.getAbsolutePath());
@@ -1351,10 +1367,10 @@ public final class DitaWriter extends AbstractXMLWriter {
      * @return relative path to out
      */
     public String getRelativePathFromOut(final String overflowingFile){
-        final File mapPathName=new File(OutputUtils.getInputMapPathName());
+        final File mapPathName=new File(outputUtils.getInputMapPathName());
         final File currFilePathName=new File(overflowingFile);
         final String relativePath=FileUtils.getRelativePathFromMap( mapPathName.toString(),currFilePathName.toString());
-        final String outputDir=OutputUtils.getOutputDir();
+        final String outputDir=outputUtils.getOutputDir();
         final StringBuffer outputPathName=new StringBuffer(outputDir).append(File.separator).append("index.html");
         final String finalOutFilePathName=FileUtils.resolveFile(outputDir,relativePath);
         final String finalRelativePathName=FileUtils.getRelativePathFromMap(finalOutFilePathName,outputPathName.toString());
@@ -1369,7 +1385,7 @@ public final class DitaWriter extends AbstractXMLWriter {
     }
 
     private boolean isOutFile(final File filePathName){
-        final String relativePath=FileUtils.getRelativePathFromMap(OutputUtils.getInputMapPathName(), filePathName.getPath());
+        final String relativePath=FileUtils.getRelativePathFromMap(outputUtils.getInputMapPathName(), filePathName.getPath());
         if(relativePath==null || relativePath.length()==0 || !relativePath.startsWith("..")){
             return false;
         }

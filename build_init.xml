@@ -224,44 +224,47 @@
         <not><isset property="xml.parser"/></not>
       </and>
     </condition>
-    <available classname="net.sf.saxon.StyleSheet" property="hasSaxon" />
-    <available classname="net.sf.saxon.Transform" property="hasSaxon" />
   </target>
 	
   <!-- property value validation begin -->
   <target name="check-arg" depends="use-init"
     description="Validate and init input arguments">
     <!-- begin to check input parameters -->
+    <dita-ot-fail id="DOTA069F">
+      <condition>
+        <and>
+          <isset property="args.input"/>
+          <not>
+            <available file="${args.input}" type="file"/>
+          </not>
+        </and>
+      </condition>
+      <param name="1" location="${args.input}"/>
+    </dita-ot-fail>
+    <dita-ot-fail id="DOTA069F">
+      <condition>
+        <and>
+          <isset property="dita.input"/>
+          <isset property="dita.input.dirname"/>
+          <not>
+            <available file="${dita.input}" filepath="${dita.input.dirname}" type="file"/>
+          </not>
+        </and>
+      </condition>
+      <param name="1" location="${dita.input.dirname}/${dita.input}"/>
+    </dita-ot-fail>
     <dita-ot-fail id="DOTA002F">
       <condition>
         <and>
-          <or>
-            <not>
-              <isset property="args.input" />
-            </not>
+          <not>
+            <isset property="args.input"/>
+          </not>
+          <not>
             <and>
-              <isset property="args.input" />
-              <not>
-                <available file="${args.input}" type="file" />
-              </not>
+              <isset property="dita.input"/>
+              <isset property="dita.input.dirname"/>
             </and>
-          </or>
-          <or>
-            <not>
-              <isset property="dita.input" />
-            </not>
-            <not>
-              <isset property="dita.input.dirname" />
-            </not>
-            <and>
-              <isset property="dita.input" />
-              <isset property="dita.input.dirname" />
-              <not>
-                <available file="${dita.input}"
-                  filepath="${dita.input.dirname}" type="file" />
-              </not>
-            </and>
-          </or>
+          </not>
         </and>
       </condition>
     </dita-ot-fail>
@@ -467,13 +470,15 @@
       </not>
     </condition>
 
-    <condition property="xslt.parser" value="SAXON">
-      <isset property="hasSaxon" />
+    <condition property="xslt.parser" value="Saxon" else="Xalan">
+      <or>
+        <available classname="net.sf.saxon.StyleSheet"/>
+        <available classname="net.sf.saxon.Transform"/>
+      </or>
     </condition>
-    <condition property="xslt.parser" value="XALAN">
-      <not>
-        <isset property="xslt.parser" />
-      </not>
+    
+    <condition property="collator" value="ICU" else="JDL">
+      <available classname="com.ibm.icu.text.Collator"/>
     </condition>
   	
   	<!-- Validate the xml file or not,default is validation(true)-->
@@ -549,13 +554,13 @@
     <echo level="info">* outputdir = ${output.dir}</echo>
     <echo level="info">* extname = ${dita.ext}</echo>
     <echo level="info">* clean.temp = ${clean.temp}</echo>
-    <echo level="info">* version = ${otversion}</echo>
-    <echo level="info">* xslt.parser = ${xslt.parser}</echo>
+    <echo level="info">* DITA-OT version = ${otversion}</echo>
+    <echo level="info">* XML parser = ${xml.parser}</echo>
+    <echo level="info">* XSLT processor = ${xslt.parser}</echo>
+    <echo level="info">* collator = ${collator}</echo>
     <echo level="info">*****************************************************************</echo>
   	<echoproperties regex="^(arg|preprocess|dita)" taskname="echo" failonerror="false"/>
   	<echo level="info">*****************************************************************</echo>
-    <echo level="info">* Using ${xml.parser}</echo>
-    <echo level="info">*****************************************************************</echo>
   </target>
 
   <target name="output-msg" depends="output-deprecated-msg, output-css-warn-message"/>

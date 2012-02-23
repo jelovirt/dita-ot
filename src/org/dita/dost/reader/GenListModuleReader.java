@@ -70,6 +70,8 @@ public final class GenListModuleReader extends AbstractXMLReader {
     private Map<String, String> catalogMap = null;
     /** Filter utils */
     private FilterUtils filterUtils;
+    /** Output utilities */
+    private OutputUtils outputUtils;
     /** Basedir of the current parsing file */
     private String currentDir = null;
 
@@ -313,6 +315,15 @@ public final class GenListModuleReader extends AbstractXMLReader {
     public void setFilterUtils(final FilterUtils filterUtils) {
         this.filterUtils = filterUtils;
     }
+    
+    /**
+     * Set output utilities.
+     * @param outputUtils output utils
+     */
+    public void setOutputUtils(final OutputUtils outputUtils) {
+        this.outputUtils = outputUtils;
+    }
+
 
     /**
      * Init xml reader used for pipeline parsing.
@@ -594,7 +605,7 @@ public final class GenListModuleReader extends AbstractXMLReader {
 
         currentFile=file.getAbsolutePath();
 
-        reader.setErrorHandler(new DITAOTXMLErrorHandler(file.getName()));
+        reader.setErrorHandler(new DITAOTXMLErrorHandler(file.getName(), logger));
         //Added on 2010-08-24 for bug:3086552 start
         final InputSource is = new InputSource(new FileInputStream(file));
         //Set the system ID
@@ -905,7 +916,7 @@ public final class GenListModuleReader extends AbstractXMLReader {
 
         //Added by William on 2010-03-02 for /onlytopicinmap update start.
         //onlyTopicInMap is on.
-        if(OutputUtils.getOnlyTopicInMap() && this.canResolved()){
+        if(outputUtils.getOnlyTopicInMap() && this.canResolved()){
             //topicref(only defined in ditamap file.)
             if(MAP_TOPICREF.matches(classValue)){
 
@@ -1502,6 +1513,7 @@ public final class GenListModuleReader extends AbstractXMLReader {
         if (ATTRIBUTE_NAME_COPY_TO.equals(attrName)
                 && FileUtils.isTopicFile(filename)) {
             final String href = atts.getValue(ATTRIBUTE_NAME_HREF);
+            final String value = FileUtils.normalizeDirectory(currentDir, href);
 
             if (StringUtils.isEmptyString(href)) {
                 final StringBuffer buff = new StringBuffer();
@@ -1522,11 +1534,13 @@ public final class GenListModuleReader extends AbstractXMLReader {
                 final Properties prop = new Properties();
                 prop.setProperty("%1", href);
                 prop.setProperty("%2", filename);
-                logger.logWarn(MessageUtils.getMessage("DOTX065W", prop).toString());
+                if(!value.equals(copytoMap.get(filename))) {
+                	logger.logWarn(MessageUtils.getMessage("DOTX065W", prop).toString());
+                }
                 //edited by Alan on Date:2009-11-02 for Work Item:#1590 end
                 ignoredCopytoSourceSet.add(href);
             } else if (!(atts.getValue(ATTRIBUTE_NAME_CHUNK) != null && atts.getValue(ATTRIBUTE_NAME_CHUNK).contains("to-content"))){
-                copytoMap.put(filename, FileUtils.normalizeDirectory(currentDir, href));
+                copytoMap.put(filename, value);
             }
 
             final String pathWithoutID = FileUtils.resolveFile(currentDir, attrValue);
@@ -1626,7 +1640,7 @@ public final class GenListModuleReader extends AbstractXMLReader {
         }
     }
     private boolean canResolved(){
-        if ((OutputUtils.getOnlyTopicInMap() == false) || isMapFile() ) {
+        if ((outputUtils.getOnlyTopicInMap() == false) || isMapFile() ) {
             return true;
         } else {
             return false;
@@ -1659,11 +1673,10 @@ public final class GenListModuleReader extends AbstractXMLReader {
         if ((OutputUtils.getGeneratecopyouter() == OutputUtils.Generate.NOT_GENERATEOUTTER)
                 || (OutputUtils.getGeneratecopyouter() == OutputUtils.Generate.GENERATEOUTTER)) {
             if (isOutFile(filename)) {
-                if (OutputUtils.getOutterControl().equals(OutputUtils.OutterControl.FAIL)){
+                if (outputUtils.getOutterControl() == OutputUtils.OutterControl.FAIL){
                     final MessageBean msgBean=MessageUtils.getMessage("DOTJ035F", prop);
                     throw new SAXParseException(null,null,new DITAOTException(msgBean,null,msgBean.toString()));
-                }
-                if (OutputUtils.getOutterControl().equals(OutputUtils.OutterControl.WARN)){
+                } else if (outputUtils.getOutterControl() == OutputUtils.OutterControl.WARN){
                     final String message=MessageUtils.getMessage("DOTJ036W",prop).toString();
                     logger.logWarn(message);
                 }
