@@ -1,6 +1,8 @@
 package org.dita.dost.module;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,6 +21,7 @@ import org.dita.dost.exception.DITAOTException;
 import org.dita.dost.log.DITAOTLogger;
 import org.dita.dost.pipeline.AbstractPipelineInput;
 import org.dita.dost.pipeline.AbstractPipelineOutput;
+import org.dita.dost.util.ThreadUtils;
 
 /**
  * XSLT processing module.
@@ -43,38 +46,50 @@ public final class XsltModule implements AbstractPipelineModule {
     }
     
     public AbstractPipelineOutput execute(AbstractPipelineInput input) throws DITAOTException {
+        final List<Runnable> rs = new ArrayList<Runnable>(includes.size());
         for (final File include: includes) {
-            Transformer t = null;
-            try {
-                t = templates.newTransformer();
-            } catch (final TransformerConfigurationException e) {
-                throw new DITAOTException("Failed to compile stylesheet: " + e.getMessage(), e);
-            }
-            final File in = new File(baseDir, include.getPath());
-            final File out = new File(destDir, include.getPath());
-            final boolean same = in.getAbsolutePath().equals(out.getAbsolutePath());
-            final File tmp = same ? new File(out.getAbsolutePath() + ".tmp" + Long.toString(System.currentTimeMillis())) : out; 
-            for (Map.Entry<String, String> e: params.entrySet()) {
-                logger.logDebug("Set parameter " + e.getKey() + " to '" + e.getValue() + "'");
-                t.setParameter(e.getKey(), e.getValue());
-            }
-            if (filenameparameter != null) {
-                logger.logDebug("Set parameter " + filenameparameter + " to '" + include.getName() + "'");
-                t.setParameter(filenameparameter, include.getName());
-            }
-            logger.logInfo("Processing " + in.getAbsolutePath() + " to " + tmp.getAbsolutePath());
-            try {
-                t.transform(new StreamSource(in), new StreamResult(tmp));
-                if (same) {
-                    logger.logDebug("Moving " + tmp.getAbsolutePath() + " to " + out.getAbsolutePath());
-                }
-            } catch (final TransformerException e) {
-            //} catch (final Exception e) {
-                logger.logError("Failed to transform document: " + e.getMessage(), e);
-                logger.logDebug("Remove " + tmp.getAbsolutePath());
-                FileUtils.delete(tmp);
-            }            
+            rs.add(new Runnable() {
+                public void run() {
+                    Transformer t = null;
+                    try {
+                        t = templates.newTransformer();
+                    } catch (final TransformerConfigurationException e) {
+                        logger.logError("Failed to create Transformer: " + e.getMessage(), e);
+                        return;
+                    }
+                    final File in = new File(baseDir, include.getPath());
+                    final File out = new File(destDir, include.getPath());
+                    final boolean same = in.getAbsolutePath().equals(out.getAbsolutePath());
+                    final File tmp = same ? new File(out.getAbsolutePath() + ".tmp" + Long.toString(System.currentTimeMillis())) : out; 
+                    for (Map.Entry<String, String> e: params.entrySet()) {
+                        logger.logDebug("Set parameter " + e.getKey() + " to '" + e.getValue() + "'");
+                        t.setParameter(e.getKey(), e.getValue());
+                    }
+                    if (filenameparameter != null) {
+                        logger.logDebug("Set parameter " + filenameparameter + " to '" + include.getName() + "'");
+                        t.setParameter(filenameparameter, include.getName());
+                    }
+                    logger.logInfo("Processing " + in.getAbsolutePath() + " to " + tmp.getAbsolutePath());
+                    try {
+                        t.transform(new StreamSource(in), new StreamResult(tmp));
+                        if (same) {
+                            logger.logDebug("Moving " + tmp.getAbsolutePath() + " to " + out.getAbsolutePath());
+                            if (!out.delete()) {
+                                throw new IOException("Failed to to delete input file " + out.getAbsolutePath());
+                            }
+                            if (!tmp.renameTo(out)) {
+                                throw new IOException("Failed to to replace input file " + out.getAbsolutePath());
+                            }
+                        }
+                    } catch (final Exception e) {
+                        logger.logError("Failed to transform document: " + e.getMessage(), e);
+                        logger.logDebug("Remove " + tmp.getAbsolutePath());
+                        FileUtils.delete(tmp);
+                    } 
+                }});
         }
+        ThreadUtils.run(rs);
+        
         return null;
     }
 

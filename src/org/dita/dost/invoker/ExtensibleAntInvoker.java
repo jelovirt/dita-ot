@@ -265,7 +265,28 @@ public final class ExtensibleAntInvoker extends Task {
                 if (m instanceof Xslt) {
                     final Xslt xm = (Xslt) m;
                     final XsltModule x = new XsltModule(xm.style);
-                    x.setIncludes(xm.includes);
+                    final List<File> inc = new ArrayList<File>();
+                    for (final Xslt.IncludesFile i: xm.includes) {
+                        if (!isValid(i.ifProperty, null)) {
+                            continue;
+                        }
+                        BufferedReader r = null;
+                        try {
+                            r = new BufferedReader(new FileReader(i.file));
+                            for (String l = r.readLine(); l != null; l = r.readLine()) {
+                                inc.add(new File(l));
+                            }
+                        } catch (IOException e) {
+                            logger.logError("Failed to read includes file " + i.file + ": " + e.getMessage() , e);
+                        } finally {
+                            if (r != null) {
+                                try {
+                                    r.close();
+                                } catch (IOException e) {}
+                            }
+                        }
+                    }
+                    x.setIncludes(inc);
                     x.setDestinationDir(xm.destDir);
                     x.setSorceDir(xm.baseDir);
                     x.setFilenameParam(xm.filenameparameter);
@@ -273,10 +294,7 @@ public final class ExtensibleAntInvoker extends Task {
                         if (!p.isValid()) {
                             throw new BuildException("Incomplete parameter");
                         }
-                        final String ifProperty = p.getIf();
-                        final String unlessProperty = p.getUnless();
-                        if ((ifProperty == null || getProject().getProperties().containsKey(ifProperty))
-                                && (unlessProperty == null || !getProject().getProperties().containsKey(unlessProperty))) {
+                        if (isValid(p.getIf(), p.getUnless())) {
                             x.setParam(p.getName(), p.getValue());
                         }
                     }
@@ -299,6 +317,11 @@ public final class ExtensibleAntInvoker extends Task {
         } catch (final DITAOTException e) {
             throw new BuildException("Failed to run pipeline: " + e.getMessage(), e);
         }
+    }
+    
+    private boolean isValid(final String ifProperty, final String unlessProperty) {
+        return (ifProperty == null || getProject().getProperties().containsKey(ifProperty))
+                && (unlessProperty == null || !getProject().getProperties().containsKey(unlessProperty));
     }
     
     /**
@@ -336,7 +359,7 @@ public final class ExtensibleAntInvoker extends Task {
         private File style;
         private File baseDir;
         private File destDir;
-        private final List<File> includes = new ArrayList<File>();
+        private final List<IncludesFile> includes = new ArrayList<IncludesFile>();
         private String filenameparameter;
         private String catalogRefid;
         
@@ -359,10 +382,9 @@ public final class ExtensibleAntInvoker extends Task {
         }
         
         public void setIncludesfile(final File includesfile) throws IOException {
-            final BufferedReader r = new BufferedReader(new FileReader(includesfile));
-            for (String l = r.readLine(); l != null; l = r.readLine()) {
-                includes.add(new File(l));
-            }
+              final IncludesFile i = new IncludesFile();
+              i.setName(includesfile);
+              includes.add(i);
         }
         
         public void setFilenameparameter(final String filenameparameter) {
@@ -371,6 +393,21 @@ public final class ExtensibleAntInvoker extends Task {
                 
         public void addConfiguredXmlcatalog(final XMLCatalog xmlcatalog) {
             this.catalogRefid = xmlcatalog.refid;
+        }
+        
+        public void addConfiguredIncludesFile(final IncludesFile includesFile) {
+            includes.add(includesFile);
+        }
+        
+        public static class IncludesFile {
+            private File file;
+            private String ifProperty;
+            public void setName(final File file) {
+                this.file = file;
+            }
+            public void setIf(final String ifProperty) {
+                this.ifProperty = ifProperty;
+            }
         }
         
         public static class XMLCatalog {
