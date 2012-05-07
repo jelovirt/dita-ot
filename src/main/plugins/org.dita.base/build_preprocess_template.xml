@@ -185,7 +185,7 @@
     </pipeline>
     <!-- old -->
     <!--
-    <xslt processor="trax" basedir="${dita.temp.dir}" taskname="conref"
+    <xslt basedir="${dita.temp.dir}" taskname="conref"
       destdir="${dita.temp.dir}" includesfile="${dita.temp.dir}/${conreffile}"
       classpathref="dost.class.path"
       reloadstylesheet="${dita.preprocess.reloadstylesheet.conref}"
