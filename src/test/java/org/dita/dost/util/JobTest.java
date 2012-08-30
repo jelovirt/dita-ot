@@ -15,6 +15,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -41,6 +42,17 @@ public final class JobTest {
         prop.setProperty(FULL_DITAMAP_TOPIC_LIST, "foo1,bar1");
         prop.setProperty(CONREF_TARGET_LIST, "foo2,bar2");
         prop.setProperty(COPYTO_SOURCE_LIST, "foo3,bar3");
+        
+//      prop.setProperty("user.input.dir", "/foo/bar");
+//      final Map<String, String> s = new HashMap<String, String>();
+//      s.put("foo", "bar");
+//      s.put("baz", "qux");
+//      prop.setMap(COPYTO_TARGET_TO_SOURCE_MAP_LIST, s);
+//      prop.setSet(SUBJEC_SCHEME_LIST, new HashSet(Arrays.asList("foo", "bar")));
+//      prop.setProperty(INPUT_DITAMAP, "foo");
+//      prop.setSet(FULL_DITAMAP_TOPIC_LIST, new HashSet(Arrays.asList("foo1","bar1")));
+//      prop.setSet(CONREF_TARGET_LIST, new HashSet(Arrays.asList("foo2","bar2")));
+//      prop.setSet(COPYTO_SOURCE_LIST, new HashSet(Arrays.asList("foo3","bar3")));
     }
     
     @BeforeClass

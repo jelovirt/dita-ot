@@ -17,13 +17,18 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
+
+import org.xml.sax.SAXException;
 
 /**
  * Definition of current job.
@@ -91,7 +96,7 @@ public final class Job {
     /** File name for temporary input file list file */
     public static final String USER_INPUT_FILE_LIST_FILE = "usr.input.file.list";
     
-    private final Properties prop;
+    private final Map<String, Object> prop;
     private final File tempDir;
 
     /**
@@ -103,7 +108,7 @@ public final class Job {
      */
     public Job(final File tempDir) throws IOException {
         this.tempDir = tempDir;
-        prop = new Properties();
+        prop = new HashMap<String, Object>();
         read();
     }
 
@@ -115,9 +120,9 @@ public final class Job {
      */
     public Job(final Properties props, final File tempDir) {
         this.tempDir = tempDir;
-        prop = new Properties();
+        prop = new HashMap<String, Object>();
         for (final Map.Entry<Object, Object> e: props.entrySet()) {
-            prop.put(e.getKey(), e.getValue());
+            prop.put(e.getKey().toString(), e.getValue());
         }
     }
     
@@ -129,16 +134,18 @@ public final class Job {
      * @throws IllegalStateException if configuration files are missing
      */
     private void read() throws IOException {
+    	final Properties p = new Properties();
+    	
         final File ditalist = new File(tempDir, FILE_NAME_DITA_LIST);
         final File xmlDitalist=new File(tempDir, FILE_NAME_DITA_LIST_XML);
         InputStream in = null;
         try{
             if(xmlDitalist.exists()) {
                 in = new FileInputStream(xmlDitalist);
-                prop.loadFromXML(in);
+				p.loadFromXML(in);
             } else if(ditalist.exists()) {
                 in = new FileInputStream(ditalist);
-                prop.load(in);
+                p.load(in);
             }
         } catch(final IOException e) {
             throw new IOException("Failed to read file: " + e.getMessage());
@@ -151,6 +158,11 @@ public final class Job {
                 }
             }
         }
+        
+		for (final Map.Entry<Object, Object> e: p.entrySet()) {
+			System.err.println("Read " + e.getKey().toString() + " = " + e.getValue());
+			prop.put(e.getKey().toString(), e.getValue());
+		}
     }
     
     /**
@@ -159,10 +171,74 @@ public final class Job {
      * @throws IOException if writing configuration files failed
      */
     public void write() throws IOException {
+    	XMLSerializer out = null;
+        try {
+            out = XMLSerializer.newInstance(new FileOutputStream(new File(tempDir, "job.xml")));
+            out.writeStartDocument();
+            out.writeStartElement("job");
+            for (final Map.Entry<String, Object> e: prop.entrySet()) {
+            	out.writeStartElement("group");
+            	out.writeAttribute("name", e.getKey());
+            	Object v = null;
+            	if (e.getValue() instanceof String) {
+            		out.writeStartElement("string");
+            		out.writeCharacters(e.getValue().toString());
+            		out.writeEndElement(); //string
+            	} else if (e.getValue() instanceof Set) {
+            		out.writeStartElement("set");
+            		final Set<?> s = (Set<?>) e.getValue();
+            		for (final Object o: s) {
+            			out.writeStartElement("string");
+                		out.writeCharacters(o.toString());
+                		out.writeEndElement(); //string
+            		}
+            		out.writeEndElement(); //set
+            	} else if (e.getValue() instanceof Map) {
+            		out.writeStartElement("map");
+            		final Map<?, ?> s = (Map<?, ?>) e.getValue();
+            		for (final Map.Entry<?, ?> o: s.entrySet()) {
+            			out.writeStartElement("entry");
+            			out.writeStartElement("key");
+                		out.writeCharacters(o.getKey().toString());
+                		out.writeEndElement(); //key
+                		out.writeStartElement("value");
+                		out.writeCharacters(o.getValue().toString());
+                		out.writeEndElement(); //key
+                		out.writeEndElement(); //entry
+            		}
+            		out.writeEndElement(); //string
+            	} else {
+            		out.writeStartElement(e.getValue().getClass().getName());
+            		out.writeCharacters(e.getValue().toString());
+            		out.writeEndElement(); //string
+            	}
+            	out.writeEndElement(); //group
+            }
+            out.writeEndElement(); //job
+            out.writeEndDocument();
+        } catch (final IOException e) {
+            throw new IOException("Failed to write file: " + e.getMessage());
+        } catch (final SAXException e) {
+        	throw new IOException("Failed to serialize job file: " + e.getMessage());
+		} finally {
+            if (out != null) {
+                try {
+                    out.close();
+                } catch (final IOException e) {
+                    throw new IOException("Failed to close file: " + e.getMessage());
+                }
+            }
+        }
+    	
+        final Properties p = new Properties();
+        for (final Map.Entry<String, Object> e: prop.entrySet()) {
+        	p.put(e.getKey(), e.getValue());
+        }
+        
         FileOutputStream propertiesOutputStream = null;
         try {
             propertiesOutputStream = new FileOutputStream(new File(tempDir, FILE_NAME_DITA_LIST));
-            prop.store(propertiesOutputStream, null);
+            p.store(propertiesOutputStream, null);
             propertiesOutputStream.flush();
         } catch (final IOException e) {
             throw new IOException("Failed to write file: " + e.getMessage());
@@ -178,7 +254,7 @@ public final class Job {
         FileOutputStream xmlOutputStream = null;
         try {
             xmlOutputStream = new FileOutputStream(new File(tempDir, FILE_NAME_DITA_LIST_XML));
-            prop.storeToXML(xmlOutputStream, null);
+            p.storeToXML(xmlOutputStream, null);
             xmlOutputStream.flush();
         } catch (final IOException e) {
             throw new IOException("Failed to write file: " + e.getMessage());
@@ -192,7 +268,7 @@ public final class Job {
             }
         }
     }
-        
+    
     /**
      * Searches for the property with the specified key in this property list.
      * 
@@ -200,7 +276,7 @@ public final class Job {
      * @return the value in this property list with the specified key value, {@code null} if not found
      */
     public String getProperty(final String key) {
-        return prop.getProperty(key);
+        return (String) prop.get(key);
     }
     
     /**
@@ -210,7 +286,8 @@ public final class Job {
      * @return the value in this property list with the specified key value, empty map if not found
      */
     public Map<String, String> getMap(final String key) {
-        return StringUtils.restoreMap(prop.getProperty(key, ""));
+        //return StringUtils.restoreMap(prop.getProperty(key, ""));
+    	return (Map<String, String>) prop.get(key);
     }
     
     /**
@@ -220,7 +297,8 @@ public final class Job {
      * @return the value in this property list with the specified key value, empty set if not found
      */
     public Set<String> getSet(final String key) {
-        return StringUtils.restoreSet(prop.getProperty(key, ""));
+        //return StringUtils.restoreSet(prop.getProperty(key, ""));
+    	return (Set<String>) prop.get(key);
     }
     
     /**
@@ -230,8 +308,9 @@ public final class Job {
      * @param value property value
      * @return the previous value of the specified key in this property list, or {@code null} if it did not have one
      */
-    public String setProperty(final String key, final String value) {
-        return (String) prop.setProperty(key, value);
+    public Object setProperty(final String key, final String value) {
+        //return (String) prop.setProperty(key, value);
+    	return prop.put(key, value);
     }
     
     /**
@@ -241,8 +320,9 @@ public final class Job {
      * @param value property value
      * @return the previous value of the specified key in this property list, or {@code null} if it did not have one
      */
-    public  Set<String> setSet(final String key, final Set<String> value) {
-        return StringUtils.restoreSet((String) prop.setProperty(key, StringUtils.assembleString(value, COMMA)));
+    public Set<String> setSet(final String key, final Set<String> value) {
+        //return StringUtils.restoreSet((String) prop.setProperty(key, StringUtils.assembleString(value, COMMA)));
+    	return (Set<String>) prop.put(key, value);
     }
     
     /**
@@ -253,7 +333,8 @@ public final class Job {
      * @return the previous value of the specified key in this property list, or {@code null} if it did not have one
      */
     public Map<String, String> setMap(final String key, final Map<String, String> value) {        
-        return StringUtils.restoreMap((String) prop.setProperty(key, StringUtils.assembleString(value, COMMA)));
+        //return StringUtils.restoreMap((String) prop.setProperty(key, StringUtils.assembleString(value, COMMA)));
+    	return (Map<String, String>) prop.put(key, value);
     }
     
     /**
@@ -261,14 +342,16 @@ public final class Job {
      * @return copy-to map
      */
     public Map<String, String> getCopytoMap() {
-        return StringUtils.restoreMap(prop.getProperty(COPYTO_TARGET_TO_SOURCE_MAP_LIST, ""));
+        //return StringUtils.restoreMap(prop.getProperty(COPYTO_TARGET_TO_SOURCE_MAP_LIST, ""));
+    	return (Map<String, String>) prop.get(COPYTO_TARGET_TO_SOURCE_MAP_LIST);
     }
 
     /**
      * @return the schemeSet
      */
     public Set<String> getSchemeSet() {
-        return StringUtils.restoreSet(prop.getProperty(SUBJEC_SCHEME_LIST, ""));
+        //return StringUtils.restoreSet(prop.getProperty(SUBJEC_SCHEME_LIST, ""));
+    	return (Set<String>) prop.get(SUBJEC_SCHEME_LIST);
     }
 
     /**
@@ -277,7 +360,7 @@ public final class Job {
      * @return input file path relative to input directory
      */
     public String getInputMap() {
-        return prop.getProperty(INPUT_DITAMAP);
+        return (String) prop.get(INPUT_DITAMAP);
     }
     
     /**
@@ -287,15 +370,18 @@ public final class Job {
      */
     public LinkedList<String> getReferenceList() {
         final LinkedList<String> refList = new LinkedList<String>();
-        final String liststr = prop.getProperty(FULL_DITAMAP_TOPIC_LIST, "")
-                + COMMA
-                + prop.getProperty(CONREF_TARGET_LIST, "")
-                + COMMA
-                + prop.getProperty(COPYTO_SOURCE_LIST, "");
-        final StringTokenizer tokenizer = new StringTokenizer(liststr, COMMA);
-        while (tokenizer.hasMoreTokens()) {
-            refList.addFirst(tokenizer.nextToken());
-        }
+//        final String liststr = prop.getProperty(FULL_DITAMAP_TOPIC_LIST, "")
+//                + COMMA
+//                + prop.getProperty(CONREF_TARGET_LIST, "")
+//                + COMMA
+//                + prop.getProperty(COPYTO_SOURCE_LIST, "");
+//        final StringTokenizer tokenizer = new StringTokenizer(liststr, COMMA);
+//        while (tokenizer.hasMoreTokens()) {
+//            refList.addFirst(tokenizer.nextToken());
+//        }
+        refList.addAll((Collection<String>)prop.get(FULL_DITAMAP_TOPIC_LIST));
+        refList.addAll((Collection<String>)prop.get(CONREF_TARGET_LIST));
+        refList.addAll((Collection<String>)prop.get(COPYTO_SOURCE_LIST));
         return refList;
     }
 
@@ -305,7 +391,7 @@ public final class Job {
      * @return absolute input directory path 
      */
     public String getInputDir() {
-        return prop.getProperty(INPUT_DIR);
+        return (String) prop.get(INPUT_DIR);
     }
 
     // Utility methods
