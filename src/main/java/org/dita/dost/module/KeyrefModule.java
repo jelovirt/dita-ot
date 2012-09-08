@@ -12,11 +12,8 @@ package org.dita.dost.module;
 import static org.dita.dost.util.Constants.*;
 
 import java.io.File;
-<<<<<<< HEAD
 import java.util.ArrayList;
-=======
 import java.io.IOException;
->>>>>>> develop
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
