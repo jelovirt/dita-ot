@@ -5,10 +5,8 @@
 <!-- (c) Copyright IBM Corp. 2004, 2006 All Rights Reserved. -->
 <xsl:stylesheet version="1.0"
                 xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-                xmlns:saxon="http://icl.com/saxon"
                 xmlns:exsl="http://exslt.org/common"
                 xmlns:related-links="http:// dita-ot.sourceforge.net/ns/200709/related-links"
-                extension-element-prefixes="saxon"
                 exclude-result-prefixes="related-links exsl"
                 >
 
@@ -40,7 +38,7 @@
 <xsl:import href="../common/output-message.xsl"/>
 <xsl:import href="../common/dita-utilities.xsl"/>
 <xsl:import href="../common/related-links.xsl"/>
-<xsl:import href="../xslhtml/rel-links.xsl"/>
+<xsl:import href="rel-links.xsl"/>
 
 <xsl:output method="xml"
             encoding="UTF-8"

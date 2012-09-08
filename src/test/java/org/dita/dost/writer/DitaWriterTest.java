@@ -6,13 +6,19 @@ package org.dita.dost.writer;
 
 import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.dita.dost.util.Constants.*;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -21,6 +27,8 @@ import java.util.Set;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+
+import org.xml.sax.helpers.AttributesImpl;
 
 import org.w3c.dom.NodeList;
 
@@ -42,11 +50,14 @@ import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.XMLReaderFactory;
 
 import org.dita.dost.TestUtils;
+import org.dita.dost.TestUtils.TestLogger;
 import org.dita.dost.module.Content;
 import org.dita.dost.module.ContentImpl;
-import org.dita.dost.util.Constants;
+import org.dita.dost.util.DelayConrefUtils;
+import org.dita.dost.util.FileUtils;
 import org.dita.dost.util.FilterUtils;
 import org.dita.dost.util.OutputUtils;
+import org.dita.dost.util.XMLUtils;
 
 public class DitaWriterTest {
 
@@ -59,7 +70,7 @@ public class DitaWriterTest {
     public static void setUp() throws IOException, SAXException {
         tempDir = TestUtils.createTempDir(DitaWriterTest.class);
         final Properties props = new Properties();
-        props.put("keylist", "");
+        props.put("keylist", "keydef=keyword.dita(main.ditamap)");
         OutputStream out = null;
         try {
             out = new FileOutputStream(new File(tempDir, "dita.list"));
@@ -71,20 +82,24 @@ public class DitaWriterTest {
         }
         final DitaWriter writer = new DitaWriter();
         writer.setLogger(new TestUtils.TestLogger());
-        writer.initXMLReader(new File("src" + File.separator + "main").getAbsolutePath(), false, true);
-        writer.setExtName(".xml");
+        writer.initXMLReader(new File("src" + File.separator + "main").getAbsoluteFile(), false, true);
+        writer.setExtName(".dita");
+        writer.setTranstype("xhtml");
         final FilterUtils fu = new FilterUtils();
         fu.setLogger(new TestUtils.TestLogger());
         writer.setFilterUtils(fu);
+        writer.setDelayConrefUtils(new DelayConrefUtils());
         final OutputUtils outputUtils = new OutputUtils();
-        outputUtils.setInputMapPathName(new File(srcDir, "main.ditamap").getAbsolutePath());
+        outputUtils.setInputMapPathName(new File(srcDir, "main.ditamap"));
         writer.setOutputUtils(outputUtils);
+        
+        FileUtils.copyFile(new File(srcDir, FILE_NAME_EXPORT_XML), new File(tempDir, FILE_NAME_EXPORT_XML));
 
         for (final String f: new String[] {"main.ditamap", "keyword.dita"}) {
-            writer.setTempDir(tempDir.getAbsolutePath());
-            writer.write(srcDir.getAbsolutePath(), f);
+            writer.setTempDir(tempDir.getAbsoluteFile());
+            writer.write(srcDir.getAbsoluteFile(), f);
         }
-
+        
         TestUtils.resetXMLUnit();
     }
 
@@ -95,7 +110,7 @@ public class DitaWriterTest {
         parser.setContentHandler(handler);
         InputStream in = null;
         try {
-            in = new FileInputStream(new File(tempDir, "keyword.xml"));
+            in = new FileInputStream(new File(tempDir, "keyword.dita"));
             handler.setSource(new File(srcDir, "keyword.dita"));
             parser.parse(new InputSource(in));
         } finally {
@@ -125,14 +140,15 @@ public class DitaWriterTest {
     @Test
     public void testWrite() throws Exception {
         final DocumentBuilder db = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-        clean(db.parse(new File(tempDir, "keyword.xml")));
+        clean(db.parse(new File(tempDir, "keyword.dita")));
 
         XMLUnit.setNormalizeWhitespace(true);
         XMLUnit.setIgnoreWhitespace(true);
         XMLUnit.setIgnoreDiffBetweenTextAndCDATA(true);
+        XMLUnit.setIgnoreComments(true);
 
-        assertXMLEqual(clean(db.parse(new File(expDir, "keyword.xml"))),
-                clean(db.parse(new File(tempDir, "keyword.xml"))));
+        assertXMLEqual(clean(db.parse(new File(expDir, "keyword.dita"))),
+                clean(db.parse(new File(tempDir, "keyword.dita"))));
         assertXMLEqual(clean(db.parse(new File(expDir, "main.ditamap"))),
                 clean(db.parse(new File(tempDir, "main.ditamap"))));
     }
@@ -147,7 +163,64 @@ public class DitaWriterTest {
         }
         return d;
     }
-
+    
+    @Test
+    public void testReplaceHref() throws Exception {
+        final Invoker w = new Invoker("replaceHREF", ATTRIBUTE_NAME_HREF, String.class, Attributes.class) {
+            @Override
+            public String invoke(final String value) throws Exception {
+                final AttributesImpl atts = new AttributesImpl();
+                XMLUtils.addOrSetAttribute(atts, ATTRIBUTE_NAME_CLASS, TOPIC_XREF.toString());
+                XMLUtils.addOrSetAttribute(atts, ATTRIBUTE_NAME_SCOPE, ATTR_SCOPE_VALUE_LOCAL);
+                XMLUtils.addOrSetAttribute(atts, ATTRIBUTE_NAME_FORMAT, ATTR_FORMAT_VALUE_DITA);
+                XMLUtils.addOrSetAttribute(atts, attrName, value);
+                return (String) method.invoke(writer, attrName, atts);    
+            }
+        };
+        // same directory path
+        assertEquals("foo%20+%25bar.dita", w.invoke("foo +%25bar.dita"));
+        assertEquals("foo.dita#bar", w.invoke("foo.dita#bar"));
+        // absolute same directory path
+        assertEquals("foo.dita", w.invoke(new File(srcDir, "foo.dita").getAbsolutePath()));
+        assertEquals("foo.dita#bar", w.invoke(new File(srcDir, "foo.dita").getAbsolutePath() + "#bar"));
+        final File sub = new File(srcDir, "sub" + File.separator + "foo +%bar.dita").getAbsoluteFile();
+        // absolute sub directory path
+        assertEquals("sub/foo%20+%bar.dita", w.invoke(sub.getAbsolutePath()));
+        assertEquals("sub/foo%20+%bar.dita#bar", w.invoke(sub.getAbsolutePath() + "#bar"));
+        // absolute sub directory URI
+        assertEquals("sub/foo%20+%25bar.dita", w.invoke(sub.toURI().toASCIIString()));
+        assertEquals("sub/foo%20+%25bar.dita#bar", w.invoke(sub.toURI().toASCIIString() + "#bar"));
+        // unsupported extension
+        assertEquals("foo.dita", w.invoke("foo.bar"));
+    }
+    
+    @Test
+    public void testReplaceConref() throws Exception {
+        final Invoker w = new Invoker("replaceCONREF", ATTRIBUTE_NAME_CONREF, Attributes.class) {
+            @Override
+            public String invoke(final String value) throws Exception {
+                final AttributesImpl atts = new AttributesImpl();
+                XMLUtils.addOrSetAttribute(atts, attrName, value);
+                return (String) method.invoke(writer, atts);    
+            }
+        };
+        // same directory path
+        assertEquals("foo +%25bar.dita", w.invoke("foo +%25bar.dita"));
+        assertEquals("foo.dita#bar", w.invoke("foo.dita#bar"));
+        // absolute same directory path
+        assertEquals("foo.dita", w.invoke(new File(srcDir, "foo.dita").getAbsolutePath()));
+        assertEquals("foo.dita#bar", w.invoke(new File(srcDir, "foo.dita").getAbsolutePath() + "#bar"));
+        final File sub = new File(srcDir, "sub" + File.separator + "foo +%bar.dita").getAbsoluteFile();
+        // absolute sub directory path
+        assertEquals("sub/foo +%bar.dita", w.invoke(sub.getAbsolutePath()));
+        assertEquals("sub/foo +%bar.dita#bar", w.invoke(sub.getAbsolutePath() + "#bar"));
+        // absolute sub directory URI
+        assertEquals(srcDir.toURI().toASCIIString() + "sub/foo%20+%25bar.dita", w.invoke(sub.toURI().toASCIIString()));
+        assertEquals(srcDir.toURI().toASCIIString() + "sub/foo%20+%25bar.dita#bar", w.invoke(sub.toURI().toASCIIString() + "#bar"));
+        // unsupported extension
+        assertEquals("foo.dita", w.invoke("foo.bar"));
+    }
+    
     @AfterClass
     public static void tearDown() throws IOException {
         TestUtils.forceDelete(tempDir);
@@ -220,7 +293,7 @@ public class DitaWriterTest {
                 Integer c = counter.get(localName);
                 c = c == null ? 1 : c + 1;
                 counter.put(localName, c);
-                assertEquals(localName + ":" + c, xtrc);
+                assertTrue(xtrc.startsWith(localName + ":" + c + ";"));
             }
         }
 
@@ -229,4 +302,23 @@ public class DitaWriterTest {
         }
 
     }
+    
+    private abstract class Invoker {
+        final DitaWriter writer;
+        final Method method;
+        final String attrName;
+        public Invoker(final String m, final String attrName, final Class<?>... args) throws Exception {
+            writer = new DitaWriter();
+            writer.setLogger(new TestUtils.TestLogger(false));
+            writer.setExtName(".dita");
+            final OutputUtils outputUtils = new OutputUtils();
+            outputUtils.setInputMapPathName(new File(srcDir, "main.ditamap"));
+            writer.setOutputUtils(outputUtils);        
+            method = DitaWriter.class.getDeclaredMethod(m, args);
+            method.setAccessible(true);
+            this.attrName = attrName;
+        }
+        public abstract String invoke(final String value) throws Exception;
+    }
+    
 }

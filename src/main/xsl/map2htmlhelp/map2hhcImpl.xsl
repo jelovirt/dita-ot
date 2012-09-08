@@ -131,17 +131,19 @@
     </xsl:when>
     <xsl:when test="(contains(@format,'htm') or contains(@format,'HTM')) and (@scope='external' or @scope='peer')">
       <!-- The html file is not available, so of course it cannot be included -->
+      <xsl:if test="not(contains(@href,'://'))">
+        <!-- Seems to be a local file, but marked external or peer, so we can't tell if it's available -->
+        <xsl:call-template name="output-message">
+          <xsl:with-param name="msgnum">048</xsl:with-param>
+          <xsl:with-param name="msgsev">I</xsl:with-param>
+          <xsl:with-param name="msgparams">%1=<xsl:value-of select="@href"/></xsl:with-param>
+        </xsl:call-template>
+      </xsl:if>
       <xsl:call-template name="output-toc-entry">
         <xsl:with-param name="pathFromMaplist" select="$pathFromMaplist"/>
       </xsl:call-template>
     </xsl:when>    
     <xsl:when test="contains(@format,'htm') or contains(@format,'HTM')">
-      <!-- Including a local HTML file: they must recompile to include it -->
-      <xsl:call-template name="output-message">
-        <xsl:with-param name="msgnum">048</xsl:with-param>
-        <xsl:with-param name="msgsev">I</xsl:with-param>
-        <xsl:with-param name="msgparams">%1=<xsl:value-of select="@href"/></xsl:with-param>
-      </xsl:call-template>
       <xsl:call-template name="output-toc-entry">
         <xsl:with-param name="pathFromMaplist" select="$pathFromMaplist"/>
       </xsl:call-template>
@@ -157,15 +159,10 @@
   </xsl:choose>
 </xsl:template>
     
-<xsl:template match="processing-instruction('workdir')" mode="get-work-dir">
-  <xsl:value-of select="."/><xsl:text>/</xsl:text>
-</xsl:template>    
-    
 <xsl:template name="output-toc-entry">
   <xsl:param name="pathFromMaplist"/>
   <xsl:variable name="WORKDIR">
-    <xsl:value-of select="$FILEREF"/>
-    <xsl:apply-templates select="/processing-instruction()" mode="get-work-dir"/>
+    <xsl:apply-templates select="/processing-instruction('workdir-uri')" mode="get-work-dir"/>
   </xsl:variable>
   <xsl:value-of select="$newline"/>
   <!-- if current node is not topicgroup and not empty or current node 
@@ -286,23 +283,21 @@
               <xsl:when test="contains(@copy-to, $DITAEXT)">
                 <xsl:attribute name="value">
                   <xsl:value-of select="$pathFromMaplist"/>
-                  <xsl:call-template name="getFileName">
+                  <xsl:call-template name="replace-extension">
                     <xsl:with-param name="filename" select="@copy-to"/>
-                    <xsl:with-param name="extension" select="$DITAEXT"/>
+                    <xsl:with-param name="extension" select="$OUTEXT"/>
+                    <xsl:with-param name="ignore-fragment" select="true()"/>
                   </xsl:call-template>
-                  <xsl:value-of select="$OUTEXT"/>
                   <xsl:value-of select="$topicID"/>
                 </xsl:attribute>
               </xsl:when>
               <xsl:when test="contains(@href, $DITAEXT)">
                 <xsl:attribute name="value">
                   <xsl:value-of select="$pathFromMaplist"/>
-                  <xsl:call-template name="getFileName">
+                  <xsl:call-template name="replace-extension">
                     <xsl:with-param name="filename" select="@href"/>
-                    <xsl:with-param name="extension" select="$DITAEXT"/>
+                    <xsl:with-param name="extension" select="$OUTEXT"/>
                   </xsl:call-template>
-                  <xsl:value-of select="$OUTEXT"/>
-                  <xsl:value-of select="$topicID"/>
                 </xsl:attribute>
               </xsl:when>
               <xsl:when test="contains(@href,'.htm') and @scope!='external'">

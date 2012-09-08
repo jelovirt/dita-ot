@@ -3,23 +3,10 @@
      Sourceforge.net. See the accompanying license.txt file for 
      applicable licenses.-->
 <!-- (c) Copyright IBM Corp. 2004, 2005 All Rights Reserved. -->
-
-<!DOCTYPE xsl:stylesheet [
-
-  <!ENTITY gt            "&gt;">
-  <!ENTITY lt            "&lt;">
-  <!ENTITY rbl           " ">
-  <!ENTITY nbsp          "&#xA0;">    <!-- &#160; -->
-  <!ENTITY quot          "&#34;">
-  <!ENTITY copyr         "&#169;">
-  ]>
-  
 <xsl:stylesheet version="1.0"
                 xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
                 xmlns:dita-ot="http://dita-ot.sourceforge.net/ns/201007/dita-ot"
                 xmlns:ditamsg="http://dita-ot.sourceforge.net/ns/200704/ditamsg"
-                xmlns:saxon="http://icl.com/saxon"
-                extension-element-prefixes="saxon"
                 exclude-result-prefixes="dita-ot ditamsg"
                 >
 
@@ -64,10 +51,6 @@
 <!-- Define a newline character -->
 <xsl:variable name="newline"><xsl:text>
 </xsl:text></xsl:variable>
-
-<xsl:template match="processing-instruction('path2project')" mode="get-path2project">
-  <xsl:value-of select="."/>
-</xsl:template>
 
 <!-- *********************************************************************************
      Setup the HTML wrapper for the table of contents
@@ -221,31 +204,26 @@
               <xsl:attribute name="href">
                 <xsl:choose>        <!-- What if targeting a nested topic? Need to keep the ID? -->
                   <!-- edited by william on 2009-08-06 for bug:2832696 start -->
-                  <xsl:when test="contains(@copy-to, $DITAEXT) and not(contains(@chunk, 'to-content')) and 
+                  <xsl:when test="@copy-to and not(contains(@chunk, 'to-content')) and 
                     (not(@format) or @format = 'dita' or @format='ditamap' ) ">
                   <!-- edited by william on 2009-08-06 for bug:2832696 end -->
                     <xsl:if test="not(@scope='external')"><xsl:value-of select="$pathFromMaplist"/></xsl:if>
-                    <xsl:call-template name="getFileName">
+                    <xsl:call-template name="replace-extension">
                       <xsl:with-param name="filename" select="@copy-to"/>
-                      <xsl:with-param name="extension" select="$DITAEXT"/>
+                      <xsl:with-param name="extension" select="$OUTEXT"/>
                     </xsl:call-template>
-                    <xsl:value-of select="$OUTEXT"/>
                     <xsl:if test="not(contains(@copy-to, '#')) and contains(@href, '#')">
                       <xsl:value-of select="concat('#', substring-after(@href, '#'))"/>
                     </xsl:if>
                   </xsl:when>
                   <!-- edited by william on 2009-08-06 for bug:2832696 start -->
-                  <xsl:when test="contains(@href,$DITAEXT) and (not(@format) or @format = 'dita' or @format='ditamap')">
+                  <xsl:when test="not(@scope = 'external') and (not(@format) or @format = 'dita' or @format='ditamap')">
                   <!-- edited by william on 2009-08-06 for bug:2832696 end -->
                     <xsl:if test="not(@scope='external')"><xsl:value-of select="$pathFromMaplist"/></xsl:if>
-                    <xsl:call-template name="getFileName">
+                    <xsl:call-template name="replace-extension">
                       <xsl:with-param name="filename" select="@href"/>
-                      <xsl:with-param name="extension" select="$DITAEXT"/>
+                      <xsl:with-param name="extension" select="$OUTEXT"/>
                     </xsl:call-template>
-                    <xsl:value-of select="$OUTEXT"/>
-                    <xsl:if test="contains(@href, '#')">
-                      <xsl:value-of select="concat('#', substring-after(@href, '#'))"/>
-                    </xsl:if>
                   </xsl:when>
                   <xsl:otherwise>  <!-- If non-DITA, keep the href as-is -->
                     <xsl:if test="not(@scope='external')"><xsl:value-of select="$pathFromMaplist"/></xsl:if>
@@ -293,18 +271,13 @@
   </xsl:apply-templates>
 </xsl:template>
 
-<xsl:template match="processing-instruction('workdir')" mode="get-work-dir">
-  <xsl:value-of select="."/><xsl:text>/</xsl:text>
-</xsl:template>  
-
 <!-- Deprecating the named template in favor of the mode template. -->
 <xsl:template name="navtitle">
   <xsl:apply-templates select="." mode="get-navtitle"/>
 </xsl:template>
 <xsl:template match="*" mode="get-navtitle">
   <xsl:variable name="WORKDIR">
-    <xsl:value-of select="$FILEREF"/>
-    <xsl:apply-templates select="/processing-instruction()" mode="get-work-dir"/>
+    <xsl:apply-templates select="/processing-instruction('workdir-uri')" mode="get-work-dir"/>
   </xsl:variable>
   <xsl:choose>
 

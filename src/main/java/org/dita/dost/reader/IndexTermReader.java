@@ -91,34 +91,21 @@ public final class IndexTermReader extends AbstractXMLReader {
 
     //Added by William on 2010-04-26 for ref:2990783 start
     public IndexTermReader(final IndexTermCollection result) {
-        this();
-        this.result = result;
+        termStack = new Stack<IndexTerm>();
+		topicIdStack = new Stack<String>();
+		indexTermSpecList = new ArrayList<String>(INT_16);
+		indexSeeSpecList = new ArrayList<String>(INT_16);
+		indexSeeAlsoSpecList = new ArrayList<String>(INT_16);
+		indexSortAsSpecList = new ArrayList<String>(INT_16);
+		topicSpecList = new ArrayList<String>(INT_16);
+		titleSpecList = new ArrayList<String>(INT_16);
+		indexTermList = new ArrayList<IndexTerm>(INT_256);
+		titleMap = new HashMap<String, String>(INT_256);
+		processRoleStack = new Stack<String>();
+		processRoleLevel = 0;
+		this.result = result != null ? result : IndexTermCollection.getInstantce();
     }
     //Added by William on 2010-04-26 for ref:2990783 end
-
-    /**
-     * Constructor.
-     * 
-     * @deprecated use {@link #IndexTermReader(IndexTermCollection)} instead
-     */
-    @Deprecated
-    public IndexTermReader() {
-        termStack = new Stack<IndexTerm>();
-        topicIdStack = new Stack<String>();
-        indexTermSpecList = new ArrayList<String>(INT_16);
-        indexSeeSpecList = new ArrayList<String>(INT_16);
-        indexSeeAlsoSpecList = new ArrayList<String>(INT_16);
-        indexSortAsSpecList = new ArrayList<String>(INT_16);
-        topicSpecList = new ArrayList<String>(INT_16);
-        titleSpecList = new ArrayList<String>(INT_16);
-        indexTermList = new ArrayList<IndexTerm>(INT_256);
-        titleMap = new HashMap<String, String>(INT_256);
-        processRoleStack = new Stack<String>();
-        processRoleLevel = 0;
-        if (result == null) {
-            result = IndexTermCollection.getInstantce();
-        }
-    }
 
     /**
      * Reset the reader.
@@ -551,11 +538,12 @@ public final class IndexTermReader extends AbstractXMLReader {
     }
 
     /**
-     * Trim whitespace from start of the string.
+     * Trim whitespace from start of the string. If last character of termName and
+     * first character of temp is a space character, remove leading string from temp 
      * 
      * @param temp
      * @param termName
-     * @return
+     * @return trimmed temp value
      */
     private String trimSpaceAtStart(final String temp, final String termName) {
         if(termName != null && termName.charAt(termName.length() - 1) == ' ') {

@@ -61,10 +61,10 @@ final class MoveLinksModule implements AbstractPipelineModule {
                 .append(SLASH).append(TOPIC_LINKLIST.localName)
                 .toString());
         indexReader.read(maplinksFile.getAbsolutePath());
-        final Set<Map.Entry<String, String>> mapSet = (Set<Map.Entry<String, String>>) indexReader.getContent().getCollection();
+		final Map<String, Map<String, String>> mapSet = indexReader.getMapping();
                 
         final List<Runnable> rs = new ArrayList<Runnable>(mapSet.size());
-        for (final Map.Entry<String, String> entry: mapSet) {
+        for (final Map.Entry<String, Map<String, String>> entry: mapSet.entrySet()) {
           rs.add(new Runnable() {
               public void run() {
                   logger.logInfo("Processing " + entry.getKey());

@@ -74,21 +74,23 @@ final class ConrefPushModule implements AbstractPipelineModule {
             reader.read(file.getAbsolutePath());
         }
 
-        final Set<Map.Entry<String, Hashtable<String, String>>> pushSet = (Set<Map.Entry<String, Hashtable<String,String>>>) reader.getContent().getCollection();
+		final Map<String, Hashtable<String, String>> pushSet = reader.getPushMap();
                 
         final List<Runnable> rs = new ArrayList<Runnable>(pushSet.size());
-        for (final Map.Entry<String, Hashtable<String,String>> entry: pushSet) {
+        for (final Map.Entry<String, Hashtable<String,String>> entry: pushSet.entrySet()) {
           rs.add(new Runnable() {
               public void run() {
-                  logger.logInfo("Processing " + new File(tempDir, entry.getKey()).getAbsolutePath());
+            	  logger.logInfo("Processing " + new File(tempDir, entry.getKey()).getAbsolutePath());
                   final ConrefPushParser parser = new ConrefPushParser();
                   parser.setLogger(logger);
                   final Content content = new ContentImpl();
                   content.setValue(entry.getValue());
                   parser.setContent(content);
+                  //pass the tempdir to ConrefPushParser
                   parser.setTempDir(tempDir.getAbsolutePath());
+                  //FIXME:This writer creates and renames files, have to
                   try {
-                      parser.write(entry.getKey());
+                	  parser.write(entry.getKey());
                   } catch (DITAOTException e) {
                       logger.logException(e);
                   }

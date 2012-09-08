@@ -37,11 +37,6 @@
         </xsl:copy>
     </xsl:template>
 
-    <xsl:template match="processing-instruction('workdir')" mode="get-work-dir">
-        <xsl:value-of select="."/>
-        <xsl:text>/</xsl:text>
-    </xsl:template>
-
     <xsl:template match="*[contains(@class, ' map/topicref ')]" priority="10">
         <xsl:param name="refclass" select="@class"/> <!-- get the current element's @class value -->
         <xsl:param name="relative-path">#none#</xsl:param>  <!-- need this to resolve multiple mapref -->
@@ -93,7 +88,7 @@
             </xsl:choose>
         </xsl:variable>
         <xsl:variable name="WORKDIR">
-            <xsl:apply-templates select="/processing-instruction()" mode="get-work-dir"/>
+            <xsl:apply-templates select="/processing-instruction('workdir-uri')" mode="get-work-dir"/>
         </xsl:variable>
         <xsl:choose>
             <xsl:when test="@format='ditamap' and contains($mapref-id-path,concat(' ',generate-id(.),' '))">
@@ -126,13 +121,13 @@
                             <!-- edited by William on 2009-09-01 for updated mapref start-->
                             <xsl:choose>
                                 <xsl:when test="starts-with(@href,'#')">
-                                    <xsl:value-of select="concat($FILEREF, $WORKDIR, $file-being-processed)"/>
+                                    <xsl:value-of select="concat($WORKDIR, $file-being-processed)"/>
                                 </xsl:when>   
                                 <xsl:when test="contains(@href, '#')">
-                                    <xsl:value-of select="concat($FILEREF, $WORKDIR, substring-before(@href, '#'))"/>
+                                    <xsl:value-of select="concat($WORKDIR, substring-before(@href, '#'))"/>
                                 </xsl:when>
                                 <xsl:otherwise>
-                                    <xsl:value-of select="concat($FILEREF, $WORKDIR, @href)"/>
+                                    <xsl:value-of select="concat($WORKDIR, @href)"/>
                                 </xsl:otherwise>
                             </xsl:choose>
                             <!-- edited by William on 2009-09-01 for updated mapref end-->
@@ -322,7 +317,7 @@
                             </xsl:when>
                             <xsl:otherwise>
                                 <!-- reference to file -->
-                                <xsl:apply-templates select="$file/*/*[contains(@class,' map/topicref ')]">
+                                <xsl:apply-templates select="$file/*/*[contains(@class,' map/topicref ')] | $file/*/processing-instruction()">
                                     <xsl:with-param name="refclass" select="$refclass"/>
                                     <xsl:with-param name="mapref-id-path" select="$updated-id-path"/>
                                     <xsl:with-param name="relative-path">
@@ -487,7 +482,12 @@
                         </xsl:choose>
                     </xsl:otherwise>
                 </xsl:choose>
-                    
+              <xsl:if test="*[contains(@class, ' map/topicref ')]">
+                <xsl:call-template name="output-message">
+                  <xsl:with-param name="msgnum">068</xsl:with-param>
+                  <xsl:with-param name="msgsev">W</xsl:with-param>
+                </xsl:call-template>
+              </xsl:if>    
             </xsl:when>
             <xsl:otherwise> <!-- not mapref -->  
                 <xsl:copy>                    
@@ -1048,11 +1048,11 @@
             <xsl:attribute name="format"><xsl:value-of select="$inherited-value"/></xsl:attribute>
             <!-- Warn if non-dita format was inherited, and this is dita.
                 Only warn if this was actually inherited (not set locally).  -->
-            <xsl:if test="not(@format) and $inherited-value!='dita' and contains(@href,$DITAEXT)">
+            <!--xsl:if test="not(@format) and $inherited-value!='dita' and contains(@href,$DITAEXT)">
                 <xsl:apply-templates select="." mode="ditamsg:incorect-inherited-format">
                     <xsl:with-param name="format" select="$inherited-value"/>
                 </xsl:apply-templates>
-            </xsl:if>
+            </xsl:if-->
         </xsl:if>
     </xsl:template>
     

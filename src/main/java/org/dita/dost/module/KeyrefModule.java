@@ -12,13 +12,19 @@ package org.dita.dost.module;
 import static org.dita.dost.util.Constants.*;
 
 import java.io.File;
+<<<<<<< HEAD
 import java.util.ArrayList;
+=======
+import java.io.IOException;
+>>>>>>> develop
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import org.w3c.dom.Element;
 
 import org.dita.dost.exception.DITAOTException;
 import org.dita.dost.log.DITAOTLogger;
@@ -101,12 +107,13 @@ final class KeyrefModule implements AbstractPipelineModule {
             reader.setKeys(maps.get(mapFile));
             reader.read(mapFile);
         }
-        final Content content = reader.getContent();
+        final Map<String, Element> keyDefinition = reader.getKeyDefinition();
         //get files which have keyref attr
         final Set<String> parseList = job.getSet(KEYREF_LIST);
         //Conref Module will change file's content, it is possible that tags with @keyref are copied in
         //while keyreflist is hard update with xslt.
         //bug:3056939
+        final Set<String> resourceOnlyList = job.getSet(RESOURCE_ONLY_LIST);
         final Set<String> conrefList = job.getSet(CONREF_LIST);
         parseList.addAll(conrefList);
         
@@ -114,19 +121,32 @@ final class KeyrefModule implements AbstractPipelineModule {
         for (final String file: parseList) {
             rs.add(new Runnable() {
                 public void run() {
-                    logger.logInfo("Processing " + new File(tempDir, file).getAbsolutePath());
+                	logger.logInfo("Processing " + new File(tempDir, file).getAbsolutePath());
                     final KeyrefPaser parser = new KeyrefPaser();
                     parser.setLogger(logger);
-                    parser.setContent(content);
+                    parser.setKeyDefinition(keyDefinition);
                     parser.setTempDir(tempDir.getAbsolutePath());
                     parser.setKeyMap(keymap);
+                    //Added by Alan Date:2009-08-04
                     parser.setExtName(extName);
                     try {
                         parser.write(file);
                     } catch (DITAOTException e) {
                         logger.logException(e);
                     }
+                    // validate resource-only list
+                    for (final String t: parser.getNormalProcessingRoleTargets()) {
+                        if (resourceOnlyList.contains(t)) {
+                            resourceOnlyList.remove(t);
+                        }
+                    }
                 }});
+        }
+        job.setSet(RESOURCE_ONLY_LIST, resourceOnlyList);
+        try {
+            job.write();
+        } catch (final IOException e) {
+            throw new DITAOTException("Failed to store job state: " + e.getMessage(), e);
         }
         ThreadUtils.run(rs);
         

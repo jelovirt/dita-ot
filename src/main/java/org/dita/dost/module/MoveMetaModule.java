@@ -107,11 +107,12 @@ final class MoveMetaModule implements AbstractPipelineModule {
             }
         }
 
-        final Set<Entry<String, Hashtable<String, Element>>> mapSet = (Set<Entry<String, Hashtable<String, Element>>>) metaReader.getContent().getCollection();
+        final Map<String, Hashtable<String, Element>> mapSet = metaReader.getMapping();
         
         //process map first
-        final List<Runnable> mrs = new ArrayList<Runnable>(mapSet.size());
-        for (final Entry<String,?> entry: mapSet) {
+        final DitaMapMetaWriter mapInserter = new DitaMapMetaWriter();
+        mapInserter.setLogger(logger);
+        for (final Entry<String, Hashtable<String, Element>> entry: mapSet.entrySet()) {
             String targetFileName = entry.getKey();
             targetFileName = targetFileName.indexOf(SHARP) != -1
                              ? targetFileName.substring(0, targetFileName.indexOf(SHARP))
@@ -138,7 +139,7 @@ final class MoveMetaModule implements AbstractPipelineModule {
 
         //process topic
         final List<Runnable> rs = new ArrayList<Runnable>(mapSet.size());
-        for (final Map.Entry<String,?> entry: mapSet) {
+        for (final Map.Entry<String, Hashtable<String, Element>> entry: mapSet.entrySet()) {
             String targetFileName = entry.getKey();
             targetFileName = targetFileName.indexOf(SHARP) != -1
                              ? targetFileName.substring(0, targetFileName.indexOf(SHARP))

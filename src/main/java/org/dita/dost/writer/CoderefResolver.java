@@ -35,7 +35,7 @@ import org.dita.dost.util.FileUtils;
  * <pre>format (";" space* "charset=" charset)?</pre>
  * 
  * <p>If no charset if defined or the charset name is not recognized,
- * {@link ava.nio.charset.Charset#defaultCharset() default charset} is used in
+ * {@link java.nio.charset.Charset#defaultCharset() default charset} is used in
  * reading the code file.</p>
  */
 public final class CoderefResolver extends AbstractXMLFilter {
@@ -118,9 +118,7 @@ public final class CoderefResolver extends AbstractXMLFilter {
                     } else {
                         final Properties prop = new Properties();
                         prop.put("%1", hrefValue);
-                        prop.put("%2", atts.getValue(ATTRIBUTE_NAME_XTRF));
-                        prop.put("%3", atts.getValue(ATTRIBUTE_NAME_XTRC));
-                        logger.logWarn(MessageUtils.getMessage("DOTJ051E",prop).toString());
+                        logger.logWarn(MessageUtils.getMessage("DOTJ051E",prop).setLocation(atts).toString());
                     }
                 } else {
                     //logger.logDebug("Code reference target not defined");
