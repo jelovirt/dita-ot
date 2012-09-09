@@ -35,6 +35,7 @@ public final class XsltModule implements AbstractPipelineModule {
     private File baseDir;
     private List<File> includes;
     private String filenameparameter;
+    private boolean reloadstylesheet;
     
     public XsltModule(final File style) {
         final TransformerFactory tf = TransformerFactory.newInstance();
@@ -46,6 +47,9 @@ public final class XsltModule implements AbstractPipelineModule {
     }
     
     public AbstractPipelineOutput execute(AbstractPipelineInput input) throws DITAOTException {
+    	if (reloadstylesheet) {
+    		logger.logDebug("Ignore reloadstylesheet");
+    	}
         final List<Runnable> rs = new ArrayList<Runnable>(includes.size());
         for (final File include: includes) {
             rs.add(new Runnable() {
@@ -115,6 +119,10 @@ public final class XsltModule implements AbstractPipelineModule {
 
     public void setFilenameParam(final String filenameparameter) {
         this.filenameparameter = filenameparameter;
+    }
+    
+    public void setReloadstylesheet(final boolean reloadstylesheet) {
+    	this.reloadstylesheet = reloadstylesheet;
     }
     
 }

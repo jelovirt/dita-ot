@@ -290,6 +290,7 @@ public final class ExtensibleAntInvoker extends Task {
                     x.setDestinationDir(xm.destDir);
                     x.setSorceDir(xm.baseDir);
                     x.setFilenameParam(xm.filenameparameter);
+                    x.setReloadstylesheet(xm.reloadstylesheet);
                     for (final Param p : m.params) {
                         if (!p.isValid()) {
                             throw new BuildException("Incomplete parameter");
@@ -362,6 +363,7 @@ public final class ExtensibleAntInvoker extends Task {
         private final List<IncludesFile> includes = new ArrayList<IncludesFile>();
         private String filenameparameter;
         private String catalogRefid;
+        private boolean reloadstylesheet;
         
         // Ant setters
         
@@ -379,6 +381,18 @@ public final class ExtensibleAntInvoker extends Task {
         
         public void setTaskname(final String taskname) {
             this.taskname = taskname;
+        }
+        
+        public void setClasspathref(final String classpath) {
+        	// Ignore classpathref attribute
+        }
+        
+        public void setExtension(final String extension) {
+        	// Ignore extension attribute
+        }
+        
+        public void setReloadstylesheet(final boolean reloadstylesheet) {
+        	this.reloadstylesheet = reloadstylesheet;
         }
         
         public void setIncludesfile(final File includesfile) throws IOException {

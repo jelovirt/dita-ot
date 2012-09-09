@@ -154,28 +154,13 @@
     <condition property="dita.preprocess.reloadstylesheet.conref" value="${dita.preprocess.reloadstylesheet}">
       <not><isset property="dita.preprocess.reloadstylesheet.conref"/></not>
     </condition>
-    
-    <!-- new -->
     <pipeline message="Resolve conref in input files" taskname="conref">
-      <xslt basedir="${dita.temp.dir}"
-        destdir="${dita.temp.dir}" includesfile="${dita.temp.dir}/${conreffile}"
-        style="${dita.script.dir}/preprocess/conref.xsl" filenameparameter="file-being-processed">
-        <param name="DITAEXT" expression="${dita.ext}"/>
-        <param name="BASEDIR" expression="${basedir}"/>
-        <param name="TEMPDIR" expression="${dita.temp.dir}"/>
-        <param name="TRANSTYPE" expression="${transtype}"/>
-        <dita:extension id="dita.preprocess.conref.param" behavior="org.dita.dost.platform.InsertAction" xmlns:dita="http://dita-ot.sourceforge.net"/>
-        <xmlcatalog refid="dita.catalog"/>
-      </xslt>
-    </pipeline>
-    <!-- old -->
-    <!--
     <xslt basedir="${dita.temp.dir}" taskname="conref"
       destdir="${dita.temp.dir}" includesfile="${dita.temp.dir}/${conreffile}"
       classpathref="dost.class.path"
       reloadstylesheet="${dita.preprocess.reloadstylesheet.conref}"
       style="${dita.script.dir}/preprocess/conref.xsl" filenameparameter="file-being-processed">
-      <mapper type="glob" from="*" to="*.cnrf" />
+      <!--mapper type="glob" from="*" to="*.cnrf" /-->
       <param name="DITAEXT" expression="${dita.ext}" if="dita.ext"/>
       <param name="BASEDIR" expression="${basedir}"/>
       <param name="TEMPDIR" expression="${dita.temp.dir}"/>
@@ -183,6 +168,8 @@
       <dita:extension id="dita.preprocess.conref.param" behavior="org.dita.dost.platform.InsertAction"/>
       <xmlcatalog refid="dita.catalog"/>
     </xslt>
+    </pipeline>
+    <!--
     <move todir="${dita.temp.dir}">
       <fileset dir="${dita.temp.dir}" includes="**/*.cnrf" />
       <mapper type="glob" from="*.cnrf" to="*" />
@@ -228,11 +215,12 @@
       <not><isset property="dita.preprocess.reloadstylesheet.mapref"/></not>
     </condition>
     <dirname property="mapref.workdir" file="${dita.temp.dir}/${user.input.file}" />
+    <pipeline message="Resolve mapref in ditamap" taskname="mapref">
     <xslt taskname="mapref"
-      basedir="${dita.temp.dir}"
-      destdir="${dita.temp.dir}"
+       basedir="${dita.temp.dir}"
+       destdir="${dita.temp.dir}"
         includesfile="${dita.temp.dir}/${fullditamapfile}"
-      extension=".ditamap.ref"
+       extension=".ditamap.ref"
         classpathref="dost.class.path"
         reloadstylesheet="${dita.preprocess.reloadstylesheet.mapref}"
       style="${dita.script.dir}/preprocess/mapref.xsl" filenameparameter="file-being-processed">
@@ -242,10 +230,13 @@
       <dita:extension id="dita.preprocess.mapref.param" behavior="org.dita.dost.platform.InsertAction"/>
       <xmlcatalog refid="dita.catalog"/>
     </xslt>
+    </pipeline>
+    <!--
     <move overwrite="true" todir="${dita.temp.dir}">
       <fileset dir="${dita.temp.dir}" includes="**/*.ditamap.ref" />
       <mapper type="glob" from="*.ditamap.ref" to="*.ditamap" />
     </move>
+    -->
   </target>
 
   <target name="mapref-check">
@@ -286,11 +277,12 @@
     <condition property="dita.preprocess.reloadstylesheet.mappull" value="${dita.preprocess.reloadstylesheet}">
       <not><isset property="dita.preprocess.reloadstylesheet.mappull"/></not>
     </condition>
+    <pipeline message="Pull the navtitle and topicmeta from topics to ditamap" taskname="mappull">
     <xslt taskname="mappull"
-        basedir="${dita.temp.dir}"
-      destdir="${dita.temp.dir}"
+           basedir="${dita.temp.dir}"
+       destdir="${dita.temp.dir}"
         includesfile="${dita.temp.dir}/${fullditamapfile}"
-      extension=".ditamap.pull"
+       extension=".ditamap.pull"
         classpathref="dost.class.path"
         reloadstylesheet="${dita.preprocess.reloadstylesheet.mappull}"
       style="${dita.script.dir}/preprocess/mappull.xsl">
@@ -299,10 +291,13 @@
       <dita:extension id="dita.preprocess.mappull.param" behavior="org.dita.dost.platform.InsertAction"/>
       <xmlcatalog refid="dita.catalog"/>
     </xslt>
+    </pipeline>
+    <!--
     <move overwrite="true" todir="${dita.temp.dir}">
       <fileset dir="${dita.temp.dir}" includes="**/*.ditamap.pull" />
       <mapper type="glob" from="*.ditamap.pull" to="*.ditamap" />
     </move>
+    -->
   </target>
   
   <target name="mappull-check">
@@ -327,10 +322,10 @@
       </module>
     </pipeline>
     
-    <xmlpropertyreader file="${dita.temp.dir}/dita.xml.properties"/>
-    <condition property="noTopic">
-        <equals arg1="${fullditatopiclist}" arg2="" />
-    </condition>
+       <xmlpropertyreader file="${dita.temp.dir}/dita.xml.properties"/>
+       <condition property="noTopic">
+               <equals arg1="${fullditatopiclist}" arg2="" />
+       </condition>
   </target>
 
   <target name="chunk-check">
@@ -403,20 +398,8 @@
     <condition property="dita.preprocess.reloadstylesheet.topicpull" value="${dita.preprocess.reloadstylesheet}">
       <not><isset property="dita.preprocess.reloadstylesheet.topicpull"/></not>
     </condition>
+
     <pipeline message="Pull metadata for link and xref element" taskname="topicpull">
-      <xslt taskname="topicpull" basedir="${dita.temp.dir}"
-        destdir="${dita.temp.dir}" includesfile="${dita.temp.dir}/${fullditatopicfile}"
-        style="${dita.script.dir}/preprocess/topicpull.xsl">
-        <includesfile name="${dita.temp.dir}/${chunkedtopicfile}" if="chunkedtopicfile"/>
-        <param name="DITAEXT" expression="${dita.ext}" if="dita.ext" />
-        <param name="TABLELINK" expression="${args.tablelink.style}" if="args.tablelink.style" />
-        <param name="FIGURELINK" expression="${args.figurelink.style}" if="args.figurelink.style" />
-        <param name="ONLYTOPICINMAP" expression="${onlytopic.in.map}" if="onlytopic.in.map"/>
-        <dita:extension id="dita.preprocess.topicpull.param" behavior="org.dita.dost.platform.InsertAction" xmlns:dita="http://dita-ot.sourceforge.net"/>
-        <xmlcatalog refid="dita.catalog"/>
-      </xslt>
-    </pipeline>
-    <!--
     <xslt taskname="topicpull" basedir="${dita.temp.dir}"
       destdir="${dita.temp.dir}" includesfile="${dita.temp.dir}/${fullditatopicfile}"
       classpathref="dost.class.path"
@@ -428,9 +411,11 @@
       <param name="FIGURELINK" expression="${args.figurelink.style}" if="args.figurelink.style" />
       <param name="ONLYTOPICINMAP" expression="${onlytopic.in.map}" if="onlytopic.in.map"/>
       <dita:extension id="dita.preprocess.topicpull.param" behavior="org.dita.dost.platform.InsertAction"/>
-      <mapper type="glob" from="*" to="*.pull" />
+      <!--mapper type="glob" from="*" to="*.pull" /-->
       <xmlcatalog refid="dita.catalog"/>
     </xslt>
+    </pipeline>
+    <!--
     <move todir="${dita.temp.dir}">
       <fileset dir="${dita.temp.dir}" includes="**/*.pull" />
       <mapper type="glob" from="*.pull" to="*" />
@@ -450,6 +435,7 @@
     dita:depends="debug-filter,{depend.preprocess.copy-files.pre},copy-image,copy-html,copy-flag,copy-subsidiary,copy-generated-files"
     dita:extension="depends org.dita.dost.platform.InsertDependsAction"
     unless="preprocess.copy-files.skip" />
+
 
   <target name="copy-image-uplevels"
 		if="image.copy.uplevels"
@@ -564,5 +550,5 @@
         includes="dita.list,property.temp,dita.xml.properties" />
     </copy>
   </target>
-
+  
 </project>
