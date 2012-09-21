@@ -20,7 +20,9 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
@@ -28,7 +30,12 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
 
+import org.xml.sax.Attributes;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
+import org.xml.sax.helpers.DefaultHandler;
 
 /**
  * Definition of current job.
@@ -39,6 +46,17 @@ import org.xml.sax.SAXException;
  */
 public final class Job {
 
+	private static final String JOB_FILE = "job.xml";
+	
+	private static final String ELEMENT_JOB = "job";
+	private static final String ATTRIBUTE_KEY = "key";
+	private static final String ELEMENT_ENTRY = "entry";
+	private static final String ELEMENT_MAP = "map";
+	private static final String ELEMENT_SET = "set";
+	private static final String ELEMENT_STRING = "string";
+	private static final String ATTRIBUTE_NAME = "name";
+	private static final String ELEMENT_GROUP = "group";
+	
     /** File name for chuncked dita map list file */
     public static final String CHUNKED_DITAMAP_LIST_FILE = "chunkedditamap.list";
     /** File name for chunked topic list file */
@@ -131,11 +149,23 @@ public final class Job {
      * assume an empty job object is being created.
      * 
      * @throws IOException if reading configuration files failed
+     * @throws SAXException if XML parsing failed
      * @throws IllegalStateException if configuration files are missing
      */
     private void read() throws IOException {
+    	final File jobFile = new File(tempDir, JOB_FILE);
+    	if (jobFile.exists()) {
+			try {
+				XMLReader parser = StringUtils.getXMLReader();
+				parser.setContentHandler(new JobHandler(prop));
+	    		parser.parse(jobFile.toURI().toString());
+			} catch (final SAXException e) {
+				throw new IOException("Failed to read job file: " + e.getMessage());
+			}
+			return;
+    	}
+    	/*
     	final Properties p = new Properties();
-    	
         final File ditalist = new File(tempDir, FILE_NAME_DITA_LIST);
         final File xmlDitalist=new File(tempDir, FILE_NAME_DITA_LIST_XML);
         InputStream in = null;
@@ -160,9 +190,81 @@ public final class Job {
         }
         
 		for (final Map.Entry<Object, Object> e: p.entrySet()) {
-			System.err.println("Read " + e.getKey().toString() + " = " + e.getValue());
-			prop.put(e.getKey().toString(), e.getValue());
+			if (((String) e.getValue()).length() > 0) {
+				prop.put(e.getKey().toString(), e.getValue());
+			}
 		}
+		*/
+    }
+    
+    private final static class JobHandler extends DefaultHandler {
+
+		private final Map<String, Object> prop;
+    	private StringBuilder buf;
+    	private String name;
+    	private String key;
+    	private Set<String> set;
+    	private Map<String, String> map;
+    	
+    	JobHandler(final Map<String, Object> prop) {
+    		this.prop = prop;
+    	}
+    	
+		@Override
+		public void characters(char[] ch, int start, int length) throws SAXException {
+			if (buf != null) {
+				buf.append(ch, start, length);
+			}
+		}
+
+		@Override
+		public void ignorableWhitespace(char[] ch, int start, int length) throws SAXException {
+			if (buf != null) {
+				buf.append(ch, start, length);
+			}
+		}
+		
+		@Override
+		public void startElement(String uri, String localName, String qName, Attributes atts) throws SAXException {
+			final String n = localName != null ? localName : qName;
+			if (n.equals(ELEMENT_GROUP)) {
+				name = atts.getValue(ATTRIBUTE_NAME);
+			} else if (n.equals(ELEMENT_STRING)) {
+				buf = new StringBuilder();
+			} else if (n.equals(ELEMENT_SET)) {
+				set = new HashSet<String>();
+			} else if (n.equals(ELEMENT_MAP)) {
+				map = new HashMap<String, String>();
+			} else if (n.equals(ELEMENT_ENTRY)) {
+				key = atts.getValue(ATTRIBUTE_KEY);
+			}
+		}
+		
+		@Override
+		public void endElement(String uri, String localName, String qName) throws SAXException {
+			final String n = localName != null ? localName : qName;
+			if (n.equals(ELEMENT_GROUP)) {
+				name = null;
+			} else if (n.equals(ELEMENT_STRING)) {
+				if (set != null) {
+					set.add(buf.toString());
+				} else if (map != null) {
+					map.put(key, buf.toString());
+				} else {
+					prop.put(name, buf.toString());
+				}
+				buf = null;
+			} else if (n.equals(ELEMENT_SET)) {
+				prop.put(name, set);
+				set = null;
+			} else if (n.equals(ELEMENT_MAP)) {
+				prop.put(name, map);
+				map = null;
+			} else if (n.equals(ELEMENT_ENTRY)) {
+				key = null;
+			}
+		}
+    	
     }
     
     /**
@@ -173,37 +275,37 @@ public final class Job {
     public void write() throws IOException {
     	XMLSerializer out = null;
         try {
-            out = XMLSerializer.newInstance(new FileOutputStream(new File(tempDir, "job.xml")));
+            out = XMLSerializer.newInstance(new FileOutputStream(new File(tempDir, JOB_FILE)));
             out.writeStartDocument();
-            out.writeStartElement("job");
+            out.writeStartElement(ELEMENT_JOB);
             for (final Map.Entry<String, Object> e: prop.entrySet()) {
-            	out.writeStartElement("group");
-            	out.writeAttribute("name", e.getKey());
-            	Object v = null;
+            	out.writeStartElement(ELEMENT_GROUP);
+            	out.writeAttribute(ATTRIBUTE_NAME, e.getKey());
             	if (e.getValue() instanceof String) {
-            		out.writeStartElement("string");
+            		out.writeStartElement(ELEMENT_STRING);
             		out.writeCharacters(e.getValue().toString());
             		out.writeEndElement(); //string
             	} else if (e.getValue() instanceof Set) {
-            		out.writeStartElement("set");
+            		out.writeStartElement(ELEMENT_SET);
             		final Set<?> s = (Set<?>) e.getValue();
             		for (final Object o: s) {
-            			out.writeStartElement("string");
+            			out.writeStartElement(ELEMENT_STRING);
                 		out.writeCharacters(o.toString());
                 		out.writeEndElement(); //string
             		}
             		out.writeEndElement(); //set
             	} else if (e.getValue() instanceof Map) {
-            		out.writeStartElement("map");
+            		out.writeStartElement(ELEMENT_MAP);
             		final Map<?, ?> s = (Map<?, ?>) e.getValue();
             		for (final Map.Entry<?, ?> o: s.entrySet()) {
-            			out.writeStartElement("entry");
-            			out.writeStartElement("key");
-                		out.writeCharacters(o.getKey().toString());
-                		out.writeEndElement(); //key
-                		out.writeStartElement("value");
+            			out.writeStartElement(ELEMENT_ENTRY);
+            			out.writeAttribute(ATTRIBUTE_KEY, o.getKey().toString());
+//            			out.writeStartElement("key");
+//                		out.writeCharacters(o.getKey().toString());
+//                		out.writeEndElement(); //key
+                		out.writeStartElement(ELEMENT_STRING);
                 		out.writeCharacters(o.getValue().toString());
-                		out.writeEndElement(); //key
+                		out.writeEndElement(); //string
                 		out.writeEndElement(); //entry
             		}
             		out.writeEndElement(); //string
@@ -229,10 +331,16 @@ public final class Job {
                 }
             }
         }
-    	
+
         final Properties p = new Properties();
         for (final Map.Entry<String, Object> e: prop.entrySet()) {
-        	p.put(e.getKey(), e.getValue());
+        	if (e.getValue() instanceof Set) {
+        		p.put(e.getKey(), StringUtils.assembleString((Collection) e.getValue(), COMMA));
+        	} else if (e.getValue() instanceof Map) {
+        		p.put(e.getKey(), StringUtils.assembleString((Map) e.getValue(), COMMA));
+        	} else {
+        		p.put(e.getKey(), e.getValue());
+        	}
         }
         
         FileOutputStream propertiesOutputStream = null;
@@ -276,7 +384,17 @@ public final class Job {
      * @return the value in this property list with the specified key value, {@code null} if not found
      */
     public String getProperty(final String key) {
-        return (String) prop.get(key);
+        //return (String) prop.get(key);
+    	final Object value = prop.get(key);
+    	if (value == null) {
+    		return null;
+    	} else if (value instanceof Set) {
+    		return StringUtils.assembleString((Collection) value, COMMA);
+    	} else if (value instanceof Map) {
+    		return StringUtils.assembleString((Map) value, COMMA);
+    	} else {
+    		return (String) value;
+    	}
     }
     
     /**
@@ -287,7 +405,15 @@ public final class Job {
      */
     public Map<String, String> getMap(final String key) {
         //return StringUtils.restoreMap(prop.getProperty(key, ""));
-    	return (Map<String, String>) prop.get(key);
+    	final Object value = prop.get(key);
+    	if (value == null) {
+    		return Collections.emptyMap();
+    	} else if (value instanceof String) {
+    		return StringUtils.restoreMap((String) value);
+		} else {
+			return (Map<String, String>) value;
+		}
+    	//return (Map<String, String>) prop.get(key);
     }
     
     /**
@@ -298,7 +424,15 @@ public final class Job {
      */
     public Set<String> getSet(final String key) {
         //return StringUtils.restoreSet(prop.getProperty(key, ""));
-    	return (Set<String>) prop.get(key);
+    	final Object value = prop.get(key);
+    	if (value == null) {
+    		return Collections.emptySet();
+    	} else if (value instanceof String) {
+    		return StringUtils.restoreSet((String) value);
+		} else {
+			return (Set<String>) value;
+		}
+    	//return (Set<String>) prop.get(key);
     }
     
     /**
@@ -322,7 +456,15 @@ public final class Job {
      */
     public Set<String> setSet(final String key, final Set<String> value) {
         //return StringUtils.restoreSet((String) prop.setProperty(key, StringUtils.assembleString(value, COMMA)));
-    	return (Set<String>) prop.put(key, value);
+    	final Object previous = prop.put(key, value);
+    	if (previous == null) {
+    		return null;
+    	} else if (previous instanceof String) {
+    		return StringUtils.restoreSet((String) previous);
+		} else {
+			return (Set<String>) previous;
+		}
+    	//return (Set<String>) prop.put(key, value);
     }
     
     /**
@@ -334,7 +476,15 @@ public final class Job {
      */
     public Map<String, String> setMap(final String key, final Map<String, String> value) {        
         //return StringUtils.restoreMap((String) prop.setProperty(key, StringUtils.assembleString(value, COMMA)));
-    	return (Map<String, String>) prop.put(key, value);
+    	final Object previous = prop.put(key, value);
+    	if (previous == null) {
+    		return null;
+    	} else if (previous instanceof String) {
+    		return StringUtils.restoreMap((String) previous);
+		} else {
+			return (Map<String, String>) previous;
+		}
+    	//return (Map<String, String>) prop.put(key, value);
     }
     
     /**
@@ -343,7 +493,7 @@ public final class Job {
      */
     public Map<String, String> getCopytoMap() {
         //return StringUtils.restoreMap(prop.getProperty(COPYTO_TARGET_TO_SOURCE_MAP_LIST, ""));
-    	return (Map<String, String>) prop.get(COPYTO_TARGET_TO_SOURCE_MAP_LIST);
+    	return getMap(COPYTO_TARGET_TO_SOURCE_MAP_LIST);
     }
 
     /**
@@ -351,7 +501,8 @@ public final class Job {
      */
     public Set<String> getSchemeSet() {
         //return StringUtils.restoreSet(prop.getProperty(SUBJEC_SCHEME_LIST, ""));
-    	return (Set<String>) prop.get(SUBJEC_SCHEME_LIST);
+    	return getSet(SUBJEC_SCHEME_LIST);
+    	
     }
 
     /**
@@ -360,7 +511,7 @@ public final class Job {
      * @return input file path relative to input directory
      */
     public String getInputMap() {
-        return (String) prop.get(INPUT_DITAMAP);
+        return getProperty(INPUT_DITAMAP);
     }
     
     /**
@@ -379,9 +530,9 @@ public final class Job {
 //        while (tokenizer.hasMoreTokens()) {
 //            refList.addFirst(tokenizer.nextToken());
 //        }
-        refList.addAll((Collection<String>)prop.get(FULL_DITAMAP_TOPIC_LIST));
-        refList.addAll((Collection<String>)prop.get(CONREF_TARGET_LIST));
-        refList.addAll((Collection<String>)prop.get(COPYTO_SOURCE_LIST));
+        refList.addAll(getSet(FULL_DITAMAP_TOPIC_LIST));
+        refList.addAll(getSet(CONREF_TARGET_LIST));
+        refList.addAll(getSet(COPYTO_SOURCE_LIST));
         return refList;
     }
 
@@ -391,7 +542,7 @@ public final class Job {
      * @return absolute input directory path 
      */
     public String getInputDir() {
-        return (String) prop.get(INPUT_DIR);
+        return getProperty(INPUT_DIR);
     }
 
     // Utility methods
