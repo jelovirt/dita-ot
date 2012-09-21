@@ -175,8 +175,10 @@ public final class DitaWriter extends AbstractXMLFilter {
             attValue = FileUtils.separatorsToUnix(attValue);
         }
 
-        if(attValue.indexOf(FILE_EXTENSION_DITAMAP) == -1){
-            return FileUtils.replaceExtension(attValue, extName);
+        if (extName != null) {
+	        if(attValue.indexOf(FILE_EXTENSION_DITAMAP) == -1){
+	            return FileUtils.replaceExtension(attValue, extName);
+	        }
         }
 
         return attValue;
@@ -298,7 +300,9 @@ public final class DitaWriter extends AbstractXMLFilter {
 
         if(checkDITAHREF(atts)){
             if(warnOfNoneTopicFormat(atts,attValue)==false){
-                return FileUtils.replaceExtension(attValue, extName);
+            	if (extName != null) {
+            		return FileUtils.replaceExtension(attValue, extName);
+            	}
             }
 
         }
@@ -672,10 +676,12 @@ public final class DitaWriter extends AbstractXMLFilter {
      * @return String
      */
     private String replaceExtName(String target) {
-        final String fileName = FileUtils.resolveFile("", target);
-        if(FileUtils.isDITATopicFile(fileName)){
-            target = FileUtils.replaceExtension(target, extName);
-        }
+    	if (extName != null) {
+	        final String fileName = FileUtils.resolveFile("", target);
+	        if(FileUtils.isDITATopicFile(fileName)){
+	            target = FileUtils.replaceExtension(target, extName);
+	        }
+    	}
         return target;
     }
 
@@ -1132,18 +1138,6 @@ public final class DitaWriter extends AbstractXMLFilter {
             }
         }
     }
-
-    /**
-     * @deprecated use {@link #write(String, String)} instead
-     */
-    @Override
-    @Deprecated
-    public void write(final String filename) {
-        final int index = filename.indexOf(STICK);
-        final String baseDir = filename.substring(0, index);
-        inputFile = filename.substring(index + 1);
-        write(new File(baseDir), inputFile);
-    }
     
     /**
      * Write output
@@ -1182,11 +1176,13 @@ public final class DitaWriter extends AbstractXMLFilter {
         OutputStream out = null;
         try {
             traceFilename = new File(baseDir, inputFile);
-            File outputFile;
-            if (FileUtils.isDITAMapFile(inputFile.toLowerCase())) {
-                outputFile = new File(tempDir, inputFile);
-            } else {
-                outputFile = new File(tempDir, FileUtils.replaceExtension(inputFile, extName));
+            File outputFile = new File(tempDir, inputFile);
+            if (extName != null) {
+	            if (FileUtils.isDITAMapFile(inputFile.toLowerCase())) {
+	                outputFile = new File(tempDir, inputFile);
+	            } else {
+	                outputFile = new File(tempDir, FileUtils.replaceExtension(inputFile, extName));
+	            }
             }
 
             //when it is not the old solution 3
