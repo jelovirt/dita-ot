@@ -105,9 +105,8 @@ final class DebugAndFilterModule implements AbstractPipelineModule {
         final Map<String, String> result = new HashMap<String, String>();
         for (final Map.Entry<String, String> e: propValues.entrySet()) {
         	final String value = e.getValue();
-            final int fileExtIndex = value.lastIndexOf(DOT);
             // don't replace DITA map file extensions
-            if (fileExtIndex != -1 && FILE_EXTENSION_DITAMAP.equalsIgnoreCase(value.substring(fileExtIndex))){
+            if (FILE_EXTENSION_DITAMAP.equals("." + FileUtils.getExtension(value))) {
                 result.put(e.getKey(), value);
             // replace file extension in both map key and value
             } else {
@@ -140,9 +139,8 @@ final class DebugAndFilterModule implements AbstractPipelineModule {
         }
         final Set<String> result = new HashSet<String>(propValues.size());
         for (final String file: propValues) {
-            final int fileExtIndex = file.lastIndexOf(DOT);
             // don't replace DITA map file extensions
-            if (fileExtIndex != -1 && FILE_EXTENSION_DITAMAP.equalsIgnoreCase(file.substring(fileExtIndex))){
+            if (FILE_EXTENSION_DITAMAP.equals("." + FileUtils.getExtension(file))) {
                 result.add(file);
             // replace file extension
             } else {
@@ -173,9 +171,8 @@ final class DebugAndFilterModule implements AbstractPipelineModule {
             return;
         }
         String result;
-        final int fileExtIndex = propValue.lastIndexOf(DOT);
         // don't replace DITA map file extensions
-        if (fileExtIndex != -1 && FILE_EXTENSION_DITAMAP.equalsIgnoreCase(propValue.substring(fileExtIndex))){
+        if (FILE_EXTENSION_DITAMAP.equals("." + FileUtils.getExtension(propValue))) {
             result = propValue;
         // replace file extension
         } else {
