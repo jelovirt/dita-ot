@@ -690,20 +690,20 @@ final class DebugAndFilterModule implements AbstractPipelineModule {
         final Job job = new Job(tempDir);
 		updatePropertyString(INPUT_DITAMAP, job);
 		updatePropertySet(HREF_TARGET_LIST, job);
-		updatePropertyString(CONREF_LIST, job);
-		updatePropertyString(HREF_DITA_TOPIC_LIST, job);
-		updatePropertyString(FULL_DITA_TOPIC_LIST, job);
-		updatePropertyString(FULL_DITAMAP_TOPIC_LIST, job);
-		updatePropertyString(CONREF_TARGET_LIST, job);
+		updatePropertySet(CONREF_LIST, job);
+		updatePropertySet(HREF_DITA_TOPIC_LIST, job);
+		updatePropertySet(FULL_DITA_TOPIC_LIST, job);
+		updatePropertySet(FULL_DITAMAP_TOPIC_LIST, job);
+		updatePropertySet(CONREF_TARGET_LIST, job);
 		updatePropertySet(COPYTO_SOURCE_LIST, job);
 		updatePropertyMap(COPYTO_TARGET_TO_SOURCE_MAP_LIST, job);
-		updatePropertyString(OUT_DITA_FILES_LIST, job);
-		updatePropertyString(CONREF_PUSH_LIST, job);
-		updatePropertyString(KEYREF_LIST, job);
-		updatePropertyString(CODEREF_LIST, job);
-		updatePropertyString(CHUNK_TOPIC_LIST, job);
+		updatePropertySet(OUT_DITA_FILES_LIST, job);
+		updatePropertySet(CONREF_PUSH_LIST, job);
+		updatePropertySet(KEYREF_LIST, job);
+		updatePropertySet(CODEREF_LIST, job);
+		updatePropertySet(CHUNK_TOPIC_LIST, job);
 		updatePropertySet(HREF_TOPIC_LIST, job);
-		updatePropertyString(RESOURCE_ONLY_LIST, job);
+		updatePropertySet(RESOURCE_ONLY_LIST, job);
         job.write();
     }
 
