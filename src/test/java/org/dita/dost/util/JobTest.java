@@ -7,18 +7,10 @@ package org.dita.dost.util;
 import static org.dita.dost.util.Constants.*;
 import static org.junit.Assert.assertEquals;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -33,8 +25,11 @@ public final class JobTest {
 
     private static File tempDir;
     private static Job job;
-    private final static Properties prop = new Properties();
-    static {
+    
+    @BeforeClass
+    public static void setUp() throws IOException {
+        tempDir = TestUtils.createTempDir(JobTest.class);
+        final Properties prop = new Properties();
         prop.setProperty("user.input.dir", "/foo/bar");
         prop.setProperty(COPYTO_TARGET_TO_SOURCE_MAP_LIST, "foo=bar,baz=qux");
         prop.setProperty(SUBJEC_SCHEME_LIST, "foo,bar");
@@ -43,64 +38,10 @@ public final class JobTest {
         prop.setProperty(FULL_DITA_TOPIC_LIST, "foo2,bar2,foo3,bar3");
         prop.setProperty(CONREF_TARGET_LIST, "foo2,bar2");
         prop.setProperty(COPYTO_SOURCE_LIST, "foo3,bar3");
-        
-//      prop.setProperty("user.input.dir", "/foo/bar");
-//      final Map<String, String> s = new HashMap<String, String>();
-//      s.put("foo", "bar");
-//      s.put("baz", "qux");
-//      prop.setMap(COPYTO_TARGET_TO_SOURCE_MAP_LIST, s);
-//      prop.setSet(SUBJEC_SCHEME_LIST, new HashSet(Arrays.asList("foo", "bar")));
-//      prop.setProperty(INPUT_DITAMAP, "foo");
-//      prop.setSet(FULL_DITAMAP_TOPIC_LIST, new HashSet(Arrays.asList("foo1","bar1")));
-//      prop.setSet(CONREF_TARGET_LIST, new HashSet(Arrays.asList("foo2","bar2")));
-//      prop.setSet(COPYTO_SOURCE_LIST, new HashSet(Arrays.asList("foo3","bar3")));
-    }
-    
-    @BeforeClass
-    public static void setUp() throws IOException {
-        tempDir = TestUtils.createTempDir(JobTest.class);
-        OutputStream ditaList = null;
-        OutputStream xmlDitaList = null;
-        try {
-            ditaList = new BufferedOutputStream(new FileOutputStream(new File(tempDir, FILE_NAME_DITA_LIST)));
-            xmlDitaList = new BufferedOutputStream(new FileOutputStream(new File(tempDir, FILE_NAME_DITA_LIST_XML)));
-            prop.store(ditaList, null);
-            prop.storeToXML(xmlDitaList, null);
-        } finally {
-            if (ditaList != null) {
-                ditaList.close();
-            }
-            if (xmlDitaList != null) {
-                xmlDitaList.close();
-            }
-        }
-        job = new Job(tempDir);
-    }
-    
-    @Test
-    public void testWrite() throws IOException {
-        final Job j = new Job(tempDir);
+
+        final Job j = new Job(prop, tempDir);
         j.write();
-        final Properties ditaList = new Properties();
-        final Properties xmlDitaList = new Properties();
-        InputStream src = null;
-        InputStream xmlSrc = null;
-        try {
-            src = new BufferedInputStream(new FileInputStream(new File(tempDir, FILE_NAME_DITA_LIST)));
-            xmlSrc = new BufferedInputStream(new FileInputStream(new File(tempDir, FILE_NAME_DITA_LIST_XML)));
-            xmlDitaList.loadFromXML(xmlSrc);
-            ditaList.load(src);
-        } finally {
-            if (src != null) {
-                src.close();
-            }
-            if (xmlSrc != null) {
-                xmlSrc.close();
-            }
-        }
-//         TODO: enable
-//        assertEquals(prop, ditaList);
-//        assertEquals(prop, xmlDitaList);
+        job = new Job(tempDir);
     }
 
     @Test
@@ -137,7 +78,7 @@ public final class JobTest {
 
     @Test
     public void testGetCollection() {
-        final LinkedList<String> exp = new LinkedList<String>();
+        final Set<String> exp = new HashSet<String>();
         exp.add("bar3");
         exp.add("foo3");
         exp.add("bar2");

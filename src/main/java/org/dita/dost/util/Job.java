@@ -1,11 +1,6 @@
 /*
- * This file is part of the DITA Open Toolkit project hosted on
- * Sourceforge.net. See the accompanying license.txt file for
- * applicable licenses.
- */
-
-/**
- * (c) Copyright IBM Corp. 2011 All Rights Reserved.
+ * This file is part of the DITA Open Toolkit project.
+ * See the accompanying license.txt file for applicable licenses.
  */
 package org.dita.dost.util;
 
@@ -23,7 +18,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -42,7 +36,7 @@ import org.xml.sax.helpers.DefaultHandler;
  */
 public final class Job {
 
-    private static final String JOB_FILE = "job.xml";
+    private static final String JOB_FILE = ".job.xml";
     
     private static final String ELEMENT_JOB = "job";
     private static final String ATTRIBUTE_KEY = "key";
@@ -52,6 +46,7 @@ public final class Job {
     private static final String ELEMENT_STRING = "string";
     private static final String ATTRIBUTE_NAME = "name";
     private static final String ELEMENT_PROPERTY = "property";
+
     private static final String ELEMENT_FILES = "files";
     private static final String ELEMENT_FILE = "file";
     private static final String ATTRIBUTE_PATH = "path";
@@ -148,13 +143,13 @@ public final class Job {
      *  
      * @param props properties file
      * @param tempDir temporary directory
+     * @deprecated use {@link #Job(File)} instead and populate properties with {@link #setProperty(String, String)}
      */
+    @Deprecated
     public Job(final Properties props, final File tempDir) {
         this.tempDir = tempDir;
         prop = new HashMap<String, Object>();
-        for (final Map.Entry<Object, Object> e: props.entrySet()) {
-            prop.put(e.getKey().toString(), e.getValue());
-        }
+        readProperties(props);
     }
     
     /**
@@ -202,7 +197,11 @@ public final class Job {
             }
         }
         
-        for (final Map.Entry<Object, Object> e: p.entrySet()) {
+        readProperties(p);
+    }
+
+	private void readProperties(final Properties p) {
+		for (final Map.Entry<Object, Object> e: p.entrySet()) {
             if (((String) e.getValue()).length() > 0) {
             	final String key = e.getKey().toString();
             	if (key.equals(COPYTO_TARGET_TO_SOURCE_MAP_LIST)) {
@@ -347,7 +346,7 @@ public final class Job {
                     out.writeCharacters(e.getValue().toString());
                     out.writeEndElement(); //string
                 }
-                out.writeEndElement(); //group
+                out.writeEndElement(); //property
             }
             out.writeStartElement(ELEMENT_FILES);
             for (final FileInfo i: files.values()) {
@@ -457,13 +456,12 @@ public final class Job {
      * @return the value in this property list with the specified key value, {@code null} if not found
      */
     public String getProperty(final String key) {
-        //return (String) prop.get(key);
         final Object value = prop.get(key);
         if (value == null) {
             return null;
-        } else if (value instanceof Set) {
+        } else if (value instanceof Set) { // migration support
             return StringUtils.assembleString((Collection) value, COMMA);
-        } else if (value instanceof Map) {
+        } else if (value instanceof Map) { // migration support
             return StringUtils.assembleString((Map) value, COMMA);
         } else {
             return (String) value;
@@ -477,16 +475,14 @@ public final class Job {
      * @return the value in this property list with the specified key value, empty map if not found
      */
     public Map<String, String> getMap(final String key) {
-        //return StringUtils.restoreMap(prop.getProperty(key, ""));
         final Object value = prop.get(key);
         if (value == null) {
             return Collections.emptyMap();
-        } else if (value instanceof String) {
+        } else if (value instanceof String) { // migration support
             return StringUtils.restoreMap((String) value);
         } else {
             return (Map<String, String>) value;
         }
-        //return (Map<String, String>) prop.get(key);
     }
     
     /**
@@ -496,7 +492,6 @@ public final class Job {
      * @return the value in this property list with the specified key value, empty set if not found
      */
     public Set<String> getSet(final String key) {
-        //return StringUtils.restoreSet(prop.getProperty(key, ""));
         if (key.equals(FULL_DITAMAP_TOPIC_LIST)) {
             return getFilesByFormat("dita", "ditamap");
         } else if (key.equals(FULL_DITA_TOPIC_LIST)) {
@@ -592,7 +587,7 @@ public final class Job {
             final Object value = prop.get(key);
             if (value == null) {
                 return Collections.emptySet();
-            } else if (value instanceof String) {
+            } else if (value instanceof String) { // migration support
                 return StringUtils.restoreSet((String) value);
             } else {
                 return (Set<String>) value;
@@ -622,7 +617,6 @@ public final class Job {
      * @return the previous value of the specified key in this property list, or {@code null} if it did not have one
      */
     public Object setProperty(final String key, final String value) {
-        //return (String) prop.setProperty(key, value);
         return prop.put(key, value);
     }
     
@@ -634,7 +628,6 @@ public final class Job {
      * @return the previous value of the specified key in this property list, or {@code null} if it did not have one
      */
     public Set<String> setSet(final String key, final Set<String> value) {
-        //return StringUtils.restoreSet((String) prop.setProperty(key, StringUtils.assembleString(value, COMMA)));
         Object previous = null;
         if (key.equals(FULL_DITAMAP_TOPIC_LIST)) {
             // skip, compound set
@@ -699,7 +692,7 @@ public final class Job {
             previous = prop.put(key, value);
             if (previous == null) {
                 return null;
-            } else if (previous instanceof String) {
+            } else if (previous instanceof String) { // migration support
                 return StringUtils.restoreSet((String) previous);
             } else {
                 return (Set<String>) previous;
@@ -725,16 +718,14 @@ public final class Job {
      * @return the previous value of the specified key in this property list, or {@code null} if it did not have one
      */
     public Map<String, String> setMap(final String key, final Map<String, String> value) {        
-        //return StringUtils.restoreMap((String) prop.setProperty(key, StringUtils.assembleString(value, COMMA)));
         final Object previous = prop.put(key, value);
         if (previous == null) {
             return null;
-        } else if (previous instanceof String) {
+        } else if (previous instanceof String) { // migration support
             return StringUtils.restoreMap((String) previous);
         } else {
             return (Map<String, String>) previous;
         }
-        //return (Map<String, String>) prop.put(key, value);
     }
     
     /**
@@ -769,20 +760,9 @@ public final class Job {
      * 
      * @return reference list
      */
-    public LinkedList<String> getReferenceList() {
-        final LinkedList<String> refList = new LinkedList<String>();
-//        final String liststr = prop.getProperty(FULL_DITAMAP_TOPIC_LIST, "")
-//                + COMMA
-//                + prop.getProperty(CONREF_TARGET_LIST, "")
-//                + COMMA
-//                + prop.getProperty(COPYTO_SOURCE_LIST, "");
-//        final StringTokenizer tokenizer = new StringTokenizer(liststr, COMMA);
-//        while (tokenizer.hasMoreTokens()) {
-//            refList.addFirst(tokenizer.nextToken());
-//        }
-        // isConrefTarget.equals("dita") || isConrefTarget.equals("ditamap")
+    public Set<String> getReferenceList() {
+        final Set<String> refList = new HashSet<String>();
         refList.addAll(getSet(FULL_DITAMAP_TOPIC_LIST));
-        // isConrefTarget
         refList.addAll(getSet(CONREF_TARGET_LIST));
         refList.addAll(getSet(COPYTO_SOURCE_LIST));
         return refList;
@@ -839,7 +819,7 @@ public final class Job {
      * @param filename list file name
      * @throws IOException if writing fails
      */
-    public void writeList(final String prop, final String filename) throws IOException {
+    private void writeList(final String prop, final String filename) throws IOException {
         final File listFile = new File(tempDir, filename);
         BufferedWriter topicWriter = null;
         try {
