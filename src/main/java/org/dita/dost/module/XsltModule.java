@@ -25,6 +25,16 @@ import org.dita.dost.util.ThreadUtils;
 
 /**
  * XSLT processing module.
+ * 
+ * <p>The module matches Ant's XSLT task with the following exceptions:</p>
+ * <ul>
+ *   <li>If source and destination directories are same, transformation results are saved to a temporary file
+ *   and the original source file is replaced after a successful transformation.</li>
+ *   <li>If no {@code extension} attribute is set, the target file extension is the same as the source file extension.</li> 
+ *   <li>Mappers are not supported.</li>
+ *   <li>Transformer object is always used only once, regardless of {@code reloadstylesheet} attribute.</li>
+ * </ul>
+ *  
  */
 public final class XsltModule implements AbstractPipelineModule {
 
