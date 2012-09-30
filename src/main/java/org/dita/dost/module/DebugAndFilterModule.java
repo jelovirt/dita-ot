@@ -281,7 +281,8 @@ final class DebugAndFilterModule implements AbstractPipelineModule {
             outputUtils.setGeneratecopyouter(input.getAttribute(ANT_INVOKER_EXT_PARAM_GENERATECOPYOUTTER));
             outputUtils.setOutterControl(input.getAttribute(ANT_INVOKER_EXT_PARAM_OUTTERCONTROL));
             outputUtils.setOnlyTopicInMap(input.getAttribute(ANT_INVOKER_EXT_PARAM_ONLYTOPICINMAP));
-            outputUtils.setInputMapPathName(inputMap);
+            outputUtils.setInput(inputMap);
+            outputUtils.setInputDir(inputDir);
             outputUtils.setOutputDir(new File(input.getAttribute(ANT_INVOKER_EXT_PARAM_OUTPUTDIR)));
             fileWriter.setOutputUtils(outputUtils);
 

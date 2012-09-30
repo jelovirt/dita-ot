@@ -9,7 +9,10 @@
  */
 package org.dita.dost.util;
 
+import static org.dita.dost.util.Constants.*;
+
 import java.io.File;
+import java.net.URI;
 
 /**
  * OutputUtils to control the output behavior.
@@ -56,8 +59,14 @@ public final class OutputUtils {
     private OutterControl outercontrol = OutterControl.WARN;
     /**Output Dir.*/
     private static File OutputDir=null;
-    /**Input Map Dir.*/
-    private File InputMapDir=null;
+    /** Input map file. */
+    private File inputMapFile=null;
+    private int uplevels = 0;
+    /** Prefix path. Either an empty string or a path which ends in {@link java.io.File#separator File.separator}. */
+    private String prefix = "";
+    /** Absolute basedir for processing */
+    private File baseInputDir;
+    private boolean flat = true;
 
     /**
      * Retrieve the outercontrol.
@@ -130,14 +139,121 @@ public final class OutputUtils {
      * Get input map path.
      * @return absolute input map path
      */
-    public File getInputMapPathName(){
-        return InputMapDir;
+    public File getInput(){
+        return inputMapFile;
     }
     /**
      * Set input map path.
      * @param inputMapDir absolute input map path
      */
-    public void setInputMapPathName(final File inputMapDir){
-        InputMapDir=inputMapDir;
+    public void setInput(final File inputMapFile){
+        this.inputMapFile = inputMapFile;
     }
+    
+    /**
+     * get input base directory
+     * 
+     * @return absolute input base directory
+     */
+    public File getInputDir() {
+    	return baseInputDir;
+    }
+    
+    /**
+     * Set input base directory
+     * 
+     * @param baseInputDir absolute input base directory
+     */
+    public void setInputDir(final File baseInputDir) {
+    	this.baseInputDir = baseInputDir;
+    }
+    
+    /**
+     * Get uplevels
+     * 
+     * @return number of directories to walk up
+     */
+    public int getUplevels() {
+    	return uplevels;
+    }
+    
+    /**
+     * Get path adjustment prefix.
+     * 
+     * @return path adjustment prefix
+     */
+    public String getPrefix() {
+    	return prefix;
+    }
+    
+    /**
+     * Update uplevels if needed. If the parameter contains a {@link org.dita.dost.util.Constants#STICK STICK}, it and
+     * anything following it is removed.
+     * 
+     * @param file file path
+     */
+    public void updateUplevels(final String file) {
+        String f = file;
+        if (f.contains(STICK)) {
+            f = f.substring(0, f.indexOf(STICK));
+        }
+        final int lastIndex = FileUtils.separatorsToUnix(FileUtils.normalize(f)).lastIndexOf("../");
+        if (lastIndex != -1) {
+            final int newUplevels = lastIndex / 3 + 1;
+            if (newUplevels > uplevels) {
+            	uplevels = newUplevels;
+            }
+        }
+    }
+    
+    /**
+     * Update base directory based on uplevels.
+     */
+    public void updateBaseDirectory() {
+        for (int i = getUplevels(); i > 0; i--) {
+            final File file = baseInputDir;
+            baseInputDir = baseInputDir.getParentFile();
+            prefix = file.getName() + File.separator + prefix;
+        }
+    }
+        
+    /**
+     * Get output path.
+     * 
+     * @param tempDir temporary directory
+     * @param inputFile input file path, relative to {@link org.dita.dost.util.Job#getInputDir() input directory}
+     * @return output file in temporary directory
+     */
+    public File getOutputFile(final File tempDir, final String inputFile) {
+    	if (flat) {
+    		final String f = inputFile.replace(UNIX_SEPARATOR, "_");
+    		return new File(tempDir, f);
+    	} else {
+    		return new File(tempDir, inputFile);
+    	}
+    }
+
+    /**
+     * Get output file URI.
+     * 
+     * @param baseDir base directory
+     * @param thisFile current file URI, relative to base director
+     * @param thatFile target file URI, relative to current file
+     * @return output URI to target file
+     */
+    public String getOutputURI(final File baseDir, final String thisFile, final String thatFile) {
+    	if (flat) {
+    		final URI t = new File(baseDir, "x").toURI();
+    		final URI ths = t.resolve(thisFile);
+	    	final URI tht = ths.resolve(thatFile);
+	    	final String r = FileUtils.getRelativePath(t.toASCIIString(), tht.toASCIIString());
+	    	return r.replace(URI_SEPARATOR, "_");
+    	} else {
+    		return thatFile;
+//    		final URI ths = new File(baseDir, "x").toURI().resolve(thisFile);
+//	    	final URI tht = ths.resolve(thatFile);
+//	    	return FileUtils.getRelativePath(ths.toASCIIString(), tht.toASCIIString());
+    	}
+    }
+    
 }

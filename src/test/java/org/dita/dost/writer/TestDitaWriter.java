@@ -131,7 +131,7 @@ public class TestDitaWriter {
         filterUtils.setFilterMap(map);
         writer.setFilterUtils(filterUtils);
         final OutputUtils outputUtils = new OutputUtils();
-        outputUtils.setInputMapPathName(new File(baseDir, inputDir.getPath() + File.separator + "keyword.dita"));
+        outputUtils.setInput(new File(baseDir, inputDir.getPath() + File.separator + "keyword.dita"));
         writer.setOutputUtils(outputUtils);
         writer.setTempDir(tempDir.getAbsoluteFile());
         writer.setKeyDefinitions(Collections.EMPTY_LIST);
