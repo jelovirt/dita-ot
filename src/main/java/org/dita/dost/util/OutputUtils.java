@@ -220,16 +220,15 @@ public final class OutputUtils {
     /**
      * Get output path.
      * 
-     * @param tempDir temporary directory
      * @param inputFile input file path, relative to {@link org.dita.dost.util.Job#getInputDir() input directory}
      * @return output file in temporary directory
      */
-    public File getOutputFile(final File tempDir, final String inputFile) {
+    public File getOutputFile(final String inputFile) {
     	if (flat) {
     		final String f = inputFile.replace(UNIX_SEPARATOR, "_");
-    		return new File(tempDir, f);
+    		return new File(f);
     	} else {
-    		return new File(tempDir, inputFile);
+    		return new File(inputFile);
     	}
     }
 

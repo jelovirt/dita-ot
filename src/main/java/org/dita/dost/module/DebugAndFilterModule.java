@@ -104,19 +104,16 @@ final class DebugAndFilterModule implements AbstractPipelineModule {
         }
         final Map<String, String> result = new HashMap<String, String>();
         for (final Map.Entry<String, String> e: propValues.entrySet()) {
-            final String value = e.getValue();
-            // don't replace DITA map file extensions
-            if (FILE_EXTENSION_DITAMAP.equals("." + FileUtils.getExtension(value))) {
-                result.put(e.getKey(), value);
-            // replace file extension in both map key and value
-            } else {
+        	String key = e.getKey();
+            String value = e.getValue();
+            if (!FILE_EXTENSION_DITAMAP.equals("." + FileUtils.getExtension(value))) {
                 if (extName != null) {
-                    result.put(FileUtils.replaceExtension(e.getKey(), extName),
-                               FileUtils.replaceExtension(value, extName));
-                } else {
-                    result.put(e.getKey(), value);
+                    key = FileUtils.replaceExtension(key, extName);
+                    value = FileUtils.replaceExtension(value, extName);
                 }
             }
+            result.put(outputUtils.getOutputFile(key).getPath(),
+            		   outputUtils.getOutputFile(value).getPath());
         }
         property.setMap(listName, result);
 //        try {
@@ -139,17 +136,13 @@ final class DebugAndFilterModule implements AbstractPipelineModule {
         }
         final Set<String> result = new HashSet<String>(propValues.size());
         for (final String file: propValues) {
-            // don't replace DITA map file extensions
-            if (FILE_EXTENSION_DITAMAP.equals("." + FileUtils.getExtension(file))) {
-                result.add(file);
-            // replace file extension
-            } else {
+        	String f = file;
+            if (!FILE_EXTENSION_DITAMAP.equals("." + FileUtils.getExtension(file))) {
                 if (extName != null) {
-                    result.add(FileUtils.replaceExtension(file,extName));
-                } else {
-                    result.add(file);
+                    f = FileUtils.replaceExtension(f, extName);
                 }
             }
+            result.add(outputUtils.getOutputFile(f).getPath());
         }
         property.setSet(listName, result);
         try {
@@ -166,23 +159,16 @@ final class DebugAndFilterModule implements AbstractPipelineModule {
      * @param property property to update
      */
     private void updatePropertyString(final String listName, final Job property){
-        final String propValue = property.getProperty(listName);
+        String propValue = property.getProperty(listName);
         if (propValue == null || propValue.trim().length() == 0){
             return;
         }
-        String result;
-        // don't replace DITA map file extensions
-        if (FILE_EXTENSION_DITAMAP.equals("." + FileUtils.getExtension(propValue))) {
-            result = propValue;
-        // replace file extension
-        } else {
+        if (!FILE_EXTENSION_DITAMAP.equals("." + FileUtils.getExtension(propValue))) {
             if (extName != null) {
-                result = FileUtils.replaceExtension(propValue, extName);
-            } else {
-                result = propValue;
+            	propValue = FileUtils.replaceExtension(propValue, extName);
             }
         }
-        property.setProperty(listName, propValue);
+        property.setProperty(listName, outputUtils.getOutputFile(propValue).getPath());
         try {
             property.writeList(listName);
         } catch (final IOException e) {
@@ -328,9 +314,7 @@ final class DebugAndFilterModule implements AbstractPipelineModule {
                 fileWriter.write(inputDir, filename);
             }
 
-            if (extName != null) {
-                updateList(tempDir);
-            }
+            updateList(tempDir);
             //Added by William on 2010-04-16 for cvf flag support start
             //update dictionary.
             updateDictionary(tempDir);
@@ -689,13 +673,17 @@ final class DebugAndFilterModule implements AbstractPipelineModule {
      */
     private void updateList(final File tempDir) throws IOException{
         final Job job = new Job(tempDir);
+        
         updatePropertyString(INPUT_DITAMAP, job);
+        updatePropertySet(FULL_DITAMAP_TOPIC_LIST, job);
+        updatePropertySet(FULL_DITAMAP_LIST, job);
         updatePropertySet(HREF_TARGET_LIST, job);
         updatePropertySet(CONREF_LIST, job);
         updatePropertySet(HREF_DITA_TOPIC_LIST, job);
         updatePropertySet(FULL_DITA_TOPIC_LIST, job);
         updatePropertySet(FULL_DITAMAP_TOPIC_LIST, job);
         updatePropertySet(CONREF_TARGET_LIST, job);
+        updatePropertySet(IMAGE_LIST, job);
         updatePropertySet(COPYTO_SOURCE_LIST, job);
         updatePropertyMap(COPYTO_TARGET_TO_SOURCE_MAP_LIST, job);
         updatePropertySet(OUT_DITA_FILES_LIST, job);

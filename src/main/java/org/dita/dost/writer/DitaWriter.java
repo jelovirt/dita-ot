@@ -709,9 +709,9 @@ public final class DitaWriter extends AbstractXMLFilter {
     private String updateHref(final String href) {
 
         //Added by William on 2010-05-18 for bug:3001705 start
-        final String filePath = outputUtils.getOutputFile(tempDir, inputFile).getAbsolutePath();
+        final String filePath = new File(tempDir, outputUtils.getOutputFile(inputFile).getPath()).getAbsolutePath();
 
-        final String keyValue = outputUtils.getOutputFile(tempDir, href).getAbsolutePath();
+        final String keyValue = new File(tempDir, outputUtils.getOutputFile(href).getPath()).getAbsolutePath();
 
         final String updatedHref = FileUtils.getRelativePath(filePath, keyValue);
         //Added by William on 2010-05-18 for bug:3001705 end
@@ -1168,11 +1168,11 @@ public final class DitaWriter extends AbstractXMLFilter {
         OutputStream out = null;
         try {
             traceFilename = new File(baseDir, inputFile);
-            File outputFile = outputUtils.getOutputFile(tempDir, inputFile);
+            File outputFile = new File(tempDir, outputUtils.getOutputFile(inputFile).getPath());
             logger.logInfo(" to " + outputFile.getAbsolutePath());
             if (extName != null) {
 	            if (!FileUtils.isDITAMapFile(inputFile.toLowerCase())) {
-	                outputFile = outputUtils.getOutputFile(tempDir, FileUtils.replaceExtension(inputFile, extName)); 
+	                outputFile = new File(tempDir, outputUtils.getOutputFile(FileUtils.replaceExtension(inputFile, extName)).getPath()); 
 	            }
             }
 
