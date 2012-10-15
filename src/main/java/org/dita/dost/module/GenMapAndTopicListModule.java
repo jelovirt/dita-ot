@@ -187,27 +187,19 @@ public final class GenMapAndTopicListModule implements AbstractPipelineModule {
     private final Set<String> schemeSet;
 
     private final Map<String, Set<String>> schemeDictionary;
-    // Added by William on 2009-07-18 for req #12014 start
     private String transtype;
-    // Added by William on 2009-07-18 for req #12014 end
 
-    // Added by William on 2010-06-09 for bug:3013079 start
     private final Map<String, String> exKeyDefMap;
-    // Added by William on 2010-06-09 for bug:3013079 end
 
     private static final String moduleStartMsg = "GenMapAndTopicListModule.execute(): Starting...";
 
     private static final String moduleEndMsg = "GenMapAndTopicListModule.execute(): Execution time: ";
 
-    // Added on 2010-08-24 for bug:2994593 start
     /** use grammar pool cache */
     private boolean gramcache = true;
-    // Added on 2010-08-24 for bug:2994593 end
 
-    // Added on 2010-08-24 for bug:3086552 start
     private boolean setSystemid = true;
 
-    // Added on 2010-08-24 for bug:3086552 end
     /**
      * Create a new instance and do the initialization.
      * 
@@ -309,10 +301,8 @@ public final class GenMapAndTopicListModule implements AbstractPipelineModule {
         }
         xmlValidate = Boolean.valueOf(input.getAttribute(ANT_INVOKER_EXT_PARAM_VALIDATE));
 
-        // Added by William on 2009-07-18 for req #12014 start
         // get transtype
         transtype = input.getAttribute(ANT_INVOKER_EXT_PARAM_TRANSTYPE);
-        // Added by William on 2009-07-18 for req #12014 start
 
         gramcache = "yes".equalsIgnoreCase(input.getAttribute(ANT_INVOKER_EXT_PARAM_GRAMCACHE));
         setSystemid = "yes".equalsIgnoreCase(input.getAttribute(ANT_INVOKER_EXT_PARAN_SETSYSTEMID));
@@ -366,9 +356,7 @@ public final class GenMapAndTopicListModule implements AbstractPipelineModule {
     }
 
     private void processWaitList() throws DITAOTException {
-        // Added by William on 2009-07-18 for req #12014 start
         reader.setTranstype(transtype);
-        // Added by William on 2009-07-18 for req #12014 end
 
         if (FileUtils.isDITAMapFile(inputFile.getPath())) {
             reader.setPrimaryDitamap(inputFile.getPath());
@@ -469,11 +457,9 @@ public final class GenMapAndTopicListModule implements AbstractPipelineModule {
     private void processParseResult(final String currentFile) {
         final Map<String, String> cpMap = reader.getCopytoMap();
         final Map<String, KeyDef> kdMap = reader.getKeysDMap();
-        // Added by William on 2010-06-09 for bug:3013079 start
         // the reader's reset method will clear the map.
         final Map<String, String> exKdMap = reader.getExKeysDefMap();
         exKeyDefMap.putAll(exKdMap);
-        // Added by William on 2010-06-09 for bug:3013079 end
 
         // Category non-copyto result and update uplevels accordingly
         for (final Reference file: reader.getNonCopytoResult()) {
@@ -487,7 +473,6 @@ public final class GenMapAndTopicListModule implements AbstractPipelineModule {
             final String value = cpMap.get(key);
 
             if (copytoMap.containsKey(key)) {
-                // edited by Alan on Date:2009-11-02 for Work Item:#1590 start
                 /*
                  * StringBuffer buff = new StringBuffer();
                  * buff.append("Copy-to task [href=\""); buff.append(value);
@@ -500,14 +485,12 @@ public final class GenMapAndTopicListModule implements AbstractPipelineModule {
                 prop.setProperty("%1", value);
                 prop.setProperty("%2", key);
                 logger.logWarn(MessageUtils.getMessage("DOTX065W", prop).toString());
-                // edited by Alan on Date:2009-11-02 for Work Item:#1590 end
                 ignoredCopytoSourceSet.add(value);
             } else {
             	outputUtils.updateUplevels(key);
                 copytoMap.put(key, value);
             }
         }
-        // TODO Added by William on 2009-06-09 for scheme key bug(497)
         schemeSet.addAll(reader.getSchemeRefSet());
 
         // collect key definitions
@@ -538,7 +521,6 @@ public final class GenMapAndTopicListModule implements AbstractPipelineModule {
                  */
                 keysDefMap.put(key, new KeyDef(key, value.href, currentFile));
             }
-            // TODO Added by William on 2009-06-09 for scheme key bug(532-547)
             // if the current file is also a schema file
             if (schemeSet.contains(currentFile)) {
             	schemekeydefMap.put(key, new KeyDef(key, value.href, currentFile));
@@ -640,15 +622,12 @@ public final class GenMapAndTopicListModule implements AbstractPipelineModule {
      * @param file file system path with optional format
      */
     private void categorizeResultFile(final Reference file) {
-        // edited by william on 2009-08-06 for bug:2832696 start
         String lcasefn = file.filename.toLowerCase();
 
-        // Added by William on 2010-03-04 for bug:2957938 start
         // avoid files referred by coderef being added into wait list
         if (subsidiarySet.contains(lcasefn)) {
             return;
         }
-        // Added by William on 2010-03-04 for bug:2957938 end
 
         if (FileUtils.isDITAFile(lcasefn)
                 && (file.format == null || ATTR_FORMAT_VALUE_DITA.equalsIgnoreCase(file.format) || ATTR_FORMAT_VALUE_DITAMAP
@@ -660,7 +639,6 @@ public final class GenMapAndTopicListModule implements AbstractPipelineModule {
             //        are defined by the file extension. Correct behaviour would be to remove this else block.
             htmlSet.add(file.filename);
         }
-        // edited by william on 2009-08-06 for bug:2832696 end
         if (FileUtils.isSupportedImageFile(lcasefn)) {
         	imageSet.add(file.filename);        	      	
 			try {
@@ -681,7 +659,6 @@ public final class GenMapAndTopicListModule implements AbstractPipelineModule {
         }
     }
 
-    
 
     /**
      * Add the given file the wait list if it has not been parsed.
@@ -952,7 +929,6 @@ public final class GenMapAndTopicListModule implements AbstractPipelineModule {
         // Output topic-scheme dictionary
         writeMapToXML(this.schemeDictionary, FILE_NAME_SUBJECT_DICTIONARY);
 
-        // added by Willam on 2009-07-17 for req #12014 start
         if (INDEX_TYPE_ECLIPSEHELP.equals(transtype)) {
             // Output plugin id
             final File pluginIdFile = new File(tempDir, FILE_NAME_PLUGIN_XML);
@@ -1008,7 +984,6 @@ public final class GenMapAndTopicListModule implements AbstractPipelineModule {
             	}
             }
         }
-        // added by Willam on 2009-07-17 for req #12014 end
 
         writeKeydef(new File(tempDir, "schemekeydef.xml"), schemekeydefMap.values());
     }
