@@ -303,7 +303,9 @@ public final class DitaWriter extends AbstractXMLFilter {
         }
 
         //return attValue;
-        return outputUtils.getOutputURI(outputUtils.getInputDir(), inputFile, attValue);
+        return outputUtils.getOutputURI(outputUtils.getInputDir(),
+        							    traceFilename.toURI().relativize(baseDir.toURI()).toASCIIString(),
+        							    attValue);
     }
     private File absolutePath;
     private List<String> colSpec;
@@ -342,6 +344,7 @@ public final class DitaWriter extends AbstractXMLFilter {
     private String[][] props;
 
     private File tempDir;
+    private File baseDir;
     private File traceFilename;
 
     private Map<String, KeyDef> keys;
@@ -1116,7 +1119,7 @@ public final class DitaWriter extends AbstractXMLFilter {
      */
     public void write(final File baseDir, final String inFile) {
         exclude = false;
-
+        this.baseDir = baseDir;
         inputFile = inFile;
 
         OutputStream out = null;
