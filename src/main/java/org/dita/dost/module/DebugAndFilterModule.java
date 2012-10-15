@@ -12,24 +12,19 @@ package org.dita.dost.module;
 import static org.dita.dost.util.Constants.*;
 import static org.dita.dost.writer.DitaWriter.*;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Queue;
 import java.util.Set;
-import java.util.StringTokenizer;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -63,7 +58,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLFilter;
@@ -104,7 +98,7 @@ final class DebugAndFilterModule implements AbstractPipelineModule {
         }
         final Map<String, String> result = new HashMap<String, String>();
         for (final Map.Entry<String, String> e: propValues.entrySet()) {
-        	String key = e.getKey();
+            String key = e.getKey();
             String value = e.getValue();
             if (!FILE_EXTENSION_DITAMAP.equals("." + FileUtils.getExtension(value))) {
                 if (extName != null) {
@@ -136,7 +130,7 @@ final class DebugAndFilterModule implements AbstractPipelineModule {
         }
         final Set<String> result = new HashSet<String>(propValues.size());
         for (final String file: propValues) {
-        	String f = file;
+            String f = file;
             if (!FILE_EXTENSION_DITAMAP.equals("." + FileUtils.getExtension(file))) {
                 if (extName != null) {
                     f = FileUtils.replaceExtension(f, extName);
