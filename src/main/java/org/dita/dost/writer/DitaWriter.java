@@ -1136,7 +1136,7 @@ public final class DitaWriter extends AbstractXMLFilter {
             //when it is not the old solution 3
             if(outputUtils.getGeneratecopyouter()!=OutputUtils.Generate.OLDSOLUTION){
                 if(isOutFile(traceFilename)){
-                    path2Project=getRelativePathFromOut(traceFilename.getAbsolutePath());
+                    path2Project=getRelativePathFromOut(new File(baseDir, outputUtils.getOutputFile(inputFile).getPath()).getAbsolutePath());
                 }else{
                     path2Project=FileUtils.getRelativePath(new File(baseDir, outputUtils.getOutputFile(inputFile).getPath()).getAbsolutePath(),
                     									   outputUtils.getInput().getAbsolutePath());
@@ -1146,7 +1146,7 @@ public final class DitaWriter extends AbstractXMLFilter {
                     }
                 }
             } else {
-                path2Project = FileUtils.getRelativePath(inputFile);
+                path2Project = FileUtils.getRelativePath(outputUtils.getOutputFile(inputFile).getPath());
             }
             counterMap = new HashMap<String, Integer>();
             final File dirFile = outputFile.getParentFile();
@@ -1201,7 +1201,7 @@ public final class DitaWriter extends AbstractXMLFilter {
     		 final File traceFilename = new File(baseDir, filename);
              if(isOutFile(traceFilename)){
 
-                 path2Project=getRelativePathFromOut(traceFilename.getAbsolutePath());
+                 path2Project=getRelativePathFromOut(new File(baseDir, outputUtils.getOutputFile(filename).getPath()).getAbsolutePath());
              }else{
             	 path2Project=FileUtils.getRelativePath(new File(baseDir, outputUtils.getOutputFile(filename).getPath()).getAbsolutePath(),
             			 								new File(baseDir, outputUtils.getOutputFile(inputMap).getPath()).getAbsolutePath());
@@ -1211,7 +1211,7 @@ public final class DitaWriter extends AbstractXMLFilter {
                  }
              }
          } else {
-             path2Project = FileUtils.getRelativePath(filename);
+             path2Project = FileUtils.getRelativePath(outputUtils.getOutputFile(filename).getPath());
          }
     	 return path2Project;
     }
