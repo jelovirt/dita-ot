@@ -850,6 +850,8 @@ public final class Constants {
     public static final String ANT_INVOKER_EXT_PARAM_OUTTERCONTROL="outercontrol";
     /**Constants for extensive params used in ant invoker(generatecopyouter).*/
     public static final String ANT_INVOKER_EXT_PARAM_GENERATECOPYOUTTER="generatecopyouter";
+    /** File organization strategy parameter name */
+    public static final String PARAM_FILE_ORGANIZATION_STRATEGY = "file-organization-strategy";
     /**Constants for extensive params used in ant invoker(onlytopicinmap).*/
     public static final String ANT_INVOKER_EXT_PARAM_ONLYTOPICINMAP="onlytopicinmap";
     /**Constants for extensive params used in ant invoker(validate).*/

@@ -66,7 +66,8 @@ public final class OutputUtils {
     private String prefix = "";
     /** Absolute basedir for processing */
     private File baseInputDir;
-    private boolean flat = true;
+    /** Flatten directory structure */
+    private boolean flat = false;
 
     /**
      * Retrieve the outercontrol.
@@ -121,6 +122,24 @@ public final class OutputUtils {
         generatecopyouter = Generate.get(Integer.parseInt(flag));
     }
 
+    /**
+     * Set file organization strategy.
+     * 
+     * @param fileOrganizationStrategy
+     * @throws IllegalArgumentException if value not recognized
+     */
+    public void setFileOrganizationStrategy(final String fileOrganizationStrategy) {
+    	if (fileOrganizationStrategy == null) {
+    		flat = false;
+    	} else if (fileOrganizationStrategy.equals("single-dir")) {
+    		flat = true;
+    	} else if (fileOrganizationStrategy.equals("as-authored")) {
+    		flat = false;
+    	} else {
+    		throw new IllegalArgumentException("File organization strategy '" + fileOrganizationStrategy + "' not supported");
+    	}
+    } 
+    
     /**
      * Get output dir.
      * @return absolute output dir

@@ -257,6 +257,7 @@ final class DebugAndFilterModule implements AbstractPipelineModule {
             fileWriter.setKeyDefinitions(GenMapAndTopicListModule.readKeydef(new File(tempDir, "keydef.xml")));
            
             outputUtils.setGeneratecopyouter(input.getAttribute(ANT_INVOKER_EXT_PARAM_GENERATECOPYOUTTER));
+            outputUtils.setFileOrganizationStrategy(input.getAttribute(PARAM_FILE_ORGANIZATION_STRATEGY));
             outputUtils.setOutterControl(input.getAttribute(ANT_INVOKER_EXT_PARAM_OUTTERCONTROL));
             outputUtils.setOnlyTopicInMap(input.getAttribute(ANT_INVOKER_EXT_PARAM_ONLYTOPICINMAP));
             outputUtils.setInput(inputMap);

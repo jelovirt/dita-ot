@@ -310,6 +310,7 @@ public final class GenMapAndTopicListModule implements AbstractPipelineModule {
         // For the output control
         outputUtils = new OutputUtils();
         outputUtils.setGeneratecopyouter(input.getAttribute(ANT_INVOKER_EXT_PARAM_GENERATECOPYOUTTER));
+        outputUtils.setFileOrganizationStrategy(input.getAttribute(PARAM_FILE_ORGANIZATION_STRATEGY));
         outputUtils.setOutterControl(input.getAttribute(ANT_INVOKER_EXT_PARAM_OUTTERCONTROL));
         outputUtils.setOnlyTopicInMap(input.getAttribute(ANT_INVOKER_EXT_PARAM_ONLYTOPICINMAP));
 

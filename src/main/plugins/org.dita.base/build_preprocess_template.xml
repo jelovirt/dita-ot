@@ -49,6 +49,7 @@
         <param name="transtype" value="${transtype}"/>
         <param name="gramcache" value="${args.grammar.cache}"/>
         <param name="setsystemid" value="${args.xml.systemid.set}"/>
+        <param name="file-organization-strategy" value="${file-organization-strategy}" if="file-organization-strategy"/>
       </module>
     </pipeline>
   </target>
@@ -75,6 +76,7 @@
         <param name="outputdir" location="${output.dir}"/>
         <param name="transtype" value="${transtype}"/>
         <param name="setsystemid" value="${args.xml.systemid.set}"/>
+        <param name="file-organization-strategy" value="${file-organization-strategy}" if="file-organization-strategy"/>
       </module>
     </pipeline>
     <xmlpropertyreader file="${dita.temp.dir}/dita.xml.properties"/>
