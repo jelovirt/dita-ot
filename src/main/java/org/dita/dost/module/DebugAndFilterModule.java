@@ -574,8 +574,7 @@ final class DebugAndFilterModule implements AbstractPipelineModule {
                 prop.setProperty("%1", copytoTarget);
                 logger.logWarn(MessageUtils.getMessage("DOTX064W", prop).toString());
             }else{
-                final String inputMapInTemp = new File(tempDir + File.separator + job.getInputMap()).getAbsolutePath();
-                copyFileWithPIReplaced(srcFile, targetFile, copytoTarget, inputMapInTemp);
+                copyFileWithPIReplaced(srcFile, targetFile, copytoTarget, job.getInputMap());
             }
         }
     }
@@ -584,15 +583,15 @@ final class DebugAndFilterModule implements AbstractPipelineModule {
     /**
      * Copy files and replace workdir PI contents.
      * 
-     * @param src
-     * @param target
-     * @param copytoTargetFilename
-     * @param inputMapInTemp
+     * @param src absolute source file
+     * @param target absolute target file
+     * @param copytoTargetFilename target file path, relative to temporary directory
+     * @param inputMap input map file path, relative to temporary directory
      */
-    public void copyFileWithPIReplaced(final File src, final File target, final String copytoTargetFilename, final String inputMapInTemp ) {
+    public void copyFileWithPIReplaced(final File src, final File target, final String copytoTargetFilename, final String inputMap) {
         final DitaWriter dw = new DitaWriter();
         dw.setOutputUtils(outputUtils);
-        final String path2project = dw.getPathtoProject(copytoTargetFilename, target, inputMapInTemp);
+        final String path2project = dw.getPathtoProject(copytoTargetFilename, tempDir, inputMap);
         final File workdir = target.getParentFile();
         try {
             final Transformer serializer = TransformerFactory.newInstance().newTransformer();

@@ -304,7 +304,7 @@ public final class DitaWriter extends AbstractXMLFilter {
 
         //return attValue;
         return outputUtils.getOutputURI(outputUtils.getInputDir(),
-        							    traceFilename.toURI().relativize(baseDir.toURI()).toASCIIString(),
+        								baseDir.toURI().relativize(traceFilename.toURI()).toASCIIString(),
         							    attValue);
     }
     private File absolutePath;
@@ -1138,7 +1138,8 @@ public final class DitaWriter extends AbstractXMLFilter {
                 if(isOutFile(traceFilename)){
                     path2Project=getRelativePathFromOut(traceFilename.getAbsolutePath());
                 }else{
-                    path2Project=FileUtils.getRelativePath(traceFilename.getAbsolutePath(), outputUtils.getInput().getAbsolutePath());
+                    path2Project=FileUtils.getRelativePath(new File(baseDir, outputUtils.getOutputFile(inputFile).getPath()).getAbsolutePath(),
+                    									   outputUtils.getInput().getAbsolutePath());
                     path2Project=new File(path2Project).getParent();
                     if(path2Project!=null && path2Project.length()>0){
                         path2Project=path2Project+File.separator;
@@ -1187,15 +1188,24 @@ public final class DitaWriter extends AbstractXMLFilter {
         }
     }
 
-    public String getPathtoProject (final String filename, final File traceFilename, final String inputMap) {
+    /**
+     * 
+     * @param filename target file path, relative to temporary directory
+     * @param baseDir absolute base directory
+     * @param inputMap absolute input map path
+     * @return
+     */
+    public String getPathtoProject (final String filename, final File baseDir, final String inputMap) {
     	String path2Project = null;
     	 if(outputUtils.getGeneratecopyouter()!=OutputUtils.Generate.OLDSOLUTION){
+    		 final File traceFilename = new File(baseDir, filename);
              if(isOutFile(traceFilename)){
 
                  path2Project=getRelativePathFromOut(traceFilename.getAbsolutePath());
              }else{
-                 path2Project=FileUtils.getRelativePath(traceFilename.getAbsolutePath(),inputMap);
-                 path2Project=new File(path2Project).getParent();
+            	 path2Project=FileUtils.getRelativePath(new File(baseDir, outputUtils.getOutputFile(filename).getPath()).getAbsolutePath(),
+            			 								new File(baseDir, outputUtils.getOutputFile(inputMap).getPath()).getAbsolutePath());
+            	 path2Project=new File(path2Project).getParent();
                  if(path2Project!=null && path2Project.length()>0){
                      path2Project=path2Project+File.separator;
                  }

@@ -10,6 +10,9 @@
 package org.dita.dost.util;
 
 import static org.junit.Assert.*;
+
+import java.io.File;
+
 import org.junit.Test;
 import org.dita.dost.util.OutputUtils;
 public class TestOutputUtils {
@@ -61,6 +64,16 @@ public class TestOutputUtils {
             outputUtils.setGeneratecopyouter(null);
             fail();
         } catch (final NumberFormatException e) {}
+    }
+    
+    @Test
+    public void testGetOutputURI() {
+    	final OutputUtils o = new OutputUtils();
+    	final File baseDir = new File("/Users/jelovirt/Temp/flatten");
+    	assertEquals("sub-file.dita", o.getOutputURI(baseDir, "space-in-name.dita", "sub-file.dita"));
+    	assertEquals("sub-folder_sub-file.dita", o.getOutputURI(baseDir, "space-in-name.dita", "sub-folder/sub-file.dita"));
+    	assertEquals("space-in-name.dita", o.getOutputURI(baseDir, "sub-folder/sub-file.dita", "../space-in-name.dita"));
+    	assertEquals("sub-folder_space-in-name.dita", o.getOutputURI(baseDir, "sub-folder/sub-file.dita", "space-in-name.dita"));
     }
 
 }
