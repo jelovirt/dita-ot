@@ -872,14 +872,14 @@ public final class GenMapAndTopicListModule implements AbstractPipelineModule {
         }
         
         prop.setProperty(INPUT_DIR, outputUtils.getInputDir().getAbsolutePath());
-        prop.setProperty(INPUT_DITAMAP, outputUtils.getPrefix() + inputFile);
+        prop.setProperty(INPUT_DITAMAP, outputUtils.getOutputFile(outputUtils.getPrefix() + inputFile).getPath());
 
         prop.setProperty(INPUT_DITAMAP_LIST_FILE_LIST, USER_INPUT_FILE_LIST_FILE);
         final File inputfile = new File(tempDir, USER_INPUT_FILE_LIST_FILE);
         Writer bufferedWriter = null;
         try {
             bufferedWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(inputfile)));
-            bufferedWriter.write(outputUtils.getPrefix() + inputFile);
+            bufferedWriter.write(prop.getProperty(INPUT_DITAMAP));
             bufferedWriter.flush();
         } catch (final FileNotFoundException e) {
             logger.logException(e);
