@@ -176,9 +176,6 @@ public final class GenMapAndTopicListModule implements AbstractPipelineModule {
     private OutputUtils outputUtils;
     private boolean xmlValidate = true;
 
-    private String relativeValue;
-
-    private String formatRelativeValue;
     /** Absolute path to input file. */
     private File rootFile;
 
@@ -623,7 +620,7 @@ public final class GenMapAndTopicListModule implements AbstractPipelineModule {
      * @param file file system path with optional format
      */
     private void categorizeResultFile(final Reference file) {
-        String lcasefn = file.filename.toLowerCase();
+        final String lcasefn = file.filename.toLowerCase();
 
         // avoid files referred by coderef being added into wait list
         if (subsidiarySet.contains(lcasefn)) {
@@ -677,13 +674,13 @@ public final class GenMapAndTopicListModule implements AbstractPipelineModule {
     /**
      * Get up-levels relative path.
      * 
-     * @return path to up-level
+     * @return path to up-level, e.g. {@code ../../}
      */
     private String getUpdateLevels() {
         int current = outputUtils.getUplevels();
         final StringBuffer buff = new StringBuffer();
         while (current > 0) {
-            buff.append(".." + FILE_SEPARATOR);
+            buff.append(".." + File.separator);
             current--;
         }
         return buff.toString();
@@ -883,10 +880,7 @@ public final class GenMapAndTopicListModule implements AbstractPipelineModule {
 
         // add out.dita.files,tempdirToinputmapdir.relative.value to solve the
         // output problem
-        relativeValue = outputUtils.getPrefix();
-        formatRelativeValue = formatRelativeValue(relativeValue);
-        prop.setProperty("tempdirToinputmapdir.relative.value", formatRelativeValue);
-
+        prop.setProperty("tempdirToinputmapdir.relative.value", formatRelativeValue(outputUtils.getPrefix()));
         prop.setProperty("uplevels", getUpdateLevels());
         addSetToProperties(prop, OUT_DITA_FILES_LIST, outDitaFilesSet);
 
@@ -1142,7 +1136,6 @@ public final class GenMapAndTopicListModule implements AbstractPipelineModule {
      * @param set relative flag image files
      */
     private void addFlagImagesSetToProperties(final Job prop, final String key, final Set<String> set) {
-        String value = null;
         final Set<String> newSet = new LinkedHashSet<String>(INT_128);
         for (final String file: set) {
             if (new File(file).isAbsolute()) {
@@ -1185,9 +1178,7 @@ public final class GenMapAndTopicListModule implements AbstractPipelineModule {
             }
         }
 
-        value = StringUtils.assembleString(newSet, COMMA);
-
-        prop.setProperty(key, value);
+        prop.setProperty(key, StringUtils.assembleString(newSet, COMMA));
 
         // clear set
         set.clear();

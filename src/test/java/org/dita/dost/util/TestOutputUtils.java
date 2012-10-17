@@ -67,13 +67,25 @@ public class TestOutputUtils {
     }
     
     @Test
-    public void testGetOutputURI() {
+    public void testGetOutputURISingleDir() {
     	final OutputUtils o = new OutputUtils();
-    	final File baseDir = new File("/Users/jelovirt/Temp/flatten");
+    	o.setFileOrganizationStrategy("single-dir");
+    	final File baseDir = new File("/temp/flatten");
     	assertEquals("sub-file.dita", o.getOutputURI(baseDir, "space-in-name.dita", "sub-file.dita"));
     	assertEquals("sub-folder_sub-file.dita", o.getOutputURI(baseDir, "space-in-name.dita", "sub-folder/sub-file.dita"));
     	assertEquals("space-in-name.dita", o.getOutputURI(baseDir, "sub-folder/sub-file.dita", "../space-in-name.dita"));
     	assertEquals("sub-folder_space-in-name.dita", o.getOutputURI(baseDir, "sub-folder/sub-file.dita", "space-in-name.dita"));
+    }
+    
+    @Test
+    public void testGetOutputURIAsAuthored() {
+    	final OutputUtils o = new OutputUtils();
+    	o.setFileOrganizationStrategy("as-authored");
+    	final File baseDir = new File("/temp/flatten");
+    	assertEquals("sub-file.dita", o.getOutputURI(baseDir, "space-in-name.dita", "sub-file.dita"));
+    	assertEquals("sub-folder/sub-file.dita", o.getOutputURI(baseDir, "space-in-name.dita", "sub-folder/sub-file.dita"));
+    	assertEquals("../space-in-name.dita", o.getOutputURI(baseDir, "sub-folder/sub-file.dita", "../space-in-name.dita"));
+    	assertEquals("space-in-name.dita", o.getOutputURI(baseDir, "sub-folder/sub-file.dita", "space-in-name.dita"));
     }
 
 }
