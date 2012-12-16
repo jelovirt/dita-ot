@@ -10,6 +10,7 @@
 package org.dita.dost.module;
 
 import static org.dita.dost.util.Constants.*;
+import static org.dita.dost.util.Job.*;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -62,9 +63,7 @@ final class KeyrefModule implements AbstractPipelineModule {
             throw new IllegalArgumentException("Temporary directory " + tempDir + " must be absolute");
         }
 
-        //Added by Alan Date:2009-08-04 --begin
         final String extName = input.getAttribute(ANT_INVOKER_PARAM_DITAEXT);
-        //Added by Alan Date:2009-08-04 --end
 
         Job job = null;
         try{
@@ -78,10 +77,7 @@ final class KeyrefModule implements AbstractPipelineModule {
         // store the key name defined in a map(keyed by ditamap file)
         final Hashtable<String, Set<String>> maps = new Hashtable<String, Set<String>>();
 
-        // get the key definitions from the dita.list, and the ditamap where it is defined
-        // are not handle yet.
-        for(final String key: job.getSet(KEY_LIST)){
-            final KeyDef keyDef = new KeyDef(key);
+        for (final KeyDef keyDef: GenMapAndTopicListModule.readKeydef(new File(tempDir, KEYDEF_LIST_FILE))) {
             keymap.put(keyDef.keys, keyDef.href);
             // map file which define the keys
             final String map = keyDef.source;
@@ -117,13 +113,12 @@ final class KeyrefModule implements AbstractPipelineModule {
         for (final String file: parseList) {
             rs.add(new Runnable() {
                 public void run() {
-                	logger.logInfo("Processing " + new File(tempDir, file).getAbsolutePath());
+                    logger.logInfo("Processing " + new File(tempDir, file).getAbsolutePath());
                     final KeyrefPaser parser = new KeyrefPaser();
                     parser.setLogger(logger);
                     parser.setKeyDefinition(keyDefinition);
                     parser.setTempDir(tempDir.getAbsolutePath());
                     parser.setKeyMap(keymap);
-                    //Added by Alan Date:2009-08-04
                     parser.setExtName(extName);
                     try {
                         parser.write(file);

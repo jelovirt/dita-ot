@@ -104,7 +104,7 @@ public final class ExtensibleAntInvoker extends Task {
         final Module m = new Module();
         try {
             m.setClass((Class<? extends AbstractPipelineModule>) Class.forName("org.dita.dost.module." + module + "Module"));
-        } catch (ClassNotFoundException e) {
+        } catch (final ClassNotFoundException e) {
             throw new BuildException("Failed to instantiate module 2: " + e.getMessage(), e);
         }
         modules.add(m);
@@ -182,7 +182,7 @@ public final class ExtensibleAntInvoker extends Task {
                 final Properties params = new Properties();
 
                 params.put("%1", keyValueStr);
-                msg = MessageUtils.getMessage("DOTJ006F", params).toString();
+                msg = MessageUtils.getInstance().getMessage("DOTJ006F", params).toString();
                 throw new RuntimeException(msg);
             }
 
@@ -195,7 +195,7 @@ public final class ExtensibleAntInvoker extends Task {
                 final Properties params = new Properties();
 
                 params.put("%1", keyValueStr);
-                msg = MessageUtils.getMessage("DOTJ006F", params).toString();
+                msg = MessageUtils.getInstance().getMessage("DOTJ006F", params).toString();
                 throw new RuntimeException(msg);
             }
 
