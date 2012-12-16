@@ -16,6 +16,7 @@
   <xsl:param name="FINALOUTPUTTYPE" select="''"/>
   <xsl:param name="INPUTMAP" select="''"/>
   <xsl:param name="DITAEXT" select="'.xml'"/>
+  <!-- Deprecated -->
   <xsl:param name="FILEREF">file://</xsl:param>
   <xsl:param name="WORKDIR">
     <xsl:apply-templates select="/processing-instruction('workdir-uri')" mode="get-work-dir"/>
@@ -124,7 +125,7 @@
         </maplinks>
       </xsl:variable>
       <xsl:choose>
-        <xsl:when test="system-property('xsl:version') >= 2.0">
+        <xsl:when test="number(system-property('xsl:version')) >= 2.0">
           <xsl:apply-templates select="$newlinks" mode="add-links-to-temp-file"/>
         </xsl:when>
         <xsl:otherwise>
