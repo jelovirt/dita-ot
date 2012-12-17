@@ -44,6 +44,7 @@ See the accompanying license.txt file for applicable licenses.
     exclude-result-prefixes="opentopic exsl opentopic-index exslf opentopic-func dita2xslfo xs"
     version="2.0">
 
+    <xsl:key name="id" match="*[@id]" use="@id"/>
     <xsl:key name="map-id" match="opentopic:map//*[@id]" use="@id"/>
 
     <xsl:variable name="msgprefix" select="'PDFX'"/>
@@ -87,12 +88,6 @@ See the accompanying license.txt file for applicable licenses.
 
     </xsl:template>
 
-    <xsl:template name="getTopicrefShortdesc">
-        <xsl:variable name="id" select="ancestor-or-self::*[contains(@class, ' topic/topic ')][1]/@id"/>
-        <xsl:variable name="mapTopicref" select="key('map-id', $id)"/>
-        <xsl:copy-of select="$mapTopicref/*[contains(@class, ' map/topicmeta ')]/*[contains(@class, ' map/shortdesc ')]"/>
-    </xsl:template>
-
     <xsl:template match="*" mode="processTopic">
         <fo:block xsl:use-attribute-sets="topic">
             <xsl:if test="not(ancestor::*[contains(@class, ' topic/topic ')])">
@@ -105,34 +100,11 @@ See the accompanying license.txt file for applicable licenses.
     </xsl:template>
 
     <xsl:template match="*" mode="commonTopicProcessing">
-        <xsl:variable name="topicrefShortdesc">
-            <xsl:call-template name="getTopicrefShortdesc"/>
-        </xsl:variable>
         <xsl:apply-templates select="*[contains(@class, ' topic/title ')]"/>
         <xsl:apply-templates select="*[contains(@class, ' topic/prolog ')]"/>
-
-        <xsl:choose>
-            <!-- When topic has an abstract, we cannot override shortdesc -->
-            <xsl:when test="*[contains(@class, ' topic/abstract ')]">
-              <xsl:apply-templates select="*[not(contains(@class, ' topic/title ')) and
-                    not(contains(@class, ' topic/prolog ')) and
-                    not(contains(@class, ' topic/shortdesc ')) and
-                    not(contains(@class, ' topic/topic '))]"/>
-            </xsl:when>
-            <xsl:when test="$topicrefShortdesc/*">
-                <xsl:apply-templates select="$topicrefShortdesc/*"/>
-                <xsl:apply-templates select="*[not(contains(@class, ' topic/title ')) and
-                    not(contains(@class, ' topic/prolog ')) and
-                    not(contains(@class, ' topic/shortdesc ')) and
-                    not(contains(@class, ' topic/topic '))]"/>
-            </xsl:when>
-            <xsl:otherwise>
-                <xsl:apply-templates select="*[not(contains(@class, ' topic/title ')) and
-                    not(contains(@class, ' topic/prolog ')) and
-                    not(contains(@class, ' topic/topic '))]"/>
-            </xsl:otherwise>
-        </xsl:choose>
-
+        <xsl:apply-templates select="*[not(contains(@class, ' topic/title ')) and
+                                       not(contains(@class, ' topic/prolog ')) and
+                                       not(contains(@class, ' topic/topic '))]"/>
         <xsl:apply-templates select="." mode="buildRelationships"/>
         <xsl:apply-templates select="*[contains(@class,' topic/topic ')]"/>
         <xsl:apply-templates select="." mode="topicEpilog"/>
@@ -740,12 +712,36 @@ See the accompanying license.txt file for applicable licenses.
         </fo:inline>
     </xsl:template>
 
-    <xsl:template match="*[contains(@class,' topic/term ')]">
+  <xsl:template match="*[contains(@class,' topic/term ')]" name="topic.term">
+    <xsl:param name="keys" select="@keyref" as="attribute()?"/>
+    <xsl:param name="contents" as="node()*">
+      <xsl:variable name="target" select="key('id', substring(@href, 2))"/>
+      <xsl:choose>
+        <xsl:when test="not(normalize-space(.)) and $keys and $target/self::*[contains(@class,' topic/topic ')]">
+          <xsl:apply-templates select="$target/*[contains(@class, ' topic/title ')]/node()"/>
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:apply-templates/>
+        </xsl:otherwise>
+      </xsl:choose>
+    </xsl:param>
+    <xsl:variable name="topicref" select="key('map-id', substring(@href, 2))"/>
+    <xsl:choose>
+      <xsl:when test="$keys and @href and not($topicref/ancestor-or-self::*[@linking][1]/@linking = ('none', 'sourceonly'))">
+        <fo:basic-link xsl:use-attribute-sets="xref term">
+          <xsl:call-template name="commonattributes"/>
+          <xsl:call-template name="buildBasicLinkDestination"/>
+          <xsl:copy-of select="$contents"/>
+        </fo:basic-link>
+      </xsl:when>
+      <xsl:otherwise>
         <fo:inline xsl:use-attribute-sets="term">
-            <xsl:call-template name="commonattributes"/>
-            <xsl:apply-templates/>
+          <xsl:call-template name="commonattributes"/>
+          <xsl:copy-of select="$contents"/>
         </fo:inline>
-    </xsl:template>
+      </xsl:otherwise>
+    </xsl:choose>
+  </xsl:template>
 
     <xsl:template match="*[contains(@class, ' topic/author ')]">
 <!--
@@ -1451,7 +1447,9 @@ See the accompanying license.txt file for applicable licenses.
                         </fo:inline>
                     </xsl:when>
                 </xsl:choose>
-                <xsl:text>: </xsl:text>
+                <xsl:call-template name="insertVariable">
+                  <xsl:with-param name="theVariableID" select="'#note-separator'"/>
+                </xsl:call-template>
             </fo:inline>
             <xsl:text>  </xsl:text>
             <xsl:apply-templates/>
@@ -1656,12 +1654,36 @@ See the accompanying license.txt file for applicable licenses.
         </fo:inline>
     </xsl:template>
 
-    <xsl:template match="*[contains(@class,' topic/keyword ')]">
+  <xsl:template match="*[contains(@class,' topic/keyword ')]" name="topic.keyword">
+    <xsl:param name="keys" select="@keyref" as="attribute()?"/>
+    <xsl:param name="contents" as="node()*">
+      <xsl:variable name="target" select="key('id', substring(@href, 2))"/>
+      <xsl:choose>
+        <xsl:when test="not(normalize-space(.)) and $keys and $target/self::*[contains(@class,' topic/topic ')]">
+          <xsl:apply-templates select="$target/*[contains(@class, ' topic/title ')]/node()"/>
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:apply-templates/>
+        </xsl:otherwise>
+      </xsl:choose>
+    </xsl:param>
+    <xsl:variable name="topicref" select="key('map-id', substring(@href, 2))"/>
+    <xsl:choose>
+      <xsl:when test="$keys and @href and not($topicref/ancestor-or-self::*[@linking][1]/@linking = ('none', 'sourceonly'))">
+        <fo:basic-link xsl:use-attribute-sets="xref keyword">
+          <xsl:call-template name="commonattributes"/>
+          <xsl:call-template name="buildBasicLinkDestination"/>
+          <xsl:copy-of select="$contents"/>
+        </fo:basic-link>
+      </xsl:when>
+      <xsl:otherwise>
         <fo:inline xsl:use-attribute-sets="keyword">
-            <xsl:call-template name="commonattributes"/>
-            <xsl:apply-templates/>
+          <xsl:call-template name="commonattributes"/>
+          <xsl:copy-of select="$contents"/>
         </fo:inline>
-    </xsl:template>
+      </xsl:otherwise>
+    </xsl:choose>
+  </xsl:template>
 
     <xsl:template match="*[contains(@class,' topic/ph ')]">
         <fo:inline xsl:use-attribute-sets="ph">
@@ -1856,6 +1878,9 @@ See the accompanying license.txt file for applicable licenses.
             <xsl:call-template name="commonattributes"/>
         </fo:inline>
     </xsl:template>
+
+    <xsl:template match="*[contains(@class,' topic/foreign ')]"/>
+    <xsl:template match="*[contains(@class,' topic/unknown ')]"/>
 
     <xsl:template match="*[contains(@class,' topic/draft-comment ')]">
         <xsl:if test="$publishRequiredCleanup = 'yes' or $DRAFT='yes'">

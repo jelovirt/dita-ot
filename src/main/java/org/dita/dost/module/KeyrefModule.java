@@ -61,9 +61,7 @@ final class KeyrefModule implements AbstractPipelineModule {
             throw new IllegalArgumentException("Temporary directory " + tempDir + " must be absolute");
         }
 
-        //Added by Alan Date:2009-08-04 --begin
         final String extName = input.getAttribute(ANT_INVOKER_PARAM_DITAEXT);
-        //Added by Alan Date:2009-08-04 --end
 
         Job job = null;
         try{
@@ -104,8 +102,8 @@ final class KeyrefModule implements AbstractPipelineModule {
         final Map<String, FileInfo> files = job.getFileInfo();
         final Set<String> parseList = new HashSet<String>();
         for (final FileInfo f: files.values()) {
-            //Conref Module will change file's content, it is possible that tags with @keyref are copied in
-            //while keyreflist is hard update with xslt.
+	        //Conref Module will change file's content, it is possible that tags with @keyref are copied in
+	        //while keyreflist is hard update with xslt.
         	if (f.hasKeyref || f.hasConref) {
         		parseList.add(f.file);
         	}
@@ -117,7 +115,6 @@ final class KeyrefModule implements AbstractPipelineModule {
             parser.setKeyDefinition(keyDefinition);
             parser.setTempDir(tempDir.getAbsolutePath());
             parser.setKeyMap(keymap);
-            //Added by Alan Date:2009-08-04
             parser.setExtName(extName);
             parser.write(file);
             // validate resource-only list

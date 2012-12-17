@@ -178,9 +178,7 @@ final class DebugAndFilterModule implements AbstractPipelineModule {
     /** Absolute input directory path. */
     private File inputDir = null;
 
-    //Added on 2010-08-24 for bug:3086552 start
     private final boolean setSystemid = true;
-    //Added on 2010-08-24 for bug:3086552 end
 
     /**
      * Default Construtor.
@@ -235,9 +233,10 @@ final class DebugAndFilterModule implements AbstractPipelineModule {
             filterReader.setLogger(logger);
             filterReader.initXMLReader("yes".equals(input.getAttribute(ANT_INVOKER_EXT_PARAN_SETSYSTEMID)));
 
-            final FilterUtils filterUtils = new FilterUtils();
-            filterUtils.setLogger(logger);
+            FilterUtils filterUtils = null;
             if (ditavalFile!=null){
+            	filterUtils = new FilterUtils();
+            	filterUtils.setLogger(logger);
                 filterReader.read(ditavalFile.getAbsolutePath());
                 filterUtils.setFilterMap(filterReader.getFilterMap());
             }
@@ -253,7 +252,9 @@ final class DebugAndFilterModule implements AbstractPipelineModule {
             fileWriter.setTempDir(tempDir);
             fileWriter.setExtName(extName);
             fileWriter.setTranstype(transtype);
-            fileWriter.setFilterUtils(filterUtils);
+            if (filterUtils != null) {
+            	fileWriter.setFilterUtils(filterUtils);
+            }
             fileWriter.setDelayConrefUtils(new DelayConrefUtils());
             fileWriter.setKeyDefinitions(GenMapAndTopicListModule.readKeydef(new File(tempDir, "keydef.xml")));
            
@@ -309,10 +310,8 @@ final class DebugAndFilterModule implements AbstractPipelineModule {
             if (extName != null) {
                 updateList(tempDir);
             }
-            //Added by William on 2010-04-16 for cvf flag support start
             //update dictionary.
             updateDictionary(tempDir);
-            //Added by William on 2010-04-16 for cvf flag support end
 
             // reload the property for processing of copy-to
             performCopytoTask(tempDir, new Job(tempDir));
@@ -570,15 +569,13 @@ final class DebugAndFilterModule implements AbstractPipelineModule {
             final File targetFile = new File(tempDir, copytoTarget);
 
             if (targetFile.exists()) {
-                //edited by Alan on Date:2009-11-02 for Work Item:#1590 start
                 /*logger
                         .logWarn(new StringBuffer("Copy-to task [copy-to=\"")
                                 .append(copytoTarget)
                                 .append("\"] which points to an existed file was ignored.").toString());*/
                 final Properties prop = new Properties();
                 prop.setProperty("%1", copytoTarget);
-                logger.logWarn(MessageUtils.getMessage("DOTX064W", prop).toString());
-                //edited by Alan on Date:2009-11-02 for Work Item:#1590 end
+                logger.logWarn(MessageUtils.getInstance().getMessage("DOTX064W", prop).toString());
             }else{
                 final String inputMapInTemp = new File(tempDir + File.separator + job.getInputMap()).getAbsolutePath();
                 copyFileWithPIReplaced(srcFile, targetFile, copytoTarget, inputMapInTemp);
@@ -686,7 +683,6 @@ final class DebugAndFilterModule implements AbstractPipelineModule {
         job.write();
     }
 
-    //Added by William on 2010-04-16 for cvf flag support start
     /**
      * Update dictionary
      * 
@@ -747,6 +743,5 @@ final class DebugAndFilterModule implements AbstractPipelineModule {
             }
         }
     }
-    //Added by William on 2010-04-16 for cvf flag support end
 
 }
