@@ -37,8 +37,8 @@
     <pipeline message="Generate list." taskname="gen-list"
       inputmap="${args.input}"
       tempdir="${dita.temp.dir}">
-      <param name="inputdir" location="${args.input.dir}" if="args.input.dir"/>
       <module class="org.dita.dost.module.GenMapAndTopicListModule">
+        <param name="inputdir" location="${args.input.dir}" if="args.input.dir"/>
         <param name="ditadir" location="${dita.dir}"/>
         <param name="ditaval" location="${dita.input.valfile}" if="dita.input.valfile"/>
         <param name="ditaext" value="${dita.ext}" if="dita.ext"/>
@@ -59,7 +59,7 @@
       While copying, populate default attributes like @class,
       add @xtrf and @xtrc and filter out elements according to valfile, if any. -->
   <target name="debug-filter"
-    dita:depends="gen-list,{depend.preprocess.debug-filter.pre}"
+    dita:depends="{depend.preprocess.debug-filter.pre}"
     dita:extension="depends org.dita.dost.platform.InsertDependsAction"
     unless="preprocess.debug-filter.skip"
     description="Debug and filter input files" >
@@ -109,7 +109,7 @@
   <!-- conref push
       Push information to the specified target -->
   <target name="conrefpush"
-    dita:depends="debug-filter,{depend.preprocess.conrefpush.pre},conrefpush-check"
+    dita:depends="{depend.preprocess.conrefpush.pre},conrefpush-check"
     dita:extension="depends org.dita.dost.platform.InsertDependsAction"
     unless="preprocess.conrefpush.skip"
     description="Resolve conref push">
@@ -128,7 +128,7 @@
   <!-- move-meta-entries
       Push information from <topicmeta> in the map into the corresponding topics. -->
   <target name="move-meta-entries" 
-    dita:depends="debug-filter,{depend.preprocess.move-meta-entries.pre},move-meta-entries-check"
+    dita:depends="{depend.preprocess.move-meta-entries.pre},move-meta-entries-check"
     dita:extension="depends org.dita.dost.platform.InsertDependsAction"
     unless="preprocess.move-meta-entries.skip"
     description="Move metadata entries">
@@ -148,7 +148,7 @@
   <!-- conref
       Pull elements referenced by conref into their correct place. -->
   <target name="conref" 
-    dita:depends="debug-filter,conrefpush,{depend.preprocess.conref.pre},conref-check"
+    dita:depends="{depend.preprocess.conref.pre},conref-check"
     dita:extension="depends org.dita.dost.platform.InsertDependsAction"
     unless="preprocess.conref.skip"
     description="Resolve conref in input files">
@@ -190,7 +190,7 @@
   
   <!-- coderef -->
   <target name="coderef"
-    dita:depends="debug-filter,keyref,{depend.preprocess.coderef.pre},coderef-check"
+    dita:depends="{depend.preprocess.coderef.pre},coderef-check"
     dita:extension="depends org.dita.dost.platform.InsertDependsAction"
     unless="preprocess.coderef.skip"
     description="Resolve coderef in input files">
@@ -212,7 +212,7 @@
       Produce a logical super-map from the map references
       (topicref with format="ditamap") in the input map. -->
   <target name="mapref" 
-    dita:depends="coderef,{depend.preprocess.mapref.pre},mapref-check"
+    dita:depends="{depend.preprocess.mapref.pre},mapref-check"
     dita:extension="depends org.dita.dost.platform.InsertDependsAction"
     unless="preprocess.mapref.skip"
     description="Resolve mapref in ditamap">
@@ -254,7 +254,7 @@
   <!-- keyref
        Resolve keyref using key definition in ditamap-->
   <target name="keyref"
-    dita:depends="move-meta-entries,{depend.preprocess.keyref.pre},keyref-check"
+    dita:depends="{depend.preprocess.keyref.pre},keyref-check"
     dita:extension="depends org.dita.dost.platform.InsertDependsAction"
     unless="preprocess.keyref.skip"
     description="Resolve keyref">
@@ -275,7 +275,7 @@
   <!-- mappull
       Pull metadata (such as navtitle) into the map from the referenced topics. -->
   <target name="mappull"
-    dita:depends="mapref,{depend.preprocess.mappull.pre},mappull-check"
+    dita:depends="{depend.preprocess.mappull.pre},mappull-check"
     dita:extension="depends org.dita.dost.platform.InsertDependsAction"
     unless="preprocess.mappull.skip"
     description="Pull the navtitle and topicmeta from topics to ditamap">
@@ -315,7 +315,7 @@
   <!-- chunk
       Assemble virtual supertopics based on chunk attribute in map. -->
   <target name="chunk" 
-    dita:depends="mappull,{depend.preprocess.chunk.pre},chunk-check"
+    dita:depends="{depend.preprocess.chunk.pre},chunk-check"
     dita:extension="depends org.dita.dost.platform.InsertDependsAction"
     unless="preprocess.chunk.skip"
     description="Process chunks">
@@ -344,7 +344,7 @@
     Produce maplinks.unordered file, containing all related links
     implied by the map (family and reltables). -->
   <target name="maplink"
-    dita:depends="chunk,{depend.preprocess.maplink.pre},maplink-check"
+    dita:depends="{depend.preprocess.maplink.pre},maplink-check"
     dita:extension="depends org.dita.dost.platform.InsertDependsAction"
     unless="preprocess.maplink.skip"
     description="Find and generate related link information">
@@ -376,7 +376,7 @@
       Push links from maplinks.unordered file into
       <related-links> sections of the corresponding topics. -->
   <target name="move-links"
-    dita:depends="maplink,{depend.preprocess.move-links.pre},move-links-check"
+    dita:depends="{depend.preprocess.move-links.pre},move-links-check"
     dita:extension="depends org.dita.dost.platform.InsertDependsAction"
     unless="preprocess.move-links.skip"
     description="Move the related link information to topics">
@@ -397,7 +397,7 @@
   <!-- topicpull
       Populate link text for links within topics (xref, link). -->
   <target name="topicpull"
-    dita:depends="debug-filter,{depend.preprocess.topicpull.pre},topicpull-check"
+    dita:depends="{depend.preprocess.topicpull.pre},topicpull-check"
     dita:extension="depends org.dita.dost.platform.InsertDependsAction"
     unless="preprocess.topicpull.skip"
     description="Pull metadata for link and xref element">
@@ -436,7 +436,7 @@
   </target>
 
   <target name="flag-module" 
-      dita:depends="debug-filter,{depend.preprocess.flag-module.pre},flag-module-check"
+      dita:depends="{depend.preprocess.flag-module.pre},flag-module-check"
       dita:extension="depends org.dita.dost.platform.InsertDependsAction"
       description="Add flagging information to topics" 
       unless="preprocess.flagging.skip">
@@ -488,7 +488,7 @@
   <!-- copy-files
       Copy files to the output directory. -->
   <target name="copy-files"
-    dita:depends="debug-filter,{depend.preprocess.copy-files.pre},copy-image,copy-html,copy-flag,copy-subsidiary,copy-generated-files"
+    dita:depends="{depend.preprocess.copy-files.pre},copy-image,copy-html,copy-flag,copy-subsidiary,copy-generated-files"
     dita:extension="depends org.dita.dost.platform.InsertDependsAction"
     unless="preprocess.copy-files.skip" />
 
