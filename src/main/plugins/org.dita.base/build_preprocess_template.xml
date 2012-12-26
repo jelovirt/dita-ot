@@ -156,12 +156,13 @@
       <not><isset property="dita.preprocess.reloadstylesheet.conref"/></not>
     </condition>
     <makeurl property="exportfile.url" file="${dita.temp.dir}/export.xml" validate="false"/>
+    <pipeline message="Resolve conref in input files" taskname="conref">
     <xslt basedir="${dita.temp.dir}" taskname="conref"
       destdir="${dita.temp.dir}" includesfile="${dita.temp.dir}/${conreffile}"
       classpathref="dost.class.path"
       reloadstylesheet="${dita.preprocess.reloadstylesheet.conref}"
       style="${dita.plugin.org.dita.base.dir}/xsl/preprocess/conref.xsl" filenameparameter="file-being-processed">
-      <mapper type="glob" from="*" to="*.cnrf" />
+      <!--mapper type="glob" from="*" to="*.cnrf" /-->
       <param name="DITAEXT" expression="${dita.ext}" if="dita.ext"/>
       <!-- Deprecated -->
       <param name="BASEDIR" expression="${basedir}"/>
@@ -172,10 +173,13 @@
       <dita:extension id="dita.preprocess.conref.param" behavior="org.dita.dost.platform.InsertAction"/>
       <xmlcatalog refid="dita.catalog"/>
     </xslt>
+    </pipeline>
+    <!--
     <move todir="${dita.temp.dir}">
       <fileset dir="${dita.temp.dir}" includes="**/*.cnrf" />
       <mapper type="glob" from="*.cnrf" to="*" />
     </move>
+    -->
   </target>
   
   <target name="conref-check">
@@ -216,11 +220,12 @@
       <not><isset property="dita.preprocess.reloadstylesheet.mapref"/></not>
     </condition>
     <dirname property="mapref.workdir" file="${dita.temp.dir}/${user.input.file}" />
+    <pipeline message="Resolve mapref in ditamap" taskname="mapref">
     <xslt taskname="mapref"
-    	basedir="${dita.temp.dir}"
-    	destdir="${dita.temp.dir}"
+       basedir="${dita.temp.dir}"
+       destdir="${dita.temp.dir}"
         includesfile="${dita.temp.dir}/${fullditamapfile}"
-    	extension=".ditamap.ref"
+       extension=".ditamap.ref"
         classpathref="dost.class.path"
         reloadstylesheet="${dita.preprocess.reloadstylesheet.mapref}"
       style="${dita.plugin.org.dita.base.dir}/xsl/preprocess/mapref.xsl" filenameparameter="file-being-processed">
@@ -231,10 +236,13 @@
       <dita:extension id="dita.preprocess.mapref.param" behavior="org.dita.dost.platform.InsertAction"/>
       <xmlcatalog refid="dita.catalog"/>
     </xslt>
+    </pipeline>
+    <!--
     <move overwrite="true" todir="${dita.temp.dir}">
       <fileset dir="${dita.temp.dir}" includes="**/*.ditamap.ref" />
       <mapper type="glob" from="*.ditamap.ref" to="*.ditamap" />
     </move>
+    -->
   </target>
 
   <target name="mapref-check">
@@ -275,11 +283,12 @@
     <condition property="dita.preprocess.reloadstylesheet.mappull" value="${dita.preprocess.reloadstylesheet}">
       <not><isset property="dita.preprocess.reloadstylesheet.mappull"/></not>
     </condition>
+    <pipeline message="Pull the navtitle and topicmeta from topics to ditamap" taskname="mappull">
     <xslt taskname="mappull"
-  	    basedir="${dita.temp.dir}"
-    	destdir="${dita.temp.dir}"
+           basedir="${dita.temp.dir}"
+       destdir="${dita.temp.dir}"
         includesfile="${dita.temp.dir}/${fullditamapfile}"
-    	extension=".ditamap.pull"
+       extension=".ditamap.pull"
         classpathref="dost.class.path"
         reloadstylesheet="${dita.preprocess.reloadstylesheet.mappull}"
       style="${dita.plugin.org.dita.base.dir}/xsl/preprocess/mappull.xsl">
@@ -288,10 +297,13 @@
       <dita:extension id="dita.preprocess.mappull.param" behavior="org.dita.dost.platform.InsertAction"/>
       <xmlcatalog refid="dita.catalog"/>
     </xslt>
+    </pipeline>
+    <!--
     <move overwrite="true" todir="${dita.temp.dir}">
       <fileset dir="${dita.temp.dir}" includes="**/*.ditamap.pull" />
       <mapper type="glob" from="*.ditamap.pull" to="*.ditamap" />
     </move>
+    -->
   </target>
   
   <target name="mappull-check">
@@ -315,11 +327,11 @@
         <param name="transtype" value="${transtype}"/>
       </module>
     </pipeline>
-  	
-  	<xmlpropertyreader file="${dita.temp.dir}/dita.xml.properties"/>
-  	<condition property="noTopic">
-  	  	<equals arg1="${fullditatopiclist}" arg2="" />
-  	</condition>
+    
+       <xmlpropertyreader file="${dita.temp.dir}/dita.xml.properties"/>
+       <condition property="noTopic">
+               <equals arg1="${fullditatopiclist}" arg2="" />
+       </condition>
   </target>
 
   <target name="chunk-check">
@@ -392,6 +404,8 @@
     <condition property="dita.preprocess.reloadstylesheet.topicpull" value="${dita.preprocess.reloadstylesheet}">
       <not><isset property="dita.preprocess.reloadstylesheet.topicpull"/></not>
     </condition>
+
+    <pipeline message="Pull metadata for link and xref element" taskname="topicpull">
     <xslt taskname="topicpull" basedir="${dita.temp.dir}"
       destdir="${dita.temp.dir}" includesfile="${dita.temp.dir}/${fullditatopicfile}"
       classpathref="dost.class.path"
@@ -403,13 +417,16 @@
       <param name="FIGURELINK" expression="${args.figurelink.style}" if="args.figurelink.style" />
       <param name="ONLYTOPICINMAP" expression="${onlytopic.in.map}" if="onlytopic.in.map"/>
       <dita:extension id="dita.preprocess.topicpull.param" behavior="org.dita.dost.platform.InsertAction"/>
-      <mapper type="glob" from="*" to="*.pull" />
+      <!--mapper type="glob" from="*" to="*.pull" /-->
       <xmlcatalog refid="dita.catalog"/>
     </xslt>
+    </pipeline>
+    <!--
     <move todir="${dita.temp.dir}">
       <fileset dir="${dita.temp.dir}" includes="**/*.pull" />
       <mapper type="glob" from="*.pull" to="*" />
     </move>
+    -->
   </target>
 
   <target name="topicpull-check">
@@ -475,7 +492,7 @@
     dita:extension="depends org.dita.dost.platform.InsertDependsAction"
     unless="preprocess.copy-files.skip" />
 
-	
+
   <target name="copy-image-uplevels"
 		if="image.copy.uplevels"
 	    dita:depends="{depend.preprocess.copy-image.pre},copy-image-check"
@@ -511,16 +528,16 @@
         <isset property="noImagelist"/>
       </or>
     </condition>
-  	<condition property="image.copy.uplevels">
-  	  <not>
-  	  	 <equals arg1="${generate.copy.outer}" arg2="3"></equals>
-  	  </not>
-  	 </condition>
-  	 <condition property="image.copy.normal">
-  	 	<and>
-  	     <equals arg1="${generate.copy.outer}" arg2="3"></equals>
-  	   </and>
-  	</condition> 	
+    <condition property="image.copy.uplevels">
+      <not>
+         <equals arg1="${generate.copy.outer}" arg2="3"></equals>
+      </not>
+     </condition>
+     <condition property="image.copy.normal">
+      <and>
+         <equals arg1="${generate.copy.outer}" arg2="3"></equals>
+       </and>
+    </condition>  
   </target>
 
   <target name="copy-html"
@@ -589,5 +606,5 @@
         includes="dita.list,property.temp,dita.xml.properties" />
     </copy>
   </target>
-    
+  
 </project>

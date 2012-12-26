@@ -56,7 +56,7 @@ public final class XsltModule implements AbstractPipelineModule {
     public AbstractPipelineOutput execute(AbstractPipelineInput input) throws DITAOTException {
     	Transformer t = null;
         for (final File include: includes) {
-        	if (reloadstylesheet) {
+        	if (reloadstylesheet || t == null) {
 	            try {
 	                t = templates.newTransformer();
 	            } catch (final TransformerConfigurationException e) {
