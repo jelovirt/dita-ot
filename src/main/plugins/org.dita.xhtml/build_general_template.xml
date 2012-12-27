@@ -27,6 +27,7 @@
         <isset property="args.xsl" />
       </not>
     </condition>
+    <pipeline message="Build XHTML output" taskname="xhtml">
     <xslt basedir="${dita.temp.dir}"
       destdir="${output.dir}" includesfile="${dita.temp.dir}${file.separator}${fullditatopicfile}"
       reloadstylesheet="${dita.xhtml.reloadstylesheet}"
@@ -63,6 +64,7 @@
       <dita:extension id="dita.conductor.xhtml.param" behavior="org.dita.dost.platform.InsertAction"/>
   	  <xmlcatalog refid="dita.catalog"/>
     </xslt>
+    </pipeline>
   </target>
 
   <target name="dita.topics.html" unless="noTopic" if="old.transform" depends="dita.xhtml.init"
@@ -72,6 +74,7 @@
         <isset property="args.xsl" />
       </not>
     </condition>
+    <pipeline message="Build HTML output" taskname="html">
     <xslt basedir="${dita.temp.dir}"
       destdir="${output.dir}" includesfile="${dita.temp.dir}${file.separator}${fullditatopicfile}"
       reloadstylesheet="${dita.xhtml.reloadstylesheet}"
@@ -108,6 +111,7 @@
 	  <dita:extension id="dita.conductor.html.param" behavior="org.dita.dost.platform.InsertAction"/>
       <xmlcatalog refid="dita.catalog"/>
     </xslt>
+    </pipeline>
   </target>
   
   <!--To generate&copy inner files-->
@@ -232,6 +236,7 @@
         <isset property="args.xsl" />
       </not>
     </condition>
+    <pipeline message="Build XHTML output" taskname="xhtml">
     <xslt basedir="${dita.temp.dir}"
       destdir="${output.dir}${file.separator}${uplevels}" includesfile="${dita.temp.dir}${file.separator}${outditafilesfile}"
       reloadstylesheet="${dita.xhtml.reloadstylesheet}"
@@ -267,6 +272,7 @@
       <dita:extension id="dita.conductor.xhtml.param" behavior="org.dita.dost.platform.InsertAction"/>
       <xmlcatalog refid="dita.catalog"/>
     </xslt>
+    </pipeline>
   </target>
 
   <target name="dita.outer.topics.html" unless="noTopic" if="outer.transform"  depends="dita.xhtml.init, checkouterTransform"
@@ -276,6 +282,7 @@
         <isset property="args.xsl" />
       </not>
     </condition>
+    <pipeline message="Build XHTML output" taskname="xhtml">
     <xslt basedir="${dita.temp.dir}"
       destdir="${output.dir}${file.separator}${uplevels}" includesfile="${dita.temp.dir}${file.separator}${outditafilesfile}"
       reloadstylesheet="${dita.xhtml.reloadstylesheet}"
@@ -311,5 +318,6 @@
 	  <dita:extension id="dita.conductor.html.param" behavior="org.dita.dost.platform.InsertAction"/>
       <xmlcatalog refid="dita.catalog"/>
     </xslt>
+    </pipeline>
   </target>
 </project>

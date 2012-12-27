@@ -352,6 +352,7 @@
     <condition property="dita.preprocess.reloadstylesheet.maplink" value="${dita.preprocess.reloadstylesheet}">
       <not><isset property="dita.preprocess.reloadstylesheet.maplink"/></not>
     </condition>
+    <!--pipeline message="Find and generate related link information" taskname="maplink"-->
     <xslt taskname="maplink"
       in="${dita.temp.dir}/${user.input.file}"
       out="${maplink.workdir}/maplinks.unordered"
@@ -364,6 +365,7 @@
       <dita:extension id="dita.preprocess.maplink.param" behavior="org.dita.dost.platform.InsertAction"/>
       <xmlcatalog refid="dita.catalog"/>
     </xslt>
+    <!--/pipeline-->
   </target>
 
   <target name="maplink-check">
@@ -444,6 +446,7 @@
     <condition property="dita.preprocess.reloadstylesheet.flag-module" value="${dita.preprocess.reloadstylesheet}">
       <not><isset property="dita.preprocess.reloadstylesheet.flag-module"></isset></not>
     </condition>
+    <pipeline message="Add flagging information to topics" taskname="flag">
     <xslt taskname="preprocess_flag" 
         basedir="${dita.temp.dir}" 
         destdir="${dita.temp.dir}" 
@@ -465,13 +468,16 @@
       <param name="DBG" expression="${args.debug}" if="args.debug"></param>
       <dita:extension id="dita.preprocess.flag-module.param" behavior="org.dita.dost.platform.InsertAction"/>
 
-      <mapper type="glob" from="*" to="*.flag"></mapper>
+      <!--mapper type="glob" from="*" to="*.flag"></mapper-->
       <xmlcatalog refid="dita.catalog"></xmlcatalog>
     </xslt>
+    </pipeline>
+    <!--
     <move todir="${dita.temp.dir}">
       <fileset dir="${dita.temp.dir}" includes="**/*.flag"></fileset>
       <mapper type="glob" from="*.flag" to="*"></mapper>
     </move>
+    -->
   </target>
 
   <target name="flag-module-check">
