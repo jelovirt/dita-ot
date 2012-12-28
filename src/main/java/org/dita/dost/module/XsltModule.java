@@ -16,6 +16,7 @@ import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
 import org.apache.tools.ant.types.XMLCatalog;
+import org.apache.tools.ant.util.FileNameMapper;
 import org.apache.tools.ant.util.FileUtils;
 
 import org.dita.dost.exception.DITAOTException;
@@ -54,8 +55,10 @@ public final class XsltModule implements AbstractPipelineModule {
     private String filedirparameter;
     private boolean reloadstylesheet;
     private XMLCatalog xmlcatalog;
+	private FileNameMapper mapper;
     
     public AbstractPipelineOutput execute(AbstractPipelineInput input) throws DITAOTException {
+    	logger.logInfo("Transforming into " + destDir.getAbsolutePath());
         final TransformerFactory tf = TransformerFactory.newInstance();
         tf.setURIResolver(xmlcatalog);
         try {
@@ -74,6 +77,7 @@ public final class XsltModule implements AbstractPipelineModule {
     	Transformer t = null;
         for (final File include: includes) {
         	if (reloadstylesheet || t == null) {
+                logger.logInfo("Loading stylesheet " + style.getAbsolutePath());
 	            try {
 	                t = templates.newTransformer();
 	            } catch (final TransformerConfigurationException e) {
@@ -81,7 +85,17 @@ public final class XsltModule implements AbstractPipelineModule {
 	            }
         	}
             final File in = new File(baseDir, include.getPath());
-            final File out = new File(destDir, include.getPath());
+            File out = new File(destDir, include.getPath());
+            if (mapper != null) {
+            	final String[] outs = mapper.mapFileName(out.getAbsolutePath());
+            	if (outs == null) {
+            		continue;
+            	}
+            	if (outs.length > 1) {
+            		throw new RuntimeException("XSLT module only support one to one output mapping");
+            	}
+            	out = new File(outs[0]);
+            }
             final boolean same = in.getAbsolutePath().equals(out.getAbsolutePath());
             final File tmp = same ? new File(out.getAbsolutePath() + ".tmp" + Long.toString(System.currentTimeMillis())) : out; 
             for (Map.Entry<String, String> e: params.entrySet()) {
@@ -170,6 +184,10 @@ public final class XsltModule implements AbstractPipelineModule {
 
 	public void setXMLCatalog(final XMLCatalog xmlcatalog) {
 		this.xmlcatalog = xmlcatalog;
+	}
+
+	public void setMapper(final FileNameMapper mapper) {
+		this.mapper = mapper;
 	}
     
 }

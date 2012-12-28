@@ -123,6 +123,7 @@
         <isset property="args.xsl" />
       </not>
     </condition>
+    <pipeline message="Build XHTML output" taskname="xhtml">
     <xslt basedir="${dita.temp.dir}"
       destdir="${output.dir}" includesfile="${dita.temp.dir}${file.separator}${fullditatopicfile}"
       reloadstylesheet="${dita.xhtml.reloadstylesheet}"
@@ -163,6 +164,7 @@
         to="\2${out.ext}"/>
       <xmlcatalog refid="dita.catalog"/>
     </xslt>
+    </pipeline>
   </target>
 
   <target name="dita.inner.topics.html" unless="noTopic"  if="inner.transform" depends="dita.xhtml.init"
@@ -172,6 +174,7 @@
         <isset property="args.xsl" />
       </not>
     </condition>
+    <pipeline message="Build HTML output" taskname="html">
     <xslt basedir="${dita.temp.dir}"
       destdir="${output.dir}" includesfile="${dita.temp.dir}${file.separator}${fullditatopicfile}"
       reloadstylesheet="${dita.xhtml.reloadstylesheet}"
@@ -211,6 +214,7 @@
         to="\2${out.ext}"/>
       <xmlcatalog refid="dita.catalog"/>
     </xslt>
+    </pipeline>
   </target>
   
   <!--requirement 2-->

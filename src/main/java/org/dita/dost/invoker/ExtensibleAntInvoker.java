@@ -28,6 +28,7 @@ import org.apache.tools.ant.Project;
 
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
+import org.apache.tools.ant.types.Mapper;
 import org.apache.tools.ant.types.XMLCatalog;
 import org.dita.dost.exception.DITAOTException;
 import org.dita.dost.log.DITAOTAntLogger;
@@ -227,7 +228,6 @@ public final class ExtensibleAntInvoker extends Task {
     }
     
     public void addConfiguredXslt(final Xslt xslt) {
-        log("XSLT stylesheet " + xslt.style.getAbsolutePath());
         modules.add(xslt);
     }
     
@@ -282,6 +282,9 @@ public final class ExtensibleAntInvoker extends Task {
                     x.setFiledirParam(xm.filedirparameter);
                     x.setReloadstylesheet(xm.reloadstylesheet);
                     x.setXMLCatalog(xm.xmlcatalog);
+                    if (xm.mapper != null) {
+                    	x.setMapper(xm.mapper.getImplementation());
+                    }
                     for (final Param p : m.params) {
                         if (!p.isValid()) {
                             throw new BuildException("Incomplete parameter");
@@ -380,6 +383,7 @@ public final class ExtensibleAntInvoker extends Task {
         private File out;
         private final List<IncludesFile> includes = new ArrayList<IncludesFile>();
         private final List<IncludesFile> excludes = new ArrayList<IncludesFile>();
+        private Mapper mapper;
         private String filenameparameter;
         private String filedirparameter;
         private XMLCatalog xmlcatalog;
@@ -445,6 +449,10 @@ public final class ExtensibleAntInvoker extends Task {
                 
         public void addConfiguredXmlcatalog(final XMLCatalog xmlcatalog) {
             this.xmlcatalog = xmlcatalog;
+        }
+        
+        public void addConfiguredMapper(final Mapper mapper) {
+            this.mapper = mapper;
         }
         
         public void addConfiguredIncludesFile(final IncludesFile includesFile) {
