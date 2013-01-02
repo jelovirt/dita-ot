@@ -119,6 +119,9 @@ public final class XsltModule implements AbstractPipelineModule {
             }
             final Source source = new SAXSource(parser, new InputSource(in.toURI().toString()));
             try {
+            	if (!tmp.getParentFile().exists() && !tmp.getParentFile().mkdirs()) {
+                	throw new IOException("Failed to create directory " + tmp.getParent());
+                }
                 t.transform(source, new StreamResult(tmp));
                 if (same) {
                     logger.logDebug("Moving " + tmp.getAbsolutePath() + " to " + out.getAbsolutePath());
