@@ -73,6 +73,7 @@
            debug="on"
            source="1.6" target="1.6">
       <exclude name="org/dita/dost/invoker/JavaInvoker.java"/>
+      <exclude name="org/dita/dost/invoker/CommandLineInvoker"/>
       <classpath>
         <pathelement location="${lib.dir}/xercesImpl.jar"/>
         <pathelement location="${lib.dir}/xml-apis.xml"/>
@@ -93,15 +94,13 @@
     <jar destfile="${dost.jar}">
       <fileset dir="${bin.dir}"/>
       <fileset dir="${src.dir}/resources"/>
-      <manifest>
-        <attribute name="Implementation-Version" value="${otversion}"/>
-        <attribute name="Main-Class" value="org.dita.dost.invoker.CommandLineInvoker"/>
-      </manifest>
     </jar>
   </target>
   
   <patternset id="pattern.global.excludes">
     <exclude name=".*"/>
+    <exclude name="**/*~"/>
+    <exclude name="local.properties"/>
     <exclude name="build.log"/>
     <exclude name="build.number"/>
     <exclude name="relnotes.txt"/>
