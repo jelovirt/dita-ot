@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="command-line-tool">
+ <title>Command-line tool</title>
+ <shortdesc>The DITA Open Toolkit (DITA-OT) provides a command-line tool for users with little
+    knowledge of Ant.</shortdesc>
+ <prolog>
+  <metadata>
+   <keywords>
+    <indexterm>command-line tool<indexterm>overview</indexterm></indexterm>
+   </keywords>
+  </metadata>
+ </prolog>
+ <conbody>
+  <p>The command-line tool is a shell/batch script that runs an Ant process, handling environment
+      configuration automatically.</p>
+  <p>Applications that embed the toolkit should invoke Ant directly.</p>
+ </conbody>
+</concept>

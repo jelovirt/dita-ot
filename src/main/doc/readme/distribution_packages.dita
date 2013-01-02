@@ -2,8 +2,8 @@
 <!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
 <concept id="distribution_packages">
   <title>Distribution packages</title>
-  <shortdesc>The DITA Open Toolkit is distributed in three packages: minimal, standard, and
-    full-easy-install. The source code is available both as a Git repository and a ZIP file.</shortdesc>
+  <shortdesc>The DITA Open Toolkit is distributed in a single client package. The source code is
+    available both as a Git repository and a ZIP file.</shortdesc>
   <prolog>
     <metadata>
       <keywords>
@@ -15,7 +15,7 @@
     </metadata>
   </prolog>
   <conbody>
-    <section>
+    <!--section>
       <title>Minimal package</title>
       <p>This package is designed for vendors that embed the toolkit within a product. It contains
         all of the core processing code: CSS and XSLT files, Ant build scripts, Java code
@@ -42,7 +42,7 @@
         support for the old bookmap), sample Ant scripts, and sample DITA files. The standard
         package includes the following open-source libraries:<draft-comment
           author="Kristen James Eberlein" time="20 July 2012">Regarding the statement above that the
-          standard package includes demo code -- Is this still true and is the example still
+          standard package includes demo code - - Is this still true and is the example still
           correct?</draft-comment></p>
       <ul>
         <li>Apache Catalog Resolver, version <keyword keyref="tool.resolver.version"/></li>
@@ -55,14 +55,14 @@
           <li><filepath>DITA-OT<keyword keyref="release.version"
               ></keyword>_standard_bin.tar.gz</filepath></li>
         </ul></p>
-    </section>
+    </section-->
     <section>
-      <title>Full-easy-install package</title>
+      <title>Client package</title>
       <p>his package is designed for users who want the simplest installation experience. In
         addition to the core DITA-OT code and the external libraries that are in the minimal and
-        standard packages, it contains Apache Ant and FOP. The full-easy-install package also
-        contains batch files designed to set up a build environment using those tools, as well as a
-        scripts for a guided demo of the DITA-OT. The full-easy-install package includes the
+        standard packages, it contains Apache Ant and FOP. The client package
+        contains shell/batch scripts for running DITA-OT from the command line.
+        The client package includes the
         following external libraries:</p>
       <ul>
         <li>Apache Ant, version <keyword keyref="tool.ant.version"/></li>
