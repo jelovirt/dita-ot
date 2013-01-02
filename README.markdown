@@ -3,6 +3,14 @@ DITA Open Toolkit [![Build Status](https://secure.travis-ci.org/dita-ot/dita-ot.
 
 The DITA Open Toolkit, or DITA-OT for short, is an open source tool that provides processing for OASIS DITA content. See [dita-ot.sf.net](http://dita-ot.sourceforge.net/) for documentation, information about releases, and download packages.
 
+Binaries
+--------
+
+Only nightly binaries are available:
+
+* [UNIX and OS X](https://dl.dropbox.com/sh/znkyu7rawgowa87/QiprWA5mCC/DITA-OTnext_client_bin.tar.gz?dl=1)
+* [Windows](https://dl.dropbox.com/sh/znkyu7rawgowa87/AAl81V-3Ta/DITA-OTnext_client_bin.zip?dl=1)
+
 Prerequisites
 -------------
 
