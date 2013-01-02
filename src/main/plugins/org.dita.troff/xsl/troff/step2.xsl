@@ -27,7 +27,7 @@
      
      -->
 
-<xsl:stylesheet version="1.0"
+<xsl:stylesheet version="2.0"
                 xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
                 >
 
@@ -228,7 +228,7 @@
     <!-- End of the string; nothing left to evaluate, so quit -->
     <xsl:when test="string-length($string)=0"/>
     <!-- At the start of the line; add the word, whatever the length -->
-    <xsl:when test="$curLength='0'">
+    <xsl:when test="$curLength=0">
       <xsl:value-of select="$addIndent"/>
       <xsl:value-of select="$firstword"/>
       <xsl:call-template name="wrap">

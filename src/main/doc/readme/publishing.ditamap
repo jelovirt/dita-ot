@@ -21,9 +21,14 @@
    <topicref href="DITA-antuse.xml" navtitle="Building output using Ant"/>
    <topicref href="creating-an-ant-build-script.dita" navtitle="Creating an Ant build script"/>
   </topicref>
-  <topicref href="DITA-javacmd.xml" navtitle="Running DITA-OT from the command-line tool">
+  <!--topicref href="DITA-javacmd.xml" navtitle="Running DITA-OT from the command-line tool">
    <topicref href="command-line-tool.dita" navtitle="Command-line tool"/>
    <topicref href="building-output-using-cl-tool.dita"
+    navtitle="Building output using the command-line tool"/>
+  </topicref-->
+  <topicref href="DITA-client.xml" navtitle="Running DITA-OT from the client tool">
+   <topicref href="client-tool.dita" navtitle="client tool"/>
+   <topicref href="building-output-using-client-tool.dita"
     navtitle="Building output using the command-line tool"/>
   </topicref>
  </topicref>
