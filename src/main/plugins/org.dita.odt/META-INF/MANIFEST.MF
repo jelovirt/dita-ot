@@ -1,0 +1,7 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2.0
+Bundle-Name: odt
+Bundle-SymbolicName: org.dita.odt;singleton=true
+Require-Bundle: org.dita.base
+Bundle-ActivationPolicy: lazy
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6

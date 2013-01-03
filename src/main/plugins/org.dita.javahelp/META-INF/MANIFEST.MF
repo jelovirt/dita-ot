@@ -1,0 +1,7 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2.0
+Bundle-Name: javahelp
+Bundle-SymbolicName: org.dita.javahelp;singleton=true
+Require-Bundle: org.dita.xhtml
+Bundle-ActivationPolicy: lazy
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6

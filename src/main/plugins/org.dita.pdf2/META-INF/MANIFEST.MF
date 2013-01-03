@@ -1,0 +1,8 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2.0
+Bundle-Name: pdf2
+Bundle-SymbolicName: org.dita.pdf2;singleton=true
+Bundle-ClassPath: lib/fo.jar
+Require-Bundle: org.dita.base
+Bundle-ActivationPolicy: lazy
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6

@@ -1,0 +1,7 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2.0
+Bundle-Name: dita11
+Bundle-SymbolicName: org.dita.specialization.dita11;singleton=true
+Require-Bundle: org.dita.base
+Bundle-ActivationPolicy: lazy
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
