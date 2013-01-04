@@ -151,7 +151,7 @@ public class Main extends org.apache.tools.ant.Main implements AntMain {
     public static final String DEFAULT_BUILD_FILENAME = "build.xml";
 
     /** Our current message output status. Follows Project.MSG_XXX. */
-    private int msgOutputLevel = Project.MSG_INFO;
+    private int msgOutputLevel = Project.MSG_WARN;
 
     /** File that we are using for configuration. */
     private File buildFile; /* null */
@@ -397,12 +397,12 @@ public class Main extends org.apache.tools.ant.Main implements AntMain {
                 justPrintVersion = true;
             } else if (arg.equals("-diagnostics")) {
                 justPrintDiagnostics = true;
-            } else if (arg.equals("-quiet") || arg.equals("-q")) {
-                msgOutputLevel = Project.MSG_WARN;
+//            } else if (arg.equals("-quiet") || arg.equals("-q")) {
+//                msgOutputLevel = Project.MSG_WARN;
             } else if (arg.equals("-verbose") || arg.equals("-v")) {
-                msgOutputLevel = Project.MSG_VERBOSE;
+                msgOutputLevel = Project.MSG_INFO;
             } else if (arg.equals("-debug") || arg.equals("-d")) {
-                msgOutputLevel = Project.MSG_DEBUG;
+                msgOutputLevel = Project.MSG_VERBOSE;
             } else if (arg.equals("-noinput")) {
                 allowInput = false;
             } else if (arg.equals("-logfile") || arg.equals("-l")) {
@@ -1049,26 +1049,25 @@ public class Main extends org.apache.tools.ant.Main implements AntMain {
     private static void printUsage() {
         String lSep = System.getProperty("line.separator");
         StringBuffer msg = new StringBuffer();
-        msg.append("dita [options]" + lSep);
+        msg.append("Usage: dita [options]" + lSep);
         msg.append("Mandatory: " + lSep);
         msg.append("  -i, -input <file>     input file" + lSep);
         msg.append("  -t, -transtype <name> transformation type" + lSep);
         msg.append("Optional: " + lSep);
         msg.append("  -o, -output <dir>     output directory" + lSep);
         msg.append("  -help, -h              print this message" + lSep);
-        msg.append("  -projecthelp, -p       print project help information" + lSep);
+//        msg.append("  -projecthelp, -p       print project help information" + lSep);
         msg.append("  -version               print the version information and exit" + lSep);
 //        msg.append("  -diagnostics           print information that might be helpful to" + lSep);
 //        msg.append("                         diagnose or report problems." + lSep);
-        msg.append("  -quiet, -q             be extra quiet" + lSep);
+//        msg.append("  -quiet, -q             be extra quiet" + lSep);
         msg.append("  -verbose, -v           be extra verbose" + lSep);
-//        msg.append("  -debug, -d             print debugging information" + lSep);
+        msg.append("  -debug, -d             print debugging information" + lSep);
 //        msg.append("  -emacs, -e             produce logging information without adornments"
 //                   + lSep);
 //        msg.append("  -lib <path>            specifies a path to search for jars and classes"
 //                   + lSep);
-        msg.append("  -logfile <file>        use given file for log" + lSep);
-        msg.append("    -l     <file>                ''" + lSep);
+        msg.append("  -l, logfile <file>     use given file for log" + lSep);
 //        msg.append("  -logger <classname>    the class which is to perform logging" + lSep);
 //        msg.append("  -listener <classname>  add an instance of class as a project listener"
 //                   + lSep);
