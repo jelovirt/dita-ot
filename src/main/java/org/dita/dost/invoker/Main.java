@@ -83,12 +83,75 @@ public class Main extends org.apache.tools.ant.Main implements AntMain {
         LAUNCH_COMMANDS.add("-nouserlib");
         LAUNCH_COMMANDS.add("-main");
     }
+    
+    private static final Map<String, String> ARGUMENT_MAPPING = new HashMap<String, String>();
+    static {
+    	ARGUMENT_MAPPING.put("-t", "transtype");
+    	ARGUMENT_MAPPING.put("-transtype", "transtype");
+    	ARGUMENT_MAPPING.put("-i", "args.input");
+    	ARGUMENT_MAPPING.put("-input", "args.input");
+    	ARGUMENT_MAPPING.put("-o", "output.dir");
+    	ARGUMENT_MAPPING.put("-output", "output.dir");
+    	ARGUMENT_MAPPING.put("-f", "args.filter");
+    	ARGUMENT_MAPPING.put("-filter", "args.filter");
+    	ARGUMENT_MAPPING.put("-temp", "dita.temp.dir");
+    	// legacy
+		//ARGUMENT_MAPPING.put("/basedir", "basedir");
+		//ARGUMENT_MAPPING.put("/ditadir", "dita.dir");
+		ARGUMENT_MAPPING.put("/i", "args.input");
+		ARGUMENT_MAPPING.put("/if", "dita.input");
+		ARGUMENT_MAPPING.put("/id", "dita.input.dirname");
+		ARGUMENT_MAPPING.put("/artlbl", "args.artlbl");
+		ARGUMENT_MAPPING.put("/draft", "args.draft");
+		ARGUMENT_MAPPING.put("/ftr", "args.ftr");
+		ARGUMENT_MAPPING.put("/hdr", "args.hdr");
+		ARGUMENT_MAPPING.put("/hdf", "args.hdf");
+		ARGUMENT_MAPPING.put("/csspath", "args.csspath");
+		ARGUMENT_MAPPING.put("/cssroot", "args.cssroot");
+		ARGUMENT_MAPPING.put("/css", "args.css");
+		ARGUMENT_MAPPING.put("/filter", "args.filter");
+		//ARGUMENT_MAPPING.put("/ditaext", "dita.extname");
+		ARGUMENT_MAPPING.put("/outdir", "output.dir");
+		ARGUMENT_MAPPING.put("/transtype", "transtype");
+		ARGUMENT_MAPPING.put("/indexshow", "args.indexshow");
+		ARGUMENT_MAPPING.put("/outext", "args.outext");
+		ARGUMENT_MAPPING.put("/copycss", "args.copycss");
+		ARGUMENT_MAPPING.put("/xsl", "args.xsl");
+		ARGUMENT_MAPPING.put("/xslpdf", "args.xsl.pdf");
+		ARGUMENT_MAPPING.put("/tempdir", "dita.temp.dir");
+		ARGUMENT_MAPPING.put("/cleantemp", "clean.temp");
+		ARGUMENT_MAPPING.put("/foimgext", "args.fo.img.ext");
+		ARGUMENT_MAPPING.put("/javahelptoc", "args.javahelp.toc");
+		ARGUMENT_MAPPING.put("/javahelpmap", "args.javahelp.map");
+		ARGUMENT_MAPPING.put("/eclipsehelptoc", "args.eclipsehelp.toc");
+		ARGUMENT_MAPPING.put("/eclipsecontenttoc", "args.eclipsecontent.toc");
+		ARGUMENT_MAPPING.put("/xhtmltoc", "args.xhtml.toc");
+		ARGUMENT_MAPPING.put("/xhtmlclass", "args.xhtml.classattr");
+		ARGUMENT_MAPPING.put("/usetasklabels", "args.gen.task.lbl");
+		ARGUMENT_MAPPING.put("/logdir", "args.logdir");
+		ARGUMENT_MAPPING.put("/ditalocale", "args.dita.locale");
+		ARGUMENT_MAPPING.put("/fooutputrellinks", "args.fo.output.rel.links");
+		ARGUMENT_MAPPING.put("/foincluderellinks", "args.fo.include.rellinks");
+		ARGUMENT_MAPPING.put("/odtincluderellinks", "args.odt.include.rellinks");
+		ARGUMENT_MAPPING.put("/retaintopicfo", "retain.topic.fo");
+		ARGUMENT_MAPPING.put("/version", "args.eclipse.version");
+		ARGUMENT_MAPPING.put("/provider", "args.eclipse.provider");
+		ARGUMENT_MAPPING.put("/fouserconfig", "args.fo.userconfig");
+		ARGUMENT_MAPPING.put("/htmlhelpincludefile", "args.htmlhelp.includefile");
+		ARGUMENT_MAPPING.put("/validate", "validate");
+		ARGUMENT_MAPPING.put("/outercontrol", "outer.control");
+		ARGUMENT_MAPPING.put("/generateouter", "generate.copy.outer");
+		ARGUMENT_MAPPING.put("/onlytopicinmap", "onlytopic.in.map");
+		ARGUMENT_MAPPING.put("/debug", "args.debug");
+		ARGUMENT_MAPPING.put("/grammarcache", "args.grammar.cache");
+		ARGUMENT_MAPPING.put("/odtimgembed", "args.odt.img.embed");
+    }
 
     /** The default build file name. {@value} */
     public static final String DEFAULT_BUILD_FILENAME = "build.xml";
 
     /** Our current message output status. Follows Project.MSG_XXX. */
-    private int msgOutputLevel = Project.MSG_INFO;
+    private int msgOutputLevel = Project.MSG_WARN;
 
     /** File that we are using for configuration. */
     private File buildFile; /* null */
@@ -334,12 +397,12 @@ public class Main extends org.apache.tools.ant.Main implements AntMain {
                 justPrintVersion = true;
             } else if (arg.equals("-diagnostics")) {
                 justPrintDiagnostics = true;
-            } else if (arg.equals("-quiet") || arg.equals("-q")) {
-                msgOutputLevel = Project.MSG_WARN;
+//            } else if (arg.equals("-quiet") || arg.equals("-q")) {
+//                msgOutputLevel = Project.MSG_WARN;
             } else if (arg.equals("-verbose") || arg.equals("-v")) {
-                msgOutputLevel = Project.MSG_VERBOSE;
+                msgOutputLevel = Project.MSG_INFO;
             } else if (arg.equals("-debug") || arg.equals("-d")) {
-                msgOutputLevel = Project.MSG_DEBUG;
+                msgOutputLevel = Project.MSG_VERBOSE;
             } else if (arg.equals("-noinput")) {
                 allowInput = false;
             } else if (arg.equals("-logfile") || arg.equals("-l")) {
@@ -386,6 +449,8 @@ public class Main extends org.apache.tools.ant.Main implements AntMain {
                 keepGoingMode = true;
             } else if (arg.equals("-nice")) {
                 i = handleArgNice(args, i);
+            } else if (ARGUMENT_MAPPING.containsKey(getArgumentName(arg))) {
+            	i = handleParameterArg(args, i);
             } else if (LAUNCH_COMMANDS.contains(arg)) {
                 //catch script/ant mismatch with a meaningful message
                 //we could ignore it, but there are likely to be other
@@ -409,6 +474,10 @@ public class Main extends org.apache.tools.ant.Main implements AntMain {
             }
         }
 
+        if (!definedProps.containsKey("transtype") || !definedProps.containsKey("args.input")) {
+        	justPrintUsage = true;
+        }
+        
         if (msgOutputLevel >= Project.MSG_VERBOSE || justPrintVersion) {
             printVersion(msgOutputLevel);
         }
@@ -552,6 +621,36 @@ public class Main extends org.apache.tools.ant.Main implements AntMain {
         }
         definedProps.put(name, value);
         return argPos;
+    }
+    
+    /** Handler parameter argument */
+    private int handleParameterArg(String[] args, int argPos) {
+        String arg = args[argPos];
+        String name = arg.substring(0, arg.length());
+        String value = null;
+        int posEq = name.indexOf("=");
+        if (posEq == -1) {
+        	posEq = arg.indexOf(":");
+        }
+        if (posEq > 0) {
+            value = name.substring(posEq + 1);
+            name = name.substring(0, posEq);
+        } else if (argPos < args.length - 1) {
+            value = args[++argPos];
+        } else {
+            throw new BuildException("Missing value for property " + name);
+        }
+        definedProps.put(ARGUMENT_MAPPING.get(name), value);
+        return argPos;
+    }
+    
+    /** Get argument name */
+    private String getArgumentName(final String arg) {
+        int pos = arg.indexOf("=");
+        if (pos == -1) {
+        	pos = arg.indexOf(":");
+        }
+        return arg.substring(0, pos != -1 ? pos: arg.length());
     }
 
     /** Handle the -logger argument. */
@@ -950,22 +1049,25 @@ public class Main extends org.apache.tools.ant.Main implements AntMain {
     private static void printUsage() {
         String lSep = System.getProperty("line.separator");
         StringBuffer msg = new StringBuffer();
-        msg.append("dita [options] [target [target2 [target3] ...]]" + lSep);
-        msg.append("Options: " + lSep);
+        msg.append("Usage: dita [options]" + lSep);
+        msg.append("Mandatory: " + lSep);
+        msg.append("  -i, -input <file>     input file" + lSep);
+        msg.append("  -t, -transtype <name> transformation type" + lSep);
+        msg.append("Optional: " + lSep);
+        msg.append("  -o, -output <dir>     output directory" + lSep);
         msg.append("  -help, -h              print this message" + lSep);
-        msg.append("  -projecthelp, -p       print project help information" + lSep);
+//        msg.append("  -projecthelp, -p       print project help information" + lSep);
         msg.append("  -version               print the version information and exit" + lSep);
 //        msg.append("  -diagnostics           print information that might be helpful to" + lSep);
 //        msg.append("                         diagnose or report problems." + lSep);
-        msg.append("  -quiet, -q             be extra quiet" + lSep);
+//        msg.append("  -quiet, -q             be extra quiet" + lSep);
         msg.append("  -verbose, -v           be extra verbose" + lSep);
-//        msg.append("  -debug, -d             print debugging information" + lSep);
+        msg.append("  -debug, -d             print debugging information" + lSep);
 //        msg.append("  -emacs, -e             produce logging information without adornments"
 //                   + lSep);
 //        msg.append("  -lib <path>            specifies a path to search for jars and classes"
 //                   + lSep);
-        msg.append("  -logfile <file>        use given file for log" + lSep);
-        msg.append("    -l     <file>                ''" + lSep);
+        msg.append("  -l, logfile <file>     use given file for log" + lSep);
 //        msg.append("  -logger <classname>    the class which is to perform logging" + lSep);
 //        msg.append("  -listener <classname>  add an instance of class as a project listener"
 //                   + lSep);
