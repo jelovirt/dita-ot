@@ -3,25 +3,32 @@ package org.dita.dost.module;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.xml.transform.Source;
 import javax.xml.transform.Templates;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.sax.SAXSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
+import org.apache.tools.ant.types.XMLCatalog;
+import org.apache.tools.ant.util.FileNameMapper;
 import org.apache.tools.ant.util.FileUtils;
-
 import org.dita.dost.exception.DITAOTException;
 import org.dita.dost.log.DITAOTLogger;
 import org.dita.dost.pipeline.AbstractPipelineInput;
 import org.dita.dost.pipeline.AbstractPipelineOutput;
+import org.dita.dost.util.StringUtils;
 import org.dita.dost.util.ThreadUtils;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
 
 /**
  * XSLT processing module.
@@ -38,25 +45,30 @@ import org.dita.dost.util.ThreadUtils;
  */
 public final class XsltModule implements AbstractPipelineModule {
 
-    private final Templates templates;
+    private Templates templates;
     private Map<String, String> params = new HashMap<String, String>();
     private DITAOTLogger logger;
+    private File style;
+    private File in;
+    private File out;
     private File destDir;
     private File baseDir;
-    private List<File> includes;
+    private Collection<File> includes;
     private String filenameparameter;
+    private String filedirparameter;
     private boolean reloadstylesheet;
+    private XMLCatalog xmlcatalog;
+	private FileNameMapper mapper;
     
-    public XsltModule(final File style) {
+    public AbstractPipelineOutput execute(AbstractPipelineInput input) throws DITAOTException {
+    	logger.logInfo("Transforming into " + destDir.getAbsolutePath());
         final TransformerFactory tf = TransformerFactory.newInstance();
+        tf.setURIResolver(xmlcatalog);
         try {
             templates = tf.newTemplates(new StreamSource(style));
         } catch (TransformerConfigurationException e) {
             throw new RuntimeException("Failed to compile stylesheet '" + style.getAbsolutePath() + "': " + e.getMessage(), e);
         }
-    }
-    
-    public AbstractPipelineOutput execute(AbstractPipelineInput input) throws DITAOTException {
     	if (reloadstylesheet) {
     		logger.logDebug("Ignore reloadstylesheet");
     	}
@@ -64,6 +76,13 @@ public final class XsltModule implements AbstractPipelineModule {
         for (final File include: includes) {
             rs.add(new Runnable() {
                 public void run() {
+                	XMLReader parser;
+            		try {
+            			parser = StringUtils.getXMLReader();
+            		} catch (final SAXException e) {
+            			throw new RuntimeException("Failed to create XML reader: " + e.getMessage(), e);
+            		}
+                    parser.setEntityResolver(xmlcatalog);
                     Transformer t = null;
                     try {
                         t = templates.newTransformer();
@@ -72,7 +91,17 @@ public final class XsltModule implements AbstractPipelineModule {
                         return;
                     }
                     final File in = new File(baseDir, include.getPath());
-                    final File out = new File(destDir, include.getPath());
+                    File out = new File(destDir, include.getPath());
+                    if (mapper != null) {
+                    	final String[] outs = mapper.mapFileName(out.getAbsolutePath());
+                    	if (outs == null) {
+                    		return;
+                    	}
+                    	if (outs.length > 1) {
+                    		throw new RuntimeException("XSLT module only support one to one output mapping");
+                    	}
+                    	out = new File(outs[0]);
+                    }
                     final boolean same = in.getAbsolutePath().equals(out.getAbsolutePath());
                     final File tmp = same ? new File(out.getAbsolutePath() + ".tmp" + Long.toString(System.currentTimeMillis())) : out; 
                     for (Map.Entry<String, String> e: params.entrySet()) {
@@ -83,9 +112,23 @@ public final class XsltModule implements AbstractPipelineModule {
                         logger.logDebug("Set parameter " + filenameparameter + " to '" + include.getName() + "'");
                         t.setParameter(filenameparameter, include.getName());
                     }
-                    logger.logInfo("Processing " + in.getAbsolutePath() + " to " + tmp.getAbsolutePath());
+                    if (filedirparameter != null) {
+                    	final String v = include.getParent() != null ? include.getParent() : ".";
+                        logger.logDebug("Set parameter " + filedirparameter + " to '" + v + "'");
+                        t.setParameter(filedirparameter, v);
+                    }
+                    if (same) {
+        	            logger.logInfo("Processing " + in.getAbsolutePath());
+        	            logger.logDebug("Processing " + in.getAbsolutePath() + " to " + tmp.getAbsolutePath());
+                    } else {
+                    	logger.logInfo("Processing " + in.getAbsolutePath() + " to " + tmp.getAbsolutePath());
+                    }
+                    final Source source = new SAXSource(parser, new InputSource(in.toURI().toString()));
                     try {
-                        t.transform(new StreamSource(in), new StreamResult(tmp));
+                    	if (!tmp.getParentFile().exists() && !tmp.getParentFile().mkdirs()) {
+                        	throw new IOException("Failed to create directory " + tmp.getParent());
+                        }
+                        t.transform(source, new StreamResult(tmp));
                         if (same) {
                             logger.logDebug("Moving " + tmp.getAbsolutePath() + " to " + out.getAbsolutePath());
                             if (!out.delete()) {
@@ -99,13 +142,17 @@ public final class XsltModule implements AbstractPipelineModule {
                         logger.logError("Failed to transform document: " + e.getMessage(), e);
                         logger.logDebug("Remove " + tmp.getAbsolutePath());
                         FileUtils.delete(tmp);
-                    } 
+                    }
                 }});
         }
         ThreadUtils.run(rs);
         
         return null;
     }
+
+	public void setStyle(final File style) {
+		this.style = style;
+	}
 
     public void setLogger(DITAOTLogger logger) {
         this.logger = logger;
@@ -115,7 +162,7 @@ public final class XsltModule implements AbstractPipelineModule {
         params.put(key, value);
     }
 
-    public void setIncludes(final List<File> includes) {
+    public void setIncludes(final Collection<File> includes) {
         this.includes = includes;
     }
 
@@ -131,8 +178,28 @@ public final class XsltModule implements AbstractPipelineModule {
         this.filenameparameter = filenameparameter;
     }
     
+    public void setFiledirParam(final String filedirparameter) {
+        this.filedirparameter = filedirparameter;
+    }
+    
     public void setReloadstylesheet(final boolean reloadstylesheet) {
     	this.reloadstylesheet = reloadstylesheet;
     }
+
+	public void setSource(final File in) {
+		this.in = in;
+	}
+
+	public void setResult(final File out) {
+		this.out = out;
+	}
+
+	public void setXMLCatalog(final XMLCatalog xmlcatalog) {
+		this.xmlcatalog = xmlcatalog;
+	}
+
+	public void setMapper(final FileNameMapper mapper) {
+		this.mapper = mapper;
+	}
     
 }

@@ -13,20 +13,23 @@ import static org.dita.dost.util.Constants.*;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.StringTokenizer;
 
 import org.apache.tools.ant.Project;
 
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
+import org.apache.tools.ant.types.Mapper;
+import org.apache.tools.ant.types.XMLCatalog;
 import org.dita.dost.exception.DITAOTException;
 import org.dita.dost.log.DITAOTAntLogger;
 import org.dita.dost.log.MessageUtils;
@@ -112,7 +115,6 @@ public final class ExtensibleAntInvoker extends Task {
     }
     
     public void addConfiguredXslt(final Xslt xslt) {
-        log("XSLT stylesheet " + xslt.style.getAbsolutePath());
         modules.add(xslt);
     }
     
@@ -151,33 +153,25 @@ public final class ExtensibleAntInvoker extends Task {
                 }
                 if (m instanceof Xslt) {
                     final Xslt xm = (Xslt) m;
-                    final XsltModule x = new XsltModule(xm.style);
-                    final List<File> inc = new ArrayList<File>();
-                    for (final Xslt.IncludesFile i: xm.includes) {
-                        if (!isValid(i.ifProperty, null)) {
-                            continue;
-                        }
-                        BufferedReader r = null;
-                        try {
-                            r = new BufferedReader(new FileReader(i.file));
-                            for (String l = r.readLine(); l != null; l = r.readLine()) {
-                                inc.add(new File(l));
-                            }
-                        } catch (IOException e) {
-                            logger.logError("Failed to read includes file " + i.file + ": " + e.getMessage() , e);
-                        } finally {
-                            if (r != null) {
-                                try {
-                                    r.close();
-                                } catch (IOException e) {}
-                            }
-                        }
+                    final XsltModule x = new XsltModule();
+                    x.setStyle(xm.style);
+                    if (xm.in != null) {
+                    	x.setSource(xm.in);
+                    	x.setResult(xm.out);
+                    } else {
+	                    final Set<File> inc = readListFile(xm.includes, logger); 
+	                    inc.removeAll(readListFile(xm.excludes, logger));
+	                    x.setIncludes(inc);
+	                    x.setDestinationDir(xm.destDir);
+	                    x.setSorceDir(xm.baseDir);
                     }
-                    x.setIncludes(inc);
-                    x.setDestinationDir(xm.destDir);
-                    x.setSorceDir(xm.baseDir);
                     x.setFilenameParam(xm.filenameparameter);
+                    x.setFiledirParam(xm.filedirparameter);
                     x.setReloadstylesheet(xm.reloadstylesheet);
+                    x.setXMLCatalog(xm.xmlcatalog);
+                    if (xm.mapper != null) {
+                    	x.setMapper(xm.mapper.getImplementation());
+                    }
                     for (final Param p : m.params) {
                         if (!p.isValid()) {
                             throw new BuildException("Incomplete parameter");
@@ -205,6 +199,31 @@ public final class ExtensibleAntInvoker extends Task {
         } catch (final DITAOTException e) {
             throw new BuildException("Failed to run pipeline: " + e.getMessage(), e);
         }
+    }
+    
+    private Set<File> readListFile(final List<Xslt.IncludesFile> includes, final DITAOTAntLogger logger) {
+    	final Set<File> inc = new HashSet<File>();
+    	for (final Xslt.IncludesFile i: includes) {
+            if (!isValid(i.ifProperty, null)) {
+                continue;
+            }
+            BufferedReader r = null;
+            try {
+                r = new BufferedReader(new FileReader(i.file));
+                for (String l = r.readLine(); l != null; l = r.readLine()) {
+                    inc.add(new File(l));
+                }
+            } catch (IOException e) {
+                logger.logError("Failed to read includes file " + i.file + ": " + e.getMessage() , e);
+            } finally {
+                if (r != null) {
+                    try {
+                        r.close();
+                    } catch (IOException e) {}
+                }
+            }
+        }
+    	return inc;
     }
     
     private boolean isValid(final String ifProperty, final String unlessProperty) {
@@ -247,9 +266,14 @@ public final class ExtensibleAntInvoker extends Task {
         private File style;
         private File baseDir;
         private File destDir;
+        private File in;
+        private File out;
         private final List<IncludesFile> includes = new ArrayList<IncludesFile>();
+        private final List<IncludesFile> excludes = new ArrayList<IncludesFile>();
+        private Mapper mapper;
         private String filenameparameter;
-        private String catalogRefid;
+        private String filedirparameter;
+        private XMLCatalog xmlcatalog;
         private boolean reloadstylesheet;
         
         // Ant setters
@@ -282,22 +306,48 @@ public final class ExtensibleAntInvoker extends Task {
         	this.reloadstylesheet = reloadstylesheet;
         }
         
+        public void setIn(final File in) {
+        	this.in = in;
+        }
+        
+        public void setOut(final File out) {
+        	this.out = out;
+        }
+        
         public void setIncludesfile(final File includesfile) throws IOException {
               final IncludesFile i = new IncludesFile();
               i.setName(includesfile);
               includes.add(i);
         }
         
+        public void setExcludesfile(final File excludesfile) throws IOException {
+            final IncludesFile i = new IncludesFile();
+            i.setName(excludesfile);
+            excludes.add(i);
+        }
+        
         public void setFilenameparameter(final String filenameparameter) {
             this.filenameparameter = filenameparameter;
         }
+        
+        public void setFiledirparameter(final String filedirparameter) {
+            this.filedirparameter = filedirparameter;
+        }
                 
         public void addConfiguredXmlcatalog(final XMLCatalog xmlcatalog) {
-            this.catalogRefid = xmlcatalog.refid;
+            this.xmlcatalog = xmlcatalog;
+        }
+        
+        public void addConfiguredMapper(final Mapper mapper) {
+            this.mapper = mapper;
         }
         
         public void addConfiguredIncludesFile(final IncludesFile includesFile) {
             includes.add(includesFile);
+        }
+        
+        public void addConfiguredExcludesFile(final IncludesFile excludesFile) {
+            excludes.add(excludesFile);
         }
         
         public static class IncludesFile {
@@ -311,12 +361,12 @@ public final class ExtensibleAntInvoker extends Task {
             }
         }
         
-        public static class XMLCatalog {
+        /*public static class XMLCatalog {
             private String refid;
             public void setRefid(final String refid) {
                 this.refid = refid;
             }
-        }
+        }*/
         
     }
 
