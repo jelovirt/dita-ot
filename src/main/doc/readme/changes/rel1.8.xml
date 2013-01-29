@@ -17,6 +17,17 @@
     <title>Migration from previous releases</title>
     <refbody>
       <section>
+      <p>Stylesheets for the following transtypes have moved
+        to plug-in specific folders:</p>
+        <ul>
+          <li>eclipsehelp</li>
+          <li>htmlhelp</li>
+          <li>javahelp</li>
+          <li>odt</li>
+          <li>xhtml</li>
+        </ul>
+      </section>
+      <section>
         <title>Preprocessing</title>
         <p>The following deprecated Ant properties have been removed:</p>
         <ul id="ul_rp5_hjs_53">
@@ -45,6 +56,14 @@
           <li><codeph>toc-topic-text</codeph>, use <codeph>tocText</codeph> mode instead</li>
         </ul>
       </section>
+      <section>
+        <title>Legacy PDF</title>
+        <p>The following deprecated XSLT stylesheets have been removed:</p>
+        <ul>
+          <li><filepath>dita2fo-shell_template.xsl</filepath></li>
+          <li><filepath>topic2fo-shell.xsl</filepath></li>
+        </ul>
+      </section>
     </refbody>
   </reference>
   <reference id="rel1.8.issues">
@@ -56,7 +75,7 @@
       <section>
         <title>Feature requests</title>
         <ul>
-          <li/>
+          <li>#1447 Move stylesheets and resource files to plug-in folder (milestone 1)</li>
         </ul>
       </section>
       <section>
