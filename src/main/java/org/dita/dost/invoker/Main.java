@@ -53,7 +53,6 @@ import org.apache.tools.ant.property.ResolvePropertyMap;
 import org.apache.tools.ant.util.ClasspathUtils;
 import org.apache.tools.ant.util.FileUtils;
 import org.apache.tools.ant.util.ProxySetup;
-import org.dita.dost.log.DITAOTBuildLogger;
 import org.dita.dost.util.Configuration;
 
 
@@ -70,6 +69,41 @@ import org.dita.dost.util.Configuration;
  */
 public class Main extends org.apache.tools.ant.Main implements AntMain {
 
+    private static abstract class Argument {    
+        final String property;
+        Argument(final String property) {
+            this.property = property;
+        }
+        abstract String getValue(final String value);
+    }
+    private static class StringArgument extends Argument {
+        StringArgument(final String property) {
+            super(property);
+        }
+        @Override
+        String getValue(final String value) {
+            return value;
+        }
+    }
+    private static class FileArgument extends Argument {
+        FileArgument(final String property) {
+            super(property);
+        }
+        @Override
+        String getValue(final String value) {
+            return new File(value).getAbsolutePath();
+        }
+    }
+    private static class BooleanArgument extends Argument {
+        BooleanArgument(final String property) {
+            super(property);
+        }
+        @Override
+        String getValue(final String value) {
+            return Boolean.valueOf(value).toString();
+        }
+    }
+    
     /**
      * A Set of args are are handled by the launcher and should
      * not be seen by Main.
@@ -84,67 +118,67 @@ public class Main extends org.apache.tools.ant.Main implements AntMain {
         LAUNCH_COMMANDS.add("-main");
     }
     
-    private static final Map<String, String> ARGUMENT_MAPPING = new HashMap<String, String>();
+    private static final Map<String, Argument> ARGUMENT_MAPPING = new HashMap<String, Argument>();
     static {
-    	ARGUMENT_MAPPING.put("-t", "transtype");
-    	ARGUMENT_MAPPING.put("-transtype", "transtype");
-    	ARGUMENT_MAPPING.put("-i", "args.input");
-    	ARGUMENT_MAPPING.put("-input", "args.input");
-    	ARGUMENT_MAPPING.put("-o", "output.dir");
-    	ARGUMENT_MAPPING.put("-output", "output.dir");
-    	ARGUMENT_MAPPING.put("-f", "args.filter");
-    	ARGUMENT_MAPPING.put("-filter", "args.filter");
-    	ARGUMENT_MAPPING.put("-temp", "dita.temp.dir");
+    	ARGUMENT_MAPPING.put("-t", new StringArgument("transtype"));
+    	ARGUMENT_MAPPING.put("-transtype", new StringArgument("transtype"));
+    	ARGUMENT_MAPPING.put("-i", new FileArgument("args.input"));
+    	ARGUMENT_MAPPING.put("-input", new FileArgument("args.input"));
+    	ARGUMENT_MAPPING.put("-o", new FileArgument("output.dir"));
+    	ARGUMENT_MAPPING.put("-output", new FileArgument("output.dir"));
+    	ARGUMENT_MAPPING.put("-f", new FileArgument("args.filter"));
+    	ARGUMENT_MAPPING.put("-filter", new FileArgument("args.filter"));
+    	ARGUMENT_MAPPING.put("-temp", new FileArgument("dita.temp.dir"));
     	// legacy
-		//ARGUMENT_MAPPING.put("/basedir", "basedir");
-		//ARGUMENT_MAPPING.put("/ditadir", "dita.dir");
-		ARGUMENT_MAPPING.put("/i", "args.input");
-		ARGUMENT_MAPPING.put("/if", "dita.input");
-		ARGUMENT_MAPPING.put("/id", "dita.input.dirname");
-		ARGUMENT_MAPPING.put("/artlbl", "args.artlbl");
-		ARGUMENT_MAPPING.put("/draft", "args.draft");
-		ARGUMENT_MAPPING.put("/ftr", "args.ftr");
-		ARGUMENT_MAPPING.put("/hdr", "args.hdr");
-		ARGUMENT_MAPPING.put("/hdf", "args.hdf");
-		ARGUMENT_MAPPING.put("/csspath", "args.csspath");
-		ARGUMENT_MAPPING.put("/cssroot", "args.cssroot");
-		ARGUMENT_MAPPING.put("/css", "args.css");
-		ARGUMENT_MAPPING.put("/filter", "args.filter");
-		//ARGUMENT_MAPPING.put("/ditaext", "dita.extname");
-		ARGUMENT_MAPPING.put("/outdir", "output.dir");
-		ARGUMENT_MAPPING.put("/transtype", "transtype");
-		ARGUMENT_MAPPING.put("/indexshow", "args.indexshow");
-		ARGUMENT_MAPPING.put("/outext", "args.outext");
-		ARGUMENT_MAPPING.put("/copycss", "args.copycss");
-		ARGUMENT_MAPPING.put("/xsl", "args.xsl");
-		ARGUMENT_MAPPING.put("/xslpdf", "args.xsl.pdf");
-		ARGUMENT_MAPPING.put("/tempdir", "dita.temp.dir");
-		ARGUMENT_MAPPING.put("/cleantemp", "clean.temp");
-		ARGUMENT_MAPPING.put("/foimgext", "args.fo.img.ext");
-		ARGUMENT_MAPPING.put("/javahelptoc", "args.javahelp.toc");
-		ARGUMENT_MAPPING.put("/javahelpmap", "args.javahelp.map");
-		ARGUMENT_MAPPING.put("/eclipsehelptoc", "args.eclipsehelp.toc");
-		ARGUMENT_MAPPING.put("/eclipsecontenttoc", "args.eclipsecontent.toc");
-		ARGUMENT_MAPPING.put("/xhtmltoc", "args.xhtml.toc");
-		ARGUMENT_MAPPING.put("/xhtmlclass", "args.xhtml.classattr");
-		ARGUMENT_MAPPING.put("/usetasklabels", "args.gen.task.lbl");
-		ARGUMENT_MAPPING.put("/logdir", "args.logdir");
-		ARGUMENT_MAPPING.put("/ditalocale", "args.dita.locale");
-		ARGUMENT_MAPPING.put("/fooutputrellinks", "args.fo.output.rel.links");
-		ARGUMENT_MAPPING.put("/foincluderellinks", "args.fo.include.rellinks");
-		ARGUMENT_MAPPING.put("/odtincluderellinks", "args.odt.include.rellinks");
-		ARGUMENT_MAPPING.put("/retaintopicfo", "retain.topic.fo");
-		ARGUMENT_MAPPING.put("/version", "args.eclipse.version");
-		ARGUMENT_MAPPING.put("/provider", "args.eclipse.provider");
-		ARGUMENT_MAPPING.put("/fouserconfig", "args.fo.userconfig");
-		ARGUMENT_MAPPING.put("/htmlhelpincludefile", "args.htmlhelp.includefile");
-		ARGUMENT_MAPPING.put("/validate", "validate");
-		ARGUMENT_MAPPING.put("/outercontrol", "outer.control");
-		ARGUMENT_MAPPING.put("/generateouter", "generate.copy.outer");
-		ARGUMENT_MAPPING.put("/onlytopicinmap", "onlytopic.in.map");
-		ARGUMENT_MAPPING.put("/debug", "args.debug");
-		ARGUMENT_MAPPING.put("/grammarcache", "args.grammar.cache");
-		ARGUMENT_MAPPING.put("/odtimgembed", "args.odt.img.embed");
+		//ARGUMENT_MAPPING.put("/basedir", new StringArgument("basedir"));
+		//ARGUMENT_MAPPING.put("/ditadir", new StringArgument("dita.dir"));
+		ARGUMENT_MAPPING.put("/i", new FileArgument("args.input"));
+		ARGUMENT_MAPPING.put("/if", new FileArgument("dita.input"));
+		ARGUMENT_MAPPING.put("/id", new FileArgument("dita.input.dirname"));
+		ARGUMENT_MAPPING.put("/artlbl", new StringArgument("args.artlbl"));
+		ARGUMENT_MAPPING.put("/draft", new StringArgument("args.draft"));
+		ARGUMENT_MAPPING.put("/ftr", new StringArgument("args.ftr"));
+		ARGUMENT_MAPPING.put("/hdr", new StringArgument("args.hdr"));
+		ARGUMENT_MAPPING.put("/hdf", new StringArgument("args.hdf"));
+		ARGUMENT_MAPPING.put("/csspath", new StringArgument("args.csspath"));
+		ARGUMENT_MAPPING.put("/cssroot", new StringArgument("args.cssroot"));
+		ARGUMENT_MAPPING.put("/css", new StringArgument("args.css"));
+		ARGUMENT_MAPPING.put("/filter", new FileArgument("args.filter"));
+		//ARGUMENT_MAPPING.put("/ditaext", new StringArgument("dita.extname"));
+		ARGUMENT_MAPPING.put("/outdir", new FileArgument("output.dir"));
+		ARGUMENT_MAPPING.put("/transtype", new StringArgument("transtype"));
+		ARGUMENT_MAPPING.put("/indexshow", new StringArgument("args.indexshow"));
+		ARGUMENT_MAPPING.put("/outext", new StringArgument("args.outext"));
+		ARGUMENT_MAPPING.put("/copycss", new StringArgument("args.copycss"));
+		ARGUMENT_MAPPING.put("/xsl", new FileArgument("args.xsl"));
+		ARGUMENT_MAPPING.put("/xslpdf", new FileArgument("args.xsl.pdf"));
+		ARGUMENT_MAPPING.put("/tempdir", new FileArgument("dita.temp.dir"));
+		ARGUMENT_MAPPING.put("/cleantemp", new StringArgument("clean.temp"));
+		ARGUMENT_MAPPING.put("/foimgext", new StringArgument("args.fo.img.ext"));
+		ARGUMENT_MAPPING.put("/javahelptoc", new StringArgument("args.javahelp.toc"));
+		ARGUMENT_MAPPING.put("/javahelpmap", new StringArgument("args.javahelp.map"));
+		ARGUMENT_MAPPING.put("/eclipsehelptoc", new StringArgument("args.eclipsehelp.toc"));
+		ARGUMENT_MAPPING.put("/eclipsecontenttoc", new StringArgument("args.eclipsecontent.toc"));
+		ARGUMENT_MAPPING.put("/xhtmltoc", new StringArgument("args.xhtml.toc"));
+		ARGUMENT_MAPPING.put("/xhtmlclass", new StringArgument("args.xhtml.classattr"));
+		ARGUMENT_MAPPING.put("/usetasklabels", new StringArgument("args.gen.task.lbl"));
+		ARGUMENT_MAPPING.put("/logdir", new FileArgument("args.logdir"));
+		ARGUMENT_MAPPING.put("/ditalocale", new StringArgument("args.dita.locale"));
+		ARGUMENT_MAPPING.put("/fooutputrellinks", new StringArgument("args.fo.output.rel.links"));
+		ARGUMENT_MAPPING.put("/foincluderellinks", new StringArgument("args.fo.include.rellinks"));
+		ARGUMENT_MAPPING.put("/odtincluderellinks", new StringArgument("args.odt.include.rellinks"));
+		ARGUMENT_MAPPING.put("/retaintopicfo", new StringArgument("retain.topic.fo"));
+		ARGUMENT_MAPPING.put("/version", new StringArgument("args.eclipse.version"));
+		ARGUMENT_MAPPING.put("/provider", new StringArgument("args.eclipse.provider"));
+		ARGUMENT_MAPPING.put("/fouserconfig", new StringArgument("args.fo.userconfig"));
+		ARGUMENT_MAPPING.put("/htmlhelpincludefile", new StringArgument("args.htmlhelp.includefile"));
+		ARGUMENT_MAPPING.put("/validate", new StringArgument("validate"));
+		ARGUMENT_MAPPING.put("/outercontrol", new StringArgument("outer.control"));
+		ARGUMENT_MAPPING.put("/generateouter", new StringArgument("generate.copy.outer"));
+		ARGUMENT_MAPPING.put("/onlytopicinmap", new StringArgument("onlytopic.in.map"));
+		ARGUMENT_MAPPING.put("/debug", new StringArgument("args.debug"));
+		ARGUMENT_MAPPING.put("/grammarcache", new StringArgument("args.grammar.cache"));
+		ARGUMENT_MAPPING.put("/odtimgembed", new StringArgument("args.odt.img.embed"));
     }
 
     /** The default build file name. {@value} */
@@ -640,7 +674,8 @@ public class Main extends org.apache.tools.ant.Main implements AntMain {
         } else {
             throw new BuildException("Missing value for property " + name);
         }
-        definedProps.put(ARGUMENT_MAPPING.get(name), value);
+        final Argument a = ARGUMENT_MAPPING.get(name);
+        definedProps.put(a.property, a.getValue(value));
         return argPos;
     }
     
