@@ -166,7 +166,7 @@ public class Main extends org.apache.tools.ant.Main implements AntMain {
     private Vector targets = new Vector();
 
     /** Set of properties that can be used by tasks. */
-    private Properties definedProps = new Properties();
+    private Map<String, Object> definedProps = new HashMap<String, Object>();
 
     /** Names of classes to add as listeners to project. */
     private Vector listeners = new Vector(1);
@@ -744,7 +744,7 @@ public class Main extends org.apache.tools.ant.Main implements AntMain {
             Enumeration propertyNames = props.propertyNames();
             while (propertyNames.hasMoreElements()) {
                 String name = (String) propertyNames.nextElement();
-                if (definedProps.getProperty(name) == null) {
+                if (!definedProps.containsKey(name)) {
                     definedProps.put(name, props.getProperty(name));
                 }
             }
@@ -881,15 +881,14 @@ public class Main extends org.apache.tools.ant.Main implements AntMain {
                 // resolve properties
                 PropertyHelper propertyHelper
                     = (PropertyHelper) PropertyHelper.getPropertyHelper(project);
-                HashMap props = new HashMap(definedProps);
+                HashMap<String, Object> props = new HashMap<String, Object>(definedProps);
                 new ResolvePropertyMap(project, propertyHelper,
                                        propertyHelper.getExpanders())
                     .resolveAllProperties(props, null, false);
 
                 // set user-define properties
-                for (Iterator e = props.entrySet().iterator(); e.hasNext(); ) {
-                    Map.Entry ent = (Map.Entry) e.next();
-                    String arg = (String) ent.getKey();
+                for (Map.Entry<String, Object> ent: props.entrySet()) {
+                    String arg = ent.getKey();
                     Object value = ent.getValue();
                     project.setUserProperty(arg, String.valueOf(value));
                 }
