@@ -8,7 +8,7 @@ This fork follows the official development version of DITA-OT, adding new featur
 Binaries
 --------
 
-Only nightly binaries are available:
+Only [nightly binaries](https://www.dropbox.com/sh/znkyu7rawgowa87/rEX8F97mXC) are available:
 
 * [UNIX and OS X](https://dl.dropbox.com/sh/znkyu7rawgowa87/QiprWA5mCC/DITA-OTnext_client_bin.tar.gz?dl=1)
 * [Windows](https://dl.dropbox.com/sh/znkyu7rawgowa87/AAl81V-3Ta/DITA-OTnext_client_bin.zip?dl=1)
