@@ -152,11 +152,9 @@ Other modes can be found within the code, and may or may not prove useful for ov
           <xsl:if test="not(@otherprops)">
             <xsl:apply-templates select="." mode="mappull:inherit-and-set-attribute"><xsl:with-param name="attrib">otherprops</xsl:with-param></xsl:apply-templates>
           </xsl:if>
-          <!-- added by William on 2009-09-07 for updated mapref behavior start -->
           <xsl:if test="not(@props)">
             <xsl:apply-templates select="." mode="mappull:inherit-and-set-attribute"><xsl:with-param name="attrib">props</xsl:with-param></xsl:apply-templates>
           </xsl:if>
-          <!-- added by William on 2009-09-07 for updated mapref behavior end -->
           <!--grab type, text and metadata, as long there's an href to grab from, and it's not inaccessible-->
           <xsl:choose>
             <xsl:when test="@href=''">
@@ -339,7 +337,7 @@ Other modes can be found within the code, and may or may not prove useful for ov
     <xsl:param name="actual-class"/> <!-- Class value on the target element -->
     <xsl:param name="actual-name"/>  <!-- Name of the target element -->
     <xsl:param name="WORKDIR">
-      <xsl:apply-templates select="/processing-instruction('workdir-uri')" mode="get-work-dir"/>
+      <xsl:apply-templates select="/processing-instruction('workdir-uri')[1]" mode="get-work-dir"/>
     </xsl:param>
     <xsl:apply-templates select="." mode="mappull:verify-type-value">
       <xsl:with-param name="type" select="$type"/>
@@ -358,7 +356,7 @@ Other modes can be found within the code, and may or may not prove useful for ov
     <xsl:param name="actual-class"/>  <!-- Class value on the target element -->
     <xsl:param name="actual-name"/>   <!-- Name of the target element -->
     <xsl:param name="WORKDIR">
-      <xsl:apply-templates select="/processing-instruction('workdir-uri')" mode="get-work-dir"/>
+      <xsl:apply-templates select="/processing-instruction('workdir-uri')[1]" mode="get-work-dir"/>
     </xsl:param>
     <xsl:choose>
       <!-- The type is correct; concept typed as concept, newtype defined as newtype -->
@@ -388,7 +386,7 @@ Other modes can be found within the code, and may or may not prove useful for ov
   <!--Figure out what portion of the href attribute is the path to the file-->
   <xsl:template match="*" mode="mappull:get-stuff_file">
     <xsl:param name="WORKDIR">
-      <xsl:apply-templates select="/processing-instruction('workdir-uri')" mode="get-work-dir"/>
+      <xsl:apply-templates select="/processing-instruction('workdir-uri')[1]" mode="get-work-dir"/>
     </xsl:param>
     <xsl:choose>
       <!--an absolute path using a scheme, eg http, plus a fragment identifier - grab the part before the fragment-->
@@ -656,7 +654,7 @@ Other modes can be found within the code, and may or may not prove useful for ov
     <xsl:param name="scope">#none#</xsl:param>
     <xsl:param name="format">#none#</xsl:param>
     <xsl:param name="WORKDIR">
-      <xsl:apply-templates select="/processing-instruction('workdir-uri')" mode="get-work-dir"/>
+      <xsl:apply-templates select="/processing-instruction('workdir-uri')[1]" mode="get-work-dir"/>
     </xsl:param>
     <xsl:variable name="locktitle">
       <xsl:call-template name="inherit">

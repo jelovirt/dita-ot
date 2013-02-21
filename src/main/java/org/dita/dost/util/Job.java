@@ -28,6 +28,7 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
 import org.xml.sax.Attributes;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.DefaultHandler;
@@ -109,6 +110,8 @@ public final class Job {
     public static final String INPUT_DITAMAP_LIST_FILE = "user.input.file.list";
     /** File name for key definition file */
     public static final String KEYDEF_LIST_FILE = "keydef.xml";
+    /** File name for key definition file */
+    public static final String SUBJECT_SCHEME_KEYDEF_LIST_FILE = "schemekeydef.xml";
     /** File name for keyref list file */
     public static final String KEYREF_LIST_FILE = "keyref.list";
     /** File name for key list file */
@@ -144,20 +147,6 @@ public final class Job {
     }
 
     /**
-     * Create new job configuration instance. Initialise from properties file.
-     *  
-     * @param props properties file
-     * @param tempDir temporary directory
-     * @deprecated use {@link #Job(File)} instead and populate properties with {@link #setProperty(String, String)}
-     */
-    @Deprecated
-    public Job(final Properties props, final File tempDir) {
-        this.tempDir = tempDir;
-        prop = new HashMap<String, Object>();
-        readProperties(props);
-    }
-    
-    /**
      * Read temporary configuration files. If configuration files are not found,
      * assume an empty job object is being created.
      * 
@@ -168,13 +157,18 @@ public final class Job {
     private void read() throws IOException {
         final File jobFile = new File(tempDir, JOB_FILE);
         if (jobFile.exists()) {
+        	InputStream in = null;
             try {
                 XMLReader parser = StringUtils.getXMLReader();
                 parser.setContentHandler(new JobHandler(prop, files));
                 parser.parse(jobFile.toURI().toString());
             } catch (final SAXException e) {
                 throw new IOException("Failed to read job file: " + e.getMessage());
-            }
+            } finally {
+            	if (in != null) {
+            		in.close();
+            	}
+            } 
             return;
         }
 
@@ -317,7 +311,7 @@ public final class Job {
         XMLStreamWriter out = null;
         try {
         	outStream = new FileOutputStream(new File(tempDir, JOB_FILE));
-            out = XMLOutputFactory.newInstance().createXMLStreamWriter(outStream);
+            out = XMLOutputFactory.newInstance().createXMLStreamWriter(outStream, "UTF-8");
             out.writeStartDocument();
             out.writeStartElement(ELEMENT_JOB);
             for (final Map.Entry<String, Object> e: prop.entrySet()) {
