@@ -638,7 +638,7 @@ public final class Job {
     public Set<String> setSet(final String key, final Set<String> value) {
         Object previous = null;
         if (key.equals(FULL_DITAMAP_TOPIC_LIST)) {
-            // skip, compound set
+            throw new RuntimeException(FULL_DITAMAP_TOPIC_LIST + " is a compound set, cannot be directly generated");
         } else if (key.equals(FULL_DITA_TOPIC_LIST)) {
             for (final String f: value) {
             	getOrAdd(f).format = "dita";
