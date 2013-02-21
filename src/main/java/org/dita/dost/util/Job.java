@@ -68,6 +68,7 @@ public final class Job {
     private static final String ATTRIBUTE_NON_CONREF_TARGET = "non-conref-target";
     // TODO: Maybe should be conaction-target
     private static final String ATTRIBUTE_CONREF_PUSH = "conrefpush";
+    private static final String ATTRIBUTE_SUBJECT_SCHEME = "subjectscheme";
     private static final String ATTRIBUTE_HAS_LINK = "has-link";
     
     /** File name for chuncked dita map list file */
@@ -270,6 +271,13 @@ public final class Job {
                 i.isConrefTarget = Boolean.parseBoolean(atts.getValue(ATTRIBUTE_CONREF_TARGET));
                 i.isNonConrefTarget = Boolean.parseBoolean(atts.getValue(ATTRIBUTE_NON_CONREF_TARGET));
                 i.isConrefPush = Boolean.parseBoolean(atts.getValue(ATTRIBUTE_CONREF_PUSH));
+                i.isSubjectScheme = Boolean.parseBoolean(atts.getValue(ATTRIBUTE_SUBJECT_SCHEME));
+                i.isCopyToSource = Boolean.parseBoolean(atts.getValue(COPYTO_SOURCE_LIST));
+                i.isOutDita = Boolean.parseBoolean(atts.getValue(OUT_DITA_FILES_LIST));
+                i.isChunkedDitaMap = Boolean.parseBoolean(atts.getValue(CHUNKED_DITAMAP_LIST));
+                i.isFlagImage = Boolean.parseBoolean(atts.getValue(FLAG_IMAGE_LIST));
+                i.isSubtarget = Boolean.parseBoolean(atts.getValue(SUBSIDIARY_TARGET_LIST));
+                i.isSkipChunk = Boolean.parseBoolean(atts.getValue(CHUNK_TOPIC_LIST));                
                 files.put(path, i);
             }
         }
@@ -385,6 +393,27 @@ public final class Job {
                 }
                 if (i.isConrefPush) {
                     out.writeAttribute(ATTRIBUTE_CONREF_PUSH, Boolean.toString(i.isConrefPush));    
+                }
+                if (i.isSubjectScheme) {
+                    out.writeAttribute(ATTRIBUTE_SUBJECT_SCHEME, Boolean.toString(i.isSubjectScheme));
+                }
+                if (i.isCopyToSource) {
+                    out.writeAttribute(COPYTO_SOURCE_LIST, Boolean.toString(i.isCopyToSource));
+                }
+                if (i.isOutDita) {
+                    out.writeAttribute(OUT_DITA_FILES_LIST, Boolean.toString(i.isOutDita));
+                }
+                if (i.isChunkedDitaMap) {
+                    out.writeAttribute(CHUNKED_DITAMAP_LIST, Boolean.toString(i.isChunkedDitaMap));
+                }
+                if (i.isFlagImage) {
+                    out.writeAttribute(FLAG_IMAGE_LIST, Boolean.toString(i.isFlagImage));
+                }
+                if (i.isSubtarget) {
+                    out.writeAttribute(SUBSIDIARY_TARGET_LIST, Boolean.toString(i.isSubtarget));
+                }
+                if (i.isSkipChunk) {
+                    out.writeAttribute(CHUNK_TOPIC_LIST, Boolean.toString(i.isSkipChunk));
                 }
                 out.writeEndElement(); //file
             }
@@ -591,6 +620,62 @@ public final class Job {
                 }
             }
             return ret;
+        } else if (key.equals(SUBJEC_SCHEME_LIST)) {
+            Set<String> ret = new HashSet<String>();
+            for (final FileInfo f: files.values()) {
+                if (f.isSubjectScheme) {
+                    ret.add(f.file);
+                }
+            }
+            return ret;
+        } else if (key.equals(COPYTO_SOURCE_LIST)) {
+            Set<String> ret = new HashSet<String>();
+            for (final FileInfo f: files.values()) {
+                if (f.isCopyToSource) {
+                    ret.add(f.file);
+                }
+            }
+            return ret;
+        } else if (key.equals(OUT_DITA_FILES_LIST)) {
+            Set<String> ret = new HashSet<String>();
+            for (final FileInfo f: files.values()) {
+                if (f.isOutDita) {
+                    ret.add(f.file);
+                }
+            }
+            return ret;
+        } else if (key.equals(CHUNKED_DITAMAP_LIST)) {
+            Set<String> ret = new HashSet<String>();
+            for (final FileInfo f: files.values()) {
+                if (f.isChunkedDitaMap) {
+                    ret.add(f.file);
+                }
+            }
+            return ret;
+        } else if (key.equals(FLAG_IMAGE_LIST)) {
+            Set<String> ret = new HashSet<String>();
+            for (final FileInfo f: files.values()) {
+                if (f.isFlagImage) {
+                    ret.add(f.file);
+                }
+            }
+            return ret;
+        } else if (key.equals(SUBSIDIARY_TARGET_LIST)) {
+            Set<String> ret = new HashSet<String>();
+            for (final FileInfo f: files.values()) {
+                if (f.isSubtarget) {
+                    ret.add(f.file);
+                }
+            }
+            return ret;
+        } else if (key.equals(CHUNK_TOPIC_LIST)) {
+            Set<String> ret = new HashSet<String>();
+            for (final FileInfo f: files.values()) {
+                if (f.isSkipChunk) {
+                    ret.add(f.file);
+                }
+            }
+            return ret;            
         } else {
             final Object value = prop.get(key);
             if (value == null) {
@@ -638,7 +723,7 @@ public final class Job {
     public Set<String> setSet(final String key, final Set<String> value) {
         Object previous = null;
         if (key.equals(FULL_DITAMAP_TOPIC_LIST)) {
-            throw new RuntimeException(FULL_DITAMAP_TOPIC_LIST + " is a compound set, cannot be directly generated");
+            //throw new RuntimeException(FULL_DITAMAP_TOPIC_LIST + " is a compound set, cannot be directly generated");
         } else if (key.equals(FULL_DITA_TOPIC_LIST)) {
             for (final String f: value) {
             	getOrAdd(f).format = "dita";
@@ -691,10 +776,37 @@ public final class Job {
             for (final String f: value) {
             	getOrAdd(f).isNonConrefTarget = true;
             }
-
         } else if (key.equals(CONREF_PUSH_LIST)) {
             for (final String f: value) {
             	getOrAdd(f).isConrefPush = true;
+            }
+        } else if (key.equals(SUBJEC_SCHEME_LIST)) {
+            for (final String f: value) {
+                getOrAdd(f).isSubjectScheme = true;
+            }
+        } else if (key.equals(COPYTO_SOURCE_LIST)) {
+            for (final String f: value) {
+                getOrAdd(f).isCopyToSource = true;
+            }
+        } else if (key.equals(OUT_DITA_FILES_LIST)) {
+            for (final String f: value) {
+                getOrAdd(f).isOutDita = true;
+            }
+        } else if (key.equals(CHUNKED_DITAMAP_LIST)) {
+            for (final String f: value) {
+                getOrAdd(f).isChunkedDitaMap = true;
+            }
+        } else if (key.equals(FLAG_IMAGE_LIST)) {
+            for (final String f: value) {
+                getOrAdd(f).isFlagImage = true;
+            }
+        } else if (key.equals(SUBSIDIARY_TARGET_LIST)) {
+            for (final String f: value) {
+                getOrAdd(f).isSubtarget = true;
+            }
+        } else if (key.equals(CHUNK_TOPIC_LIST)) {
+            for (final String f: value) {
+                getOrAdd(f).isSkipChunk = true;
             }
         } else {
             previous = prop.put(key, value);
@@ -741,7 +853,6 @@ public final class Job {
      * @return copy-to map
      */
     public Map<String, String> getCopytoMap() {
-        //return StringUtils.restoreMap(prop.getProperty(COPYTO_TARGET_TO_SOURCE_MAP_LIST, ""));
         return getMap(COPYTO_TARGET_TO_SOURCE_MAP_LIST);
     }
 
@@ -749,7 +860,6 @@ public final class Job {
      * @return the schemeSet
      */
     public Set<String> getSchemeSet() {
-        //return StringUtils.restoreSet(prop.getProperty(SUBJEC_SCHEME_LIST, ""));
         return getSet(SUBJEC_SCHEME_LIST);
         
     }
@@ -816,7 +926,7 @@ public final class Job {
     public void writeList(final String prop) throws IOException {
         final String filename = prop.equals(INPUT_DITAMAP)
                                 ? INPUT_DITAMAP_LIST_FILE
-                                : prop.substring(0, prop.lastIndexOf("list"))+ ".list";
+                                : prop.substring(0, prop.lastIndexOf("list")) + ".list";
         writeList(prop, filename);
     }
     
@@ -854,8 +964,7 @@ public final class Job {
      */
     public static final class FileInfo {
         
-    	public final String file;
-    	
+        public final String file;
     	public String format;
         public boolean hasConref;
         public boolean isChunked;
@@ -867,11 +976,18 @@ public final class Job {
         public boolean isConrefPush;
         public boolean hasKeyref;
         public boolean hasCoderef;
+        public boolean isSubjectScheme;
+        public boolean isSkipChunk;
+        public boolean isSubtarget;
+        public boolean isFlagImage;
+        public boolean isChunkedDitaMap;
+        public boolean isOutDita;
+        public boolean isCopyToSource;
         
         FileInfo(final String file) {
             this.file = file;
         }
-
+        
 //        private FileInfo(final String file, final String format,
 //                         final boolean hasConref,
 //                         final boolean isChunked,
@@ -882,7 +998,8 @@ public final class Job {
 //                         final boolean isNonConrefTarget,
 //                         final boolean isConrefPush,
 //                         final boolean hasKeyref,
-//                         final boolean hasCoderef) {
+//                         final boolean hasCoderef,
+//                         final boolean isSubjectScheme) {
 //            this.file = file;
 //            this.format = format;
 //			this.hasConref = hasConref;
@@ -895,6 +1012,7 @@ public final class Job {
 //			this.isConrefPush = isConrefPush;
 //			this.hasKeyref = hasKeyref;
 //			this.hasCoderef = hasCoderef;
+//          this.isSubjectScheme = isSubjectScheme;
 //        }
 //        
 //        public String file() { return file; }
@@ -909,9 +1027,103 @@ public final class Job {
 //        public boolean isConrefPush() { return isConrefPush; }
 //        public boolean hasKeyref() { return hasKeyref; }
 //        public boolean hasCoderef() { return hasCoderef; }
+//        public boolean isSubjectScheme() { return isSubjectScheme; }
 //        
 //        public FileInfo withIsResourceOnly(final boolean hasConref) { return new FileInfo(file, format, hasConref, isChunked, hasLink, isResourceOnly, isTarget, isConrefTarget, isNonConrefTarget, isConrefPush, hasKeyref, hasCoderef); }
     
+        public static class Builder {
+            
+            private String file;
+            private String format;
+            private boolean hasConref;
+            private boolean isChunked;
+            private boolean hasLink;
+            private boolean isResourceOnly;
+            private boolean isTarget;
+            private boolean isConrefTarget;
+            private boolean isNonConrefTarget;
+            private boolean isConrefPush;
+            private boolean hasKeyref;
+            private boolean hasCoderef;
+            private boolean isSubjectScheme;
+            private boolean isSkipChunk;
+            private boolean isSubtarget;
+            private boolean isFlagImage;
+            private boolean isChunkedDitaMap;
+            private boolean isOutDita;
+            private boolean isCopyToSource;
+        
+            public Builder() {}
+            public Builder(final FileInfo orig) {
+                file = orig.file;
+                format = orig.format;
+                hasConref = orig.hasConref;
+                isChunked = orig.isChunked;
+                hasLink = orig.hasLink;
+                isResourceOnly = orig.isResourceOnly;
+                isTarget = orig.isTarget;
+                isConrefTarget = orig.isConrefTarget;
+                isNonConrefTarget = orig.isNonConrefTarget;
+                isConrefPush = orig.isConrefPush;
+                hasKeyref = orig.hasKeyref;
+                hasCoderef = orig.hasCoderef;
+                isSubjectScheme = orig.isSubjectScheme;
+                isSkipChunk = orig.isSkipChunk;
+                isSubtarget = orig.isSubtarget;
+                isFlagImage = orig.isFlagImage;
+                isChunkedDitaMap = orig.isChunkedDitaMap;
+                isOutDita = orig.isOutDita;
+                isCopyToSource = orig.isCopyToSource;
+            }
+            
+            public Builder file(final String file) { this.file = file; return this; }
+            public Builder format(final String format) { this.format = format; return this; }
+            public Builder hasConref(final boolean hasConref) { this.hasConref = hasConref; return this; }
+            public Builder isChunked(final boolean isChunked) { this.isChunked = isChunked; return this; }
+            public Builder hasLink(final boolean hasLink) { this.hasLink = hasLink; return this; }
+            public Builder isResourceOnly(final boolean isResourceOnly) { this.isResourceOnly = isResourceOnly; return this; }
+            public Builder isTarget(final boolean isTarget) { this.isTarget = isTarget; return this; }
+            public Builder isConrefTarget(final boolean isConrefTarget) { this.isConrefTarget = isConrefTarget; return this; }
+            public Builder isNonConrefTarget(final boolean isNonConrefTarget) { this.isNonConrefTarget = isNonConrefTarget; return this; }
+            public Builder isConrefPush(final boolean isConrefPush) { this.isConrefPush = isConrefPush; return this; }
+            public Builder hasKeyref(final boolean hasKeyref) { this.hasKeyref = hasKeyref; return this; }
+            public Builder hasCoderef(final boolean hasCoderef) { this.hasCoderef = hasCoderef; return this; }
+            public Builder isSubjectScheme(final boolean isSubjectScheme) { this.isSubjectScheme = isSubjectScheme; return this; }
+            public Builder isSkipChunk(final boolean isSkipChunk) { this.isSkipChunk = isSkipChunk; return this; }
+            public Builder isSubtarget(final boolean isSubtarget) { this.isSubtarget = isSubtarget; return this; }
+            public Builder isFlagImage(final boolean isFlagImage) { this.isFlagImage = isFlagImage; return this; }
+            public Builder isChunkedDitaMap(final boolean isChunkedDitaMap) { this.isChunkedDitaMap = isChunkedDitaMap; return this; }
+            public Builder isOutDita(final boolean isOutDita) { this.isOutDita = isOutDita; return this; }
+            public Builder isCopyToSource(final boolean isCopyToSource) { this.isCopyToSource = isCopyToSource; return this; }
+            
+            public FileInfo build() {
+                if (file == null) {
+                    throw new IllegalArgumentException("file may not be null");
+                }
+                final FileInfo fi = new FileInfo(file);
+                fi.format = format;
+                fi.hasConref = hasConref;
+                fi.isChunked = isChunked;
+                fi.hasLink = hasLink;
+                fi.isResourceOnly = isResourceOnly;
+                fi.isTarget = isTarget;
+                fi.isConrefTarget = isConrefTarget;
+                fi.isNonConrefTarget = isNonConrefTarget;
+                fi.isConrefPush = isConrefPush;
+                fi.hasKeyref = hasKeyref;
+                fi.hasCoderef = hasCoderef;
+                fi.isSubjectScheme = isSubjectScheme;
+                fi.isSkipChunk = isSkipChunk;
+                fi.isSubtarget = isSubtarget;
+                fi.isFlagImage = isFlagImage;
+                fi.isChunkedDitaMap = isChunkedDitaMap;
+                fi.isOutDita = isOutDita;
+                fi.isCopyToSource = isCopyToSource;
+                return fi;
+            }
+            
+        }
+        
     }
     
 }
