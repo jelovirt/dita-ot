@@ -28,7 +28,6 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
 import org.xml.sax.Attributes;
-import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.DefaultHandler;
@@ -70,6 +69,12 @@ public final class Job {
     private static final String ATTRIBUTE_CONREF_PUSH = "conrefpush";
     private static final String ATTRIBUTE_SUBJECT_SCHEME = "subjectscheme";
     private static final String ATTRIBUTE_HAS_LINK = "has-link";
+    private static final String ATTRIBUTE_COPYTO_SOURCE_LIST = "copy-to-source";
+    private static final String ATTRIBUTE_OUT_DITA_FILES_LIST = "out-dita";
+    private static final String ATTRIBUTE_CHUNKED_DITAMAP_LIST = "chunked-ditamap";
+    private static final String ATTRIBUTE_FLAG_IMAGE_LIST = "flag-image";
+    private static final String ATTRIBUTE_SUBSIDIARY_TARGET_LIST = "subtarget";
+    private static final String ATTRIBUTE_CHUNK_TOPIC_LIST = "skip-chunk";
     
     /** File name for chuncked dita map list file */
     public static final String CHUNKED_DITAMAP_LIST_FILE = "chunkedditamap.list";
@@ -272,12 +277,12 @@ public final class Job {
                 i.isNonConrefTarget = Boolean.parseBoolean(atts.getValue(ATTRIBUTE_NON_CONREF_TARGET));
                 i.isConrefPush = Boolean.parseBoolean(atts.getValue(ATTRIBUTE_CONREF_PUSH));
                 i.isSubjectScheme = Boolean.parseBoolean(atts.getValue(ATTRIBUTE_SUBJECT_SCHEME));
-                i.isCopyToSource = Boolean.parseBoolean(atts.getValue(COPYTO_SOURCE_LIST));
-                i.isOutDita = Boolean.parseBoolean(atts.getValue(OUT_DITA_FILES_LIST));
-                i.isChunkedDitaMap = Boolean.parseBoolean(atts.getValue(CHUNKED_DITAMAP_LIST));
-                i.isFlagImage = Boolean.parseBoolean(atts.getValue(FLAG_IMAGE_LIST));
-                i.isSubtarget = Boolean.parseBoolean(atts.getValue(SUBSIDIARY_TARGET_LIST));
-                i.isSkipChunk = Boolean.parseBoolean(atts.getValue(CHUNK_TOPIC_LIST));                
+                i.isCopyToSource = Boolean.parseBoolean(atts.getValue(ATTRIBUTE_COPYTO_SOURCE_LIST));
+                i.isOutDita = Boolean.parseBoolean(atts.getValue(ATTRIBUTE_OUT_DITA_FILES_LIST));
+                i.isChunkedDitaMap = Boolean.parseBoolean(atts.getValue(ATTRIBUTE_CHUNKED_DITAMAP_LIST));
+                i.isFlagImage = Boolean.parseBoolean(atts.getValue(ATTRIBUTE_FLAG_IMAGE_LIST));
+                i.isSubtarget = Boolean.parseBoolean(atts.getValue(ATTRIBUTE_SUBSIDIARY_TARGET_LIST));
+                i.isSkipChunk = Boolean.parseBoolean(atts.getValue(ATTRIBUTE_CHUNK_TOPIC_LIST));                
                 files.put(path, i);
             }
         }
@@ -398,22 +403,22 @@ public final class Job {
                     out.writeAttribute(ATTRIBUTE_SUBJECT_SCHEME, Boolean.toString(i.isSubjectScheme));
                 }
                 if (i.isCopyToSource) {
-                    out.writeAttribute(COPYTO_SOURCE_LIST, Boolean.toString(i.isCopyToSource));
+                    out.writeAttribute(ATTRIBUTE_COPYTO_SOURCE_LIST, Boolean.toString(i.isCopyToSource));
                 }
                 if (i.isOutDita) {
-                    out.writeAttribute(OUT_DITA_FILES_LIST, Boolean.toString(i.isOutDita));
+                    out.writeAttribute(ATTRIBUTE_OUT_DITA_FILES_LIST, Boolean.toString(i.isOutDita));
                 }
                 if (i.isChunkedDitaMap) {
-                    out.writeAttribute(CHUNKED_DITAMAP_LIST, Boolean.toString(i.isChunkedDitaMap));
+                    out.writeAttribute(ATTRIBUTE_CHUNKED_DITAMAP_LIST, Boolean.toString(i.isChunkedDitaMap));
                 }
                 if (i.isFlagImage) {
-                    out.writeAttribute(FLAG_IMAGE_LIST, Boolean.toString(i.isFlagImage));
+                    out.writeAttribute(ATTRIBUTE_FLAG_IMAGE_LIST, Boolean.toString(i.isFlagImage));
                 }
                 if (i.isSubtarget) {
-                    out.writeAttribute(SUBSIDIARY_TARGET_LIST, Boolean.toString(i.isSubtarget));
+                    out.writeAttribute(ATTRIBUTE_SUBSIDIARY_TARGET_LIST, Boolean.toString(i.isSubtarget));
                 }
                 if (i.isSkipChunk) {
-                    out.writeAttribute(CHUNK_TOPIC_LIST, Boolean.toString(i.isSkipChunk));
+                    out.writeAttribute(ATTRIBUTE_CHUNK_TOPIC_LIST, Boolean.toString(i.isSkipChunk));
                 }
                 out.writeEndElement(); //file
             }
@@ -564,7 +569,6 @@ public final class Job {
             }
             return ret;
         } else if (key.equals(KEYREF_LIST)) {
-//            throw new RuntimeException(KEYREF_LIST + " should be accessed via files accessor");
             Set<String> ret = new HashSet<String>();
             for (final FileInfo f: files.values()) {
                 if (f.hasKeyref) {
@@ -686,7 +690,6 @@ public final class Job {
                 return (Set<String>) value;
             }
         }
-        //return (Set<String>) prop.get(key);
     }
     
     private Set<String> getFilesByFormat(final String...formats) {
@@ -959,8 +962,6 @@ public final class Job {
     
     /**
      * File info object.
-     * 
-     * TODO: make immutable
      */
     public static final class FileInfo {
         
