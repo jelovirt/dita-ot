@@ -188,10 +188,12 @@ final class DebugAndFilterModule implements AbstractPipelineModule {
     public DebugAndFilterModule(){
     }
 
+    @Override
     public void setLogger(final DITAOTLogger logger) {
         this.logger = logger;
     }
 
+    @Override
     public AbstractPipelineOutput execute(final AbstractPipelineInput input) throws DITAOTException {
         if (logger == null) {
             throw new IllegalStateException("Logger not set");
@@ -348,7 +350,7 @@ final class DebugAndFilterModule implements AbstractPipelineModule {
             prop.loadFromXML(in);
             in.close();
         } catch (final IOException e) {
-            this.logger.logException(e);
+            logger.logException(e);
         } finally {
             if (in != null) {
                 try {
@@ -542,6 +544,11 @@ final class DebugAndFilterModule implements AbstractPipelineModule {
      */
     private void generateScheme(final String filename, final Document root) throws DITAOTException {
         try {
+            final File f = new File(filename);
+            final File p = f.getParentFile();
+            if (!p.exists() && !p.mkdirs()) {
+                throw new IOException("Failed to make directory " + p.getAbsolutePath());
+            }
             final FileOutputStream file = new FileOutputStream(new File(filename));
             final StreamResult res = new StreamResult(file);
             final DOMSource ds = new DOMSource(root);
@@ -636,6 +643,7 @@ final class DebugAndFilterModule implements AbstractPipelineModule {
             this.path2project = path2project;
         }
         
+        @Override
         public void processingInstruction(final String target, final String data) throws SAXException {
             String d = data;
             if(target.equals(PI_WORKDIR_TARGET)) {
@@ -744,7 +752,7 @@ final class DebugAndFilterModule implements AbstractPipelineModule {
             prop.storeToXML(os, null);
             os.close();
         } catch (final IOException e) {
-            this.logger.logException(e);
+            logger.logException(e);
         } finally {
             if (os != null) {
                 try {

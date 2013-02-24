@@ -28,6 +28,7 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
 import org.xml.sax.Attributes;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.DefaultHandler;
@@ -165,9 +166,11 @@ public final class Job {
         if (jobFile.exists()) {
         	InputStream in = null;
             try {
-                XMLReader parser = StringUtils.getXMLReader();
+                final XMLReader parser = StringUtils.getXMLReader();
                 parser.setContentHandler(new JobHandler(prop, files));
-                parser.parse(jobFile.toURI().toString());
+                //parser.parse(jobFile.toURI().toString());
+                in = new FileInputStream(jobFile);
+                parser.parse(new InputSource(in));
             } catch (final SAXException e) {
                 throw new IOException("Failed to read job file: " + e.getMessage());
             } finally {
@@ -230,27 +233,27 @@ public final class Job {
         private Set<String> set;
         private Map<String, String> map;
         
-        JobHandler(final Map<String, Object> prop, Map<String, FileInfo> files) {
+        JobHandler(final Map<String, Object> prop, final Map<String, FileInfo> files) {
             this.prop = prop;
             this.files = files;
         }
         
         @Override
-        public void characters(char[] ch, int start, int length) throws SAXException {
+        public void characters(final char[] ch, final int start, final int length) throws SAXException {
             if (buf != null) {
                 buf.append(ch, start, length);
             }
         }
 
         @Override
-        public void ignorableWhitespace(char[] ch, int start, int length) throws SAXException {
+        public void ignorableWhitespace(final char[] ch, final int start, final int length) throws SAXException {
             if (buf != null) {
                 buf.append(ch, start, length);
             }
         }
         
         @Override
-        public void startElement(String uri, String localName, String qName, Attributes atts) throws SAXException {
+        public void startElement(final String uri, final String localName, final String qName, final Attributes atts) throws SAXException {
             final String n = localName != null ? localName : qName;
             if (n.equals(ELEMENT_PROPERTY)) {
                 name = atts.getValue(ATTRIBUTE_NAME);
@@ -288,7 +291,7 @@ public final class Job {
         }
         
         @Override
-        public void endElement(String uri, String localName, String qName) throws SAXException {
+        public void endElement(final String uri, final String localName, final String qName) throws SAXException {
             final String n = localName != null ? localName : qName;
             if (n.equals(ELEMENT_PROPERTY)) {
                 name = null;
@@ -545,7 +548,7 @@ public final class Job {
         } else if (key.equals(IMAGE_LIST)) {
             return getFilesByFormat("image");
         } else if (key.equals(CHUNKED_TOPIC_LIST)) {
-            Set<String> ret = new HashSet<String>();
+            final Set<String> ret = new HashSet<String>();
             for (final FileInfo f: files.values()) {
                 if (f.isChunked) {
                     ret.add(f.file);
@@ -553,7 +556,7 @@ public final class Job {
             }
             return ret;
         } else if (key.equals(CONREF_LIST)) {
-            Set<String> ret = new HashSet<String>();
+            final Set<String> ret = new HashSet<String>();
             for (final FileInfo f: files.values()) {
                 if (f.hasConref) {
                     ret.add(f.file);
@@ -561,7 +564,7 @@ public final class Job {
             }
             return ret;
         } else if (key.equals(HREF_DITA_TOPIC_LIST)) {
-            Set<String> ret = new HashSet<String>();
+            final Set<String> ret = new HashSet<String>();
             for (final FileInfo f: files.values()) {
                 if (f.hasLink) {
                     ret.add(f.file);
@@ -569,7 +572,7 @@ public final class Job {
             }
             return ret;
         } else if (key.equals(KEYREF_LIST)) {
-            Set<String> ret = new HashSet<String>();
+            final Set<String> ret = new HashSet<String>();
             for (final FileInfo f: files.values()) {
                 if (f.hasKeyref) {
                     ret.add(f.file);
@@ -577,7 +580,7 @@ public final class Job {
             }
             return ret;
         } else if (key.equals(CODEREF_LIST)) {
-            Set<String> ret = new HashSet<String>();
+            final Set<String> ret = new HashSet<String>();
             for (final FileInfo f: files.values()) {
                 if (f.hasCoderef) {
                     ret.add(f.file);
@@ -585,7 +588,7 @@ public final class Job {
             }
             return ret;
         } else if (key.equals(RESOURCE_ONLY_LIST)) {
-            Set<String> ret = new HashSet<String>();
+            final Set<String> ret = new HashSet<String>();
             for (final FileInfo f: files.values()) {
                 if (f.isResourceOnly) {
                     ret.add(f.file);
@@ -593,7 +596,7 @@ public final class Job {
             }
             return ret;
         } else if (key.equals(HREF_TARGET_LIST)) {
-            Set<String> ret = new HashSet<String>();
+            final Set<String> ret = new HashSet<String>();
             for (final FileInfo f: files.values()) {
                 if (f.isTarget) {
                     ret.add(f.file);
@@ -601,7 +604,7 @@ public final class Job {
             }
             return ret;
         } else if (key.equals(HREF_TOPIC_LIST)) {
-            Set<String> ret = new HashSet<String>();
+            final Set<String> ret = new HashSet<String>();
             for (final FileInfo f: files.values()) {
                 if (f.isNonConrefTarget) {
                     ret.add(f.file);
@@ -609,7 +612,7 @@ public final class Job {
             }
             return ret;
         } else if (key.equals(CONREF_TARGET_LIST)) {
-            Set<String> ret = new HashSet<String>();
+            final Set<String> ret = new HashSet<String>();
             for (final FileInfo f: files.values()) {
                 if (f.isConrefTarget) {
                     ret.add(f.file);
@@ -617,7 +620,7 @@ public final class Job {
             }
             return ret;    
         } else if (key.equals(CONREF_PUSH_LIST)) {
-            Set<String> ret = new HashSet<String>();
+            final Set<String> ret = new HashSet<String>();
             for (final FileInfo f: files.values()) {
                 if (f.isConrefPush) {
                     ret.add(f.file);
@@ -625,7 +628,7 @@ public final class Job {
             }
             return ret;
         } else if (key.equals(SUBJEC_SCHEME_LIST)) {
-            Set<String> ret = new HashSet<String>();
+            final Set<String> ret = new HashSet<String>();
             for (final FileInfo f: files.values()) {
                 if (f.isSubjectScheme) {
                     ret.add(f.file);
@@ -633,7 +636,7 @@ public final class Job {
             }
             return ret;
         } else if (key.equals(COPYTO_SOURCE_LIST)) {
-            Set<String> ret = new HashSet<String>();
+            final Set<String> ret = new HashSet<String>();
             for (final FileInfo f: files.values()) {
                 if (f.isCopyToSource) {
                     ret.add(f.file);
@@ -641,7 +644,7 @@ public final class Job {
             }
             return ret;
         } else if (key.equals(OUT_DITA_FILES_LIST)) {
-            Set<String> ret = new HashSet<String>();
+            final Set<String> ret = new HashSet<String>();
             for (final FileInfo f: files.values()) {
                 if (f.isOutDita) {
                     ret.add(f.file);
@@ -649,7 +652,7 @@ public final class Job {
             }
             return ret;
         } else if (key.equals(CHUNKED_DITAMAP_LIST)) {
-            Set<String> ret = new HashSet<String>();
+            final Set<String> ret = new HashSet<String>();
             for (final FileInfo f: files.values()) {
                 if (f.isChunkedDitaMap) {
                     ret.add(f.file);
@@ -657,7 +660,7 @@ public final class Job {
             }
             return ret;
         } else if (key.equals(FLAG_IMAGE_LIST)) {
-            Set<String> ret = new HashSet<String>();
+            final Set<String> ret = new HashSet<String>();
             for (final FileInfo f: files.values()) {
                 if (f.isFlagImage) {
                     ret.add(f.file);
@@ -665,7 +668,7 @@ public final class Job {
             }
             return ret;
         } else if (key.equals(SUBSIDIARY_TARGET_LIST)) {
-            Set<String> ret = new HashSet<String>();
+            final Set<String> ret = new HashSet<String>();
             for (final FileInfo f: files.values()) {
                 if (f.isSubtarget) {
                     ret.add(f.file);
@@ -673,7 +676,7 @@ public final class Job {
             }
             return ret;
         } else if (key.equals(CHUNK_TOPIC_LIST)) {
-            Set<String> ret = new HashSet<String>();
+            final Set<String> ret = new HashSet<String>();
             for (final FileInfo f: files.values()) {
                 if (f.isSkipChunk) {
                     ret.add(f.file);
@@ -693,7 +696,7 @@ public final class Job {
     }
     
     private Set<String> getFilesByFormat(final String...formats) {
-        Set<String> ret = new HashSet<String>();
+        final Set<String> ret = new HashSet<String>();
         for (final FileInfo f: files.values()) {
             format: for (final String format: formats) {
                 if (format.equals(f.format)) {
