@@ -506,19 +506,6 @@ public final class Job {
     public String getInputMap() {
         return getProperty(INPUT_DITAMAP);
     }
-    
-    /**
-     * Get reference list.
-     * 
-     * @return reference list
-     */
-    public Set<String> getReferenceList() {
-        final Set<String> refList = new HashSet<String>();
-        refList.addAll(getSet(FULL_DITAMAP_TOPIC_LIST));
-        refList.addAll(getSet(CONREF_TARGET_LIST));
-        refList.addAll(getSet(COPYTO_SOURCE_LIST));
-        return refList;
-    }
 
     /**
      * Get input directory.
@@ -537,6 +524,7 @@ public final class Job {
      * @param prop property name
      * @throws IOException if writing fails
      */
+    @Deprecated
     public void writeList(final String prop) throws IOException {
         final String filename = prop.equals(INPUT_DITAMAP)
                                 ? INPUT_DITAMAP_LIST_FILE
@@ -551,6 +539,7 @@ public final class Job {
      * @param filename list file name
      * @throws IOException if writing fails
      */
+    @Deprecated
     private void writeList(final String prop, final String filename) throws IOException {
         final File listFile = new File(tempDir, filename);
         BufferedWriter topicWriter = null;
