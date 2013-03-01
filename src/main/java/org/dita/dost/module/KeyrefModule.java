@@ -121,7 +121,9 @@ final class KeyrefModule implements AbstractPipelineModule {
             parser.write(file);
             // validate resource-only list
             for (final String t: parser.getNormalProcessingRoleTargets()) {
-            	files.get(t).isResourceOnly = false;
+                if (files.containsKey(t)) {
+                    files.get(t).isResourceOnly = false;
+                }
             }
         }
         job.addAll(files.values());
