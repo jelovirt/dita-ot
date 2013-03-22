@@ -76,6 +76,7 @@ public final class Job {
     private static final String ATTRIBUTE_FLAG_IMAGE_LIST = "flag-image";
     private static final String ATTRIBUTE_SUBSIDIARY_TARGET_LIST = "subtarget";
     private static final String ATTRIBUTE_CHUNK_TOPIC_LIST = "skip-chunk";
+    private static final String ATTRIBUTE_ACTIVE = "active";
     
     /** File name for chuncked dita map list file */
     public static final String CHUNKED_DITAMAP_LIST_FILE = "chunkedditamap.list";
@@ -281,6 +282,7 @@ public final class Job {
                 i.isConrefPush = Boolean.parseBoolean(atts.getValue(ATTRIBUTE_CONREF_PUSH));
                 i.isSubjectScheme = Boolean.parseBoolean(atts.getValue(ATTRIBUTE_SUBJECT_SCHEME));
                 i.isCopyToSource = Boolean.parseBoolean(atts.getValue(ATTRIBUTE_COPYTO_SOURCE_LIST));
+                i.isActive = Boolean.parseBoolean(atts.getValue(ATTRIBUTE_ACTIVE));
                 i.isOutDita = Boolean.parseBoolean(atts.getValue(ATTRIBUTE_OUT_DITA_FILES_LIST));
                 i.isChunkedDitaMap = Boolean.parseBoolean(atts.getValue(ATTRIBUTE_CHUNKED_DITAMAP_LIST));
                 i.isFlagImage = Boolean.parseBoolean(atts.getValue(ATTRIBUTE_FLAG_IMAGE_LIST));
@@ -423,6 +425,9 @@ public final class Job {
                 if (i.isSkipChunk) {
                     out.writeAttribute(ATTRIBUTE_CHUNK_TOPIC_LIST, Boolean.toString(i.isSkipChunk));
                 }
+                if (i.isActive) {
+                    out.writeAttribute(ATTRIBUTE_ACTIVE, Boolean.toString(i.isActive));
+                }
                 out.writeEndElement(); //file
             }
             out.writeEndElement(); //files
@@ -538,11 +543,26 @@ public final class Job {
      */
     public Set<String> getSet(final String key) {
         if (key.equals(FULL_DITAMAP_TOPIC_LIST)) {
-            return getFilesByFormat("dita", "ditamap");
+            final Set<String> ret = new HashSet<String>();
+            ret.addAll(getSet(FULL_DITA_TOPIC_LIST)); 
+            ret.addAll(getSet(FULL_DITAMAP_LIST));
+            return ret;
         } else if (key.equals(FULL_DITA_TOPIC_LIST)) {
-            return getFilesByFormat("dita");
+            final Set<String> ret = new HashSet<String>();
+            for (final FileInfo f: files.values()) {
+                if (f.isActive && "dita".equals(f.format)) {
+                    ret.add(f.file);
+                }
+            }
+            return ret;
         } else if (key.equals(FULL_DITAMAP_LIST)) {
-            return getFilesByFormat("ditamap");
+            final Set<String> ret = new HashSet<String>();
+            for (final FileInfo f: files.values()) {
+                if (f.isActive && "ditamap".equals(f.format)) {
+                    ret.add(f.file);
+                }
+            }
+            return ret;
         } else if (key.equals(HTML_LIST)) {
             return getFilesByFormat("html");
         } else if (key.equals(IMAGE_LIST)) {
@@ -731,12 +751,26 @@ public final class Job {
         if (key.equals(FULL_DITAMAP_TOPIC_LIST)) {
             //throw new RuntimeException(FULL_DITAMAP_TOPIC_LIST + " is a compound set, cannot be directly generated");
         } else if (key.equals(FULL_DITA_TOPIC_LIST)) {
+            for (FileInfo f: files.values()) {
+                if ("dita".equals(f.format)) {
+                    f.isActive = false;
+                }
+            }
             for (final String f: value) {
-            	getOrAdd(f).format = "dita";
+            	final FileInfo ff = getOrAdd(f);
+            	ff.format = "dita";
+            	ff.isActive = true;
             }
         } else if (key.equals(FULL_DITAMAP_LIST)) {
+            for (FileInfo f: files.values()) {
+                if ("ditamap".equals(f.format)) {
+                    f.isActive = false;
+                }
+            }
             for (final String f: value) {
-            	getOrAdd(f).format = "ditamap";
+                final FileInfo ff = getOrAdd(f);
+                ff.format = "ditamap";
+                ff.isActive = true;
             }
         } else if (key.equals(HTML_LIST)) {
             for (final String f: value) {
@@ -976,6 +1010,7 @@ public final class Job {
         public boolean isChunkedDitaMap;
         public boolean isOutDita;
         public boolean isCopyToSource;
+        public boolean isActive;
         
         FileInfo(final String file) {
             this.file = file;
@@ -1045,6 +1080,7 @@ public final class Job {
             private boolean isChunkedDitaMap;
             private boolean isOutDita;
             private boolean isCopyToSource;
+            private boolean isActive;
         
             public Builder() {}
             public Builder(final FileInfo orig) {
@@ -1067,6 +1103,7 @@ public final class Job {
                 isChunkedDitaMap = orig.isChunkedDitaMap;
                 isOutDita = orig.isOutDita;
                 isCopyToSource = orig.isCopyToSource;
+                isActive = orig.isActive;
             }
             
             public Builder file(final String file) { this.file = file; return this; }
@@ -1088,6 +1125,7 @@ public final class Job {
             public Builder isChunkedDitaMap(final boolean isChunkedDitaMap) { this.isChunkedDitaMap = isChunkedDitaMap; return this; }
             public Builder isOutDita(final boolean isOutDita) { this.isOutDita = isOutDita; return this; }
             public Builder isCopyToSource(final boolean isCopyToSource) { this.isCopyToSource = isCopyToSource; return this; }
+            public Builder isActive(final boolean isActive) { this.isActive = isActive; return this; }
             
             public FileInfo build() {
                 if (file == null) {
@@ -1112,6 +1150,7 @@ public final class Job {
                 fi.isChunkedDitaMap = isChunkedDitaMap;
                 fi.isOutDita = isOutDita;
                 fi.isCopyToSource = isCopyToSource;
+                fi.isActive = isActive;
                 return fi;
             }
             
