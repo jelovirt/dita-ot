@@ -42,7 +42,8 @@
   <property name="dost.jar" location="${lib.dir}/dost.jar"/>
   <property name="binary-min" value="DITA-OT${otversion}_minimal_bin"/>
   <property name="binary-big" value="DITA-OT${otversion}_full_easy_install_bin"/>
-  <property name="binary-client" value="DITA-OT${otversion}_client_bin"/>
+  <!--property name="binary-client" value="DITA-OT${otversion}_client_bin"/-->
+  <property name="binary-client" value="DITA-OTnext_client_bin"/>
   <property name="binary" value="DITA-OT${otversion}_standard_bin"/>
   <property name="win32.zip.suffix" value=".zip"/>
   <property name="linux.zip.suffix" value=".tar.gz"/>
@@ -167,12 +168,12 @@
     <include name="plugins/com.sophos.tocjs/**"/>
     <include name="bin/dita"/>
     <include name="bin/dita.bat"/>
-    <include name="doc/**"/>
+    <exclude name="doc/**"/>
     <exclude name="demo/**"/>
     <include name="dtd/**"/>
     <include name="plugins/**"/>
     <include name="resource/**"/>
-    <include name="samples/**"/>
+    <exclude name="samples/**"/>
     <include name="schema/**"/>
     <include name="xsl/**"/>
     <include name="lib/**"/>    
@@ -441,7 +442,7 @@
     </tar>
   </target>
   
-  <target name="build-package-binary-client" depends="jar, jar.plug-ins, update-doc">
+  <target name="build-package-binary-client" depends="jar, jar.plug-ins">
     <mkdir dir="${out.dir}"/>
     <sequential>
       <antcall target="package-binary-client">
