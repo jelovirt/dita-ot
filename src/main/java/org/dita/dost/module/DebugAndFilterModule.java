@@ -51,6 +51,7 @@ import org.dita.dost.util.CatalogUtils;
 import org.dita.dost.util.FileUtils;
 import org.dita.dost.util.FilterUtils;
 import org.dita.dost.util.Job;
+import org.dita.dost.util.KeyDef;
 import org.dita.dost.util.OutputUtils;
 import org.dita.dost.util.StringUtils;
 import org.dita.dost.util.TimingUtils;
@@ -250,7 +251,7 @@ final class DebugAndFilterModule implements AbstractPipelineModule {
             	fileWriter.setFilterUtils(filterUtils);
             }
             fileWriter.setDelayConrefUtils(new DelayConrefUtils());
-            fileWriter.setKeyDefinitions(GenMapAndTopicListModule.readKeydef(new File(tempDir, KEYDEF_LIST_FILE)));
+            fileWriter.setKeyDefinitions(KeyDef.readKeydef(new File(tempDir, KEYDEF_LIST_FILE)));
            
             outputUtils.setGeneratecopyouter(input.getAttribute(ANT_INVOKER_EXT_PARAM_GENERATECOPYOUTTER));
             outputUtils.setOutterControl(input.getAttribute(ANT_INVOKER_EXT_PARAM_OUTTERCONTROL));
@@ -321,7 +322,7 @@ final class DebugAndFilterModule implements AbstractPipelineModule {
     }
 
     /**
-     * Read a map from XML properties file. Values are split by {@link COMMA} into a set.
+     * Read a map from XML properties file. Values are split by {@link org.dita.dost.util.Constants#COMMA COMMA} into a set.
      * 
      * @param filename XML properties file path, relative to temporary directory
      */
@@ -338,13 +339,13 @@ final class DebugAndFilterModule implements AbstractPipelineModule {
             prop.loadFromXML(in);
             in.close();
         } catch (final IOException e) {
-            logger.logException(e);
+            logger.logError(e.getMessage(), e) ;
         } finally {
             if (in != null) {
                 try {
                     in.close();
                 } catch (final IOException e) {
-                    logger.logException(e);
+                    logger.logError(e.getMessage(), e) ;
                 }
             }
         }
@@ -414,7 +415,7 @@ final class DebugAndFilterModule implements AbstractPipelineModule {
                 generateScheme(rel, parentRoot);
             }
         } catch (final Exception e) {
-            logger.logException(e);
+            logger.logError(e.getMessage(), e) ;
             throw new DITAOTException(e);
         }
 
@@ -550,7 +551,7 @@ final class DebugAndFilterModule implements AbstractPipelineModule {
                 file.close();
             }
         } catch (final Exception e) {
-            logger.logException(e);
+            logger.logError(e.getMessage(), e) ;
             throw new DITAOTException(e);
         }
     }
@@ -573,9 +574,7 @@ final class DebugAndFilterModule implements AbstractPipelineModule {
                         .logWarn(new StringBuffer("Copy-to task [copy-to=\"")
                                 .append(copytoTarget)
                                 .append("\"] which points to an existed file was ignored.").toString());*/
-                final Properties prop = new Properties();
-                prop.setProperty("%1", copytoTarget);
-                logger.logWarn(MessageUtils.getInstance().getMessage("DOTX064W", prop).toString());
+                logger.logWarn(MessageUtils.getInstance().getMessage("DOTX064W", copytoTarget).toString());
             }else{
                 final String inputMapInTemp = new File(tempDir + File.separator + job.getInputMap()).getAbsolutePath();
                 copyFileWithPIReplaced(srcFile, targetFile, copytoTarget, inputMapInTemp);
@@ -617,8 +616,14 @@ final class DebugAndFilterModule implements AbstractPipelineModule {
     }
     
     /**
-     * XML filter to rewrite {@link #PI_WORKDIR_TARGET}, {@link #PI_WORKDIR_TARGET_URI}, and
-     * {@link #PI_PATH2PROJ_TARGET} to reflect copy-to location.
+     * XML filter to rewrite processing instructions to reflect copy-to location. The following processing-instructions are 
+     * 
+     * <ul>
+     * <li>{@link DitaWriter#PI_WORKDIR_TARGET PI_WORKDIR_TARGET}</li>
+     * <li>{@link DitaWriter#PI_WORKDIR_TARGET_URI PI_WORKDIR_TARGET_URI}</li>
+     * <li>{@link DitaWriter#PI_PATH2PROJ_TARGET PI_PATH2PROJ_TARGET}</li>
+     * <li>{@link DitaWriter#PI_PATH2PROJ_TARGET_URI PI_PATH2PROJ_TARGET_URI}</li>
+     * </ul>
      */
     private static final class CopyToFilter extends XMLFilterImpl {
         
@@ -740,13 +745,13 @@ final class DebugAndFilterModule implements AbstractPipelineModule {
             prop.storeToXML(os, null);
             os.close();
         } catch (final IOException e) {
-            logger.logException(e);
+            logger.logError(e.getMessage(), e) ;
         } finally {
             if (os != null) {
                 try {
                     os.close();
                 } catch (final IOException e) {
-                    logger.logException(e);
+                    logger.logError(e.getMessage(), e) ;
                 }
             }
         }

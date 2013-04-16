@@ -179,8 +179,6 @@ See the accompanying license.txt file for applicable licenses.
                     </xsl:otherwise>
                 </xsl:choose>
             </xsl:when>
-      <!--BS: skipp abstract (copyright) from usual content. It will be processed from the front-matter-->
-      <xsl:when test="$topicType = 'topicAbstract'"/>
       <xsl:otherwise>
                 <xsl:apply-templates select="." mode="processUnknowTopic">
                     <xsl:with-param name="topicType" select="$topicType"/>
@@ -236,6 +234,7 @@ See the accompanying license.txt file for applicable licenses.
                     </xsl:choose>
 
                     <xsl:apply-templates select="*[contains(@class,' topic/topic ')]"/>
+                    <xsl:call-template name="pullPrologIndexTerms.end-range"/>
                 </fo:block>
             </fo:flow>
         </fo:page-sequence>
@@ -290,6 +289,7 @@ See the accompanying license.txt file for applicable licenses.
                     </xsl:choose>
 
                     <xsl:apply-templates select="*[contains(@class,' topic/topic ')]"/>
+                    <xsl:call-template name="pullPrologIndexTerms.end-range"/>
                 </fo:block>
             </fo:flow>
         </fo:page-sequence>
@@ -346,6 +346,7 @@ See the accompanying license.txt file for applicable licenses.
               <xsl:apply-templates select="."/>
             </xsl:if>
           </xsl:for-each>
+          <xsl:call-template name="pullPrologIndexTerms.end-range"/>
         </fo:block>
       </fo:flow>
     </fo:page-sequence>
@@ -412,6 +413,7 @@ See the accompanying license.txt file for applicable licenses.
                             <xsl:apply-templates select="."/>
                         </xsl:if>
                     </xsl:for-each>
+                    <xsl:call-template name="pullPrologIndexTerms.end-range"/>
                 </fo:block>
             </fo:flow>
         </fo:page-sequence>
@@ -467,6 +469,7 @@ See the accompanying license.txt file for applicable licenses.
                     </xsl:choose>
 
                     <xsl:apply-templates select="*[contains(@class,' topic/topic ')]"/>
+                    <xsl:call-template name="pullPrologIndexTerms.end-range"/>
                 </fo:block>
             </fo:flow>
         </fo:page-sequence>
@@ -1076,7 +1079,6 @@ See the accompanying license.txt file for applicable licenses.
                     </xsl:otherwise>
                 </xsl:choose>
             </xsl:when>
-      <xsl:when test="$topicType = 'topicAbstract'"/>
       <xsl:otherwise>
                 <xsl:call-template name="processUnknowTopic">
                     <xsl:with-param name="topicType" select="$topicType"/>
@@ -1397,8 +1399,29 @@ See the accompanying license.txt file for applicable licenses.
     <!--/xsl:template-->
 
     <xsl:template name="pullPrologIndexTerms">
+      <!-- index terms and ranges from topic -->
         <xsl:apply-templates select="ancestor-or-self::*[contains(@class, ' topic/topic ')][1]/*[contains(@class, ' topic/prolog ')]
-            //opentopic-index:index.entry[not(parent::opentopic-index:index.entry)]"/>
+            //opentopic-index:index.entry[not(parent::opentopic-index:index.entry) and not(@end-range = 'true')]"/>
+      <!-- index ranges from map -->
+      <xsl:variable name="topicref" select="key('map-id', @id)"/>
+      <xsl:apply-templates select="$topicref/
+                                     *[contains(@class, ' map/topicmeta ')]/
+                                       *[contains(@class, ' topic/keywords ')]/
+                                         descendant::opentopic-index:index.entry[@start-range = 'true']"/>
+    </xsl:template>
+  
+    <xsl:template name="pullPrologIndexTerms.end-range">
+      <!-- index ranges from topic -->
+        <xsl:apply-templates select="ancestor-or-self::*[contains(@class, ' topic/topic ')][1]/
+                                       *[contains(@class, ' topic/prolog ')]/
+                                         descendant::opentopic-index:index.entry[not(parent::opentopic-index:index.entry) and
+                                                                                 @end-range = 'true']"/>
+      <!-- index ranges from map -->
+      <xsl:variable name="topicref" select="key('map-id', @id)"/>
+      <xsl:apply-templates select="$topicref/
+                                     *[contains(@class, ' map/topicmeta ')]/
+                                       *[contains(@class, ' topic/keywords ')]/
+                                         descendant::opentopic-index:index.entry[@end-range = 'true']"/>
     </xsl:template>
 
     <xsl:template match="*[contains(@class, ' topic/metadata ')]">
@@ -1839,7 +1862,7 @@ See the accompanying license.txt file for applicable licenses.
                         <xsl:call-template name="commonattributes"/>
                         <xsl:apply-templates select="." mode="placeImage">
                             <xsl:with-param name="imageAlign" select="@align"/>
-                            <xsl:with-param name="href" select="concat($input.dir.url, @href)"/>
+                            <xsl:with-param name="href" select="if (@scope = 'external') then @href else concat($input.dir.url, @href)"/>
                             <xsl:with-param name="height" select="@height"/>
                             <xsl:with-param name="width" select="@width"/>
                         </xsl:apply-templates>
@@ -1851,7 +1874,7 @@ See the accompanying license.txt file for applicable licenses.
                     <xsl:call-template name="commonattributes"/>
                     <xsl:apply-templates select="." mode="placeImage">
                         <xsl:with-param name="imageAlign" select="@align"/>
-                        <xsl:with-param name="href" select="concat($input.dir.url, @href)"/>
+                        <xsl:with-param name="href" select="if (@scope = 'external') then @href else concat($input.dir.url, @href)"/>
                         <xsl:with-param name="height" select="@height"/>
                         <xsl:with-param name="width" select="@width"/>
                     </xsl:apply-templates>
