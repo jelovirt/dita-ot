@@ -1,4 +1,8 @@
 /*
+ * This file is part of the DITA Open Toolkit project.
+ * See the accompanying license.txt file for applicable licenses.
+ */
+/*
  *  Licensed to the Apache Software Foundation (ASF) under one or more
  *  contributor license agreements.  See the NOTICE file distributed with
  *  this work for additional information regarding copyright ownership.
@@ -26,7 +30,6 @@ import java.util.Date;
 import java.text.DateFormat;
 
 import org.apache.tools.ant.BuildEvent;
-import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.BuildLogger;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.util.DateUtils;
@@ -34,14 +37,14 @@ import org.apache.tools.ant.util.StringUtils;
 import org.apache.tools.ant.util.FileUtils;
 
 /**
- * Writes build events to a PrintStream. Currently, it
- * only writes which targets are being executed, and
- * any messages that get logged.
- *
+ * Writes build events to a PrintStream. Currently, it only writes which targets
+ * are being executed, and any messages that get logged.
+ * 
  */
 public class DefaultLogger implements BuildLogger {
     /**
      * Size of left-hand column for right-justified task name.
+     * 
      * @see #messageLogged(BuildEvent)
      */
     public static final int LEFT_COLUMN_SIZE = 12;
@@ -66,8 +69,8 @@ public class DefaultLogger implements BuildLogger {
 
     /** Whether or not to use emacs-style output */
     protected boolean emacsMode = false;
-    // CheckStyle:VisibilityModifier ON
 
+    // CheckStyle:VisibilityModifier ON
 
     /**
      * Sole constructor.
@@ -77,127 +80,113 @@ public class DefaultLogger implements BuildLogger {
 
     /**
      * Sets the highest level of message this logger should respond to.
-     *
-     * Only messages with a message level lower than or equal to the
-     * given level should be written to the log.
+     * 
+     * Only messages with a message level lower than or equal to the given level
+     * should be written to the log.
      * <p>
-     * Constants for the message levels are in the
-     * {@link Project Project} class. The order of the levels, from least
-     * to most verbose, is <code>MSG_ERR</code>, <code>MSG_WARN</code>,
-     * <code>MSG_INFO</code>, <code>MSG_VERBOSE</code>,
-     * <code>MSG_DEBUG</code>.
+     * Constants for the message levels are in the {@link Project Project}
+     * class. The order of the levels, from least to most verbose, is
+     * <code>MSG_ERR</code>, <code>MSG_WARN</code>, <code>MSG_INFO</code>,
+     * <code>MSG_VERBOSE</code>, <code>MSG_DEBUG</code>.
      * <p>
      * The default message level for DefaultLogger is Project.MSG_ERR.
-     *
+     * 
      * @param level the logging level for the logger.
      */
-    public void setMessageOutputLevel(int level) {
-        this.msgOutputLevel = level;
+    @Override
+    public void setMessageOutputLevel(final int level) {
+        msgOutputLevel = level;
     }
 
     /**
      * Sets the output stream to which this logger is to send its output.
-     *
-     * @param output The output stream for the logger.
-     *               Must not be <code>null</code>.
+     * 
+     * @param output The output stream for the logger. Must not be
+     *            <code>null</code>.
      */
-    public void setOutputPrintStream(PrintStream output) {
-        this.out = new PrintStream(output, true);
+    @Override
+    public void setOutputPrintStream(final PrintStream output) {
+        out = new PrintStream(output, true);
     }
 
     /**
      * Sets the output stream to which this logger is to send error messages.
-     *
-     * @param err The error stream for the logger.
-     *            Must not be <code>null</code>.
+     * 
+     * @param err The error stream for the logger. Must not be <code>null</code>
+     *            .
      */
-    public void setErrorPrintStream(PrintStream err) {
+    @Override
+    public void setErrorPrintStream(final PrintStream err) {
         this.err = new PrintStream(err, true);
     }
 
     /**
      * Sets this logger to produce emacs (and other editor) friendly output.
-     *
+     * 
      * @param emacsMode <code>true</code> if output is to be unadorned so that
-     *                  emacs and other editors can parse files names, etc.
+     *            emacs and other editors can parse files names, etc.
      */
-    public void setEmacsMode(boolean emacsMode) {
+    @Override
+    public void setEmacsMode(final boolean emacsMode) {
         this.emacsMode = emacsMode;
     }
 
     /**
      * Responds to a build being started by just remembering the current time.
-     *
+     * 
      * @param event Ignored.
      */
-    public void buildStarted(BuildEvent event) {
+    @Override
+    public void buildStarted(final BuildEvent event) {
         startTime = System.currentTimeMillis();
     }
 
-    static void throwableMessage(StringBuffer m, Throwable error, boolean verbose) {
-    	String msg = error.getMessage();
-    	final int i = msg.indexOf(": ");
-    	if (i != -1) {
-    		msg = msg.substring(i + 1).trim();
-    	}
-    	m.append(msg).append(lSep);
-//        while (error instanceof BuildException) { // #43398
-//            Throwable cause = error.getCause();
-//            if (cause == null) {
-//                break;
-//            }
-//            String msg1 = error.toString();
-//            String msg2 = cause.toString();
-//            if (msg1.endsWith(msg2)) {
-//                m.append(msg1.substring(0, msg1.length() - msg2.length()));
-//                error = cause;
-//            } else {
-//                break;
-//            }
-//        }
-//        if (verbose || !(error instanceof BuildException)) {
-//            m.append(StringUtils.getStackTrace(error));
-//        } else {
-//            m.append(error).append(lSep);
-//        }
+    static void throwableMessage(final StringBuffer m, final Throwable error, final boolean verbose) {
+        String msg = error.getMessage();
+        final int i = msg.indexOf(": ");
+        if (i != -1) {
+            msg = msg.substring(i + 1).trim();
+        }
+        m.append(msg).append(lSep);
     }
 
     /**
-     * Prints whether the build succeeded or failed,
-     * any errors the occurred during the build, and
-     * how long the build took.
-     *
-     * @param event An event with any relevant extra information.
-     *              Must not be <code>null</code>.
+     * Prints whether the build succeeded or failed, any errors the occurred
+     * during the build, and how long the build took.
+     * 
+     * @param event An event with any relevant extra information. Must not be
+     *            <code>null</code>.
      */
-    public void buildFinished(BuildEvent event) {
-        Throwable error = event.getException();
-        StringBuffer message = new StringBuffer();
+    @Override
+    public void buildFinished(final BuildEvent event) {
+        final Throwable error = event.getException();
+        final StringBuffer message = new StringBuffer();
         if (error == null) {
-//            message.append(StringUtils.LINE_SEP);
-//            message.append(getBuildSuccessfulMessage());
+            // message.append(StringUtils.LINE_SEP);
+            // message.append(getBuildSuccessfulMessage());
         } else {
-//            message.append(StringUtils.LINE_SEP);
-//            message.append(getBuildFailedMessage());
+            // message.append(StringUtils.LINE_SEP);
+            // message.append(getBuildFailedMessage());
             message.append(StringUtils.LINE_SEP);
             throwableMessage(message, error, Project.MSG_VERBOSE <= msgOutputLevel);
         }
-//        message.append(StringUtils.LINE_SEP);
-//        message.append("Total time: ");
-//        message.append(formatTime(System.currentTimeMillis() - startTime));
+        // message.append(StringUtils.LINE_SEP);
+        // message.append("Total time: ");
+        // message.append(formatTime(System.currentTimeMillis() - startTime));
 
-        String msg = message.toString();
+        final String msg = message.toString();
         if (error == null) {
             printMessage(msg, out, Project.MSG_VERBOSE);
-        } else if (!msg.isEmpty()){
+        } else if (!msg.isEmpty()) {
             printMessage(msg, err, Project.MSG_ERR);
         }
         log(msg);
     }
 
     /**
-     * This is an override point: the message that indicates whether a build failed.
-     * Subclasses can change/enhance the message.
+     * This is an override point: the message that indicates whether a build
+     * failed. Subclasses can change/enhance the message.
+     * 
      * @return The classic "BUILD FAILED"
      */
     protected String getBuildFailedMessage() {
@@ -205,8 +194,9 @@ public class DefaultLogger implements BuildLogger {
     }
 
     /**
-     * This is an override point: the message that indicates that a build succeeded.
-     * Subclasses can change/enhance the message.
+     * This is an override point: the message that indicates that a build
+     * succeeded. Subclasses can change/enhance the message.
+     * 
      * @return The classic "BUILD SUCCESSFUL"
      */
     protected String getBuildSuccessfulMessage() {
@@ -214,17 +204,16 @@ public class DefaultLogger implements BuildLogger {
     }
 
     /**
-     * Logs a message to say that the target has started if this
-     * logger allows information-level messages.
-     *
-     * @param event An event with any relevant extra information.
-     *              Must not be <code>null</code>.
-      */
-    public void targetStarted(BuildEvent event) {
-        if (Project.MSG_INFO <= msgOutputLevel
-            && !event.getTarget().getName().equals("")) {
-            String msg = StringUtils.LINE_SEP
-                + event.getTarget().getName() + ":";
+     * Logs a message to say that the target has started if this logger allows
+     * information-level messages.
+     * 
+     * @param event An event with any relevant extra information. Must not be
+     *            <code>null</code>.
+     */
+    @Override
+    public void targetStarted(final BuildEvent event) {
+        if (Project.MSG_INFO <= msgOutputLevel && !event.getTarget().getName().equals("")) {
+            final String msg = StringUtils.LINE_SEP + event.getTarget().getName() + ":";
             printMessage(msg, out, event.getPriority());
             log(msg);
         }
@@ -232,48 +221,51 @@ public class DefaultLogger implements BuildLogger {
 
     /**
      * No-op implementation.
-     *
+     * 
      * @param event Ignored.
      */
-    public void targetFinished(BuildEvent event) {
+    @Override
+    public void targetFinished(final BuildEvent event) {
     }
 
     /**
      * No-op implementation.
-     *
+     * 
      * @param event Ignored.
      */
-    public void taskStarted(BuildEvent event) {
+    @Override
+    public void taskStarted(final BuildEvent event) {
     }
 
     /**
      * No-op implementation.
-     *
+     * 
      * @param event Ignored.
      */
-    public void taskFinished(BuildEvent event) {
+    @Override
+    public void taskFinished(final BuildEvent event) {
     }
 
     /**
-     * Logs a message, if the priority is suitable.
-     * In non-emacs mode, task level messages are prefixed by the
-     * task name which is right-justified.
-     *
-     * @param event A BuildEvent containing message information.
-     *              Must not be <code>null</code>.
+     * Logs a message, if the priority is suitable. In non-emacs mode, task
+     * level messages are prefixed by the task name which is right-justified.
+     * 
+     * @param event A BuildEvent containing message information. Must not be
+     *            <code>null</code>.
      */
-    public void messageLogged(BuildEvent event) {
-        int priority = event.getPriority();
+    @Override
+    public void messageLogged(final BuildEvent event) {
+        final int priority = event.getPriority();
         // Filter out messages based on priority
         if (priority <= msgOutputLevel) {
 
-            StringBuffer message = new StringBuffer();
+            final StringBuffer message = new StringBuffer();
             if (event.getTask() != null && !emacsMode) {
                 // Print out the name of the task if we're in one
-                String name = event.getTask().getTaskName();
+                final String name = event.getTask().getTaskName();
                 String label = "[" + name + "] ";
-                int size = LEFT_COLUMN_SIZE - label.length();
-                StringBuffer tmp = new StringBuffer();
+                final int size = LEFT_COLUMN_SIZE - label.length();
+                final StringBuffer tmp = new StringBuffer();
                 for (int i = 0; i < size; i++) {
                     tmp.append(" ");
                 }
@@ -282,8 +274,7 @@ public class DefaultLogger implements BuildLogger {
 
                 BufferedReader r = null;
                 try {
-                    r = new BufferedReader(
-                            new StringReader(event.getMessage()));
+                    r = new BufferedReader(new StringReader(event.getMessage()));
                     String line = r.readLine();
                     boolean first = true;
                     do {
@@ -299,7 +290,7 @@ public class DefaultLogger implements BuildLogger {
                         message.append(label).append(line);
                         line = r.readLine();
                     } while (line != null);
-                } catch (IOException e) {
+                } catch (final IOException e) {
                     // shouldn't be possible
                     message.append(label).append(event.getMessage());
                 } finally {
@@ -309,15 +300,15 @@ public class DefaultLogger implements BuildLogger {
                 }
 
             } else {
-                //emacs mode or there is no task
+                // emacs mode or there is no task
                 message.append(event.getMessage());
             }
-            Throwable ex = event.getException();
+            final Throwable ex = event.getException();
             if (Project.MSG_DEBUG <= msgOutputLevel && ex != null) {
-                    message.append(StringUtils.getStackTrace(ex));
+                message.append(StringUtils.getStackTrace(ex));
             }
 
-            String msg = message.toString();
+            final String msg = message.toString();
             if (priority != Project.MSG_ERR) {
                 printMessage(msg, out, priority);
             } else {
@@ -329,11 +320,11 @@ public class DefaultLogger implements BuildLogger {
 
     /**
      * Convenience method to format a specified length of time.
-     *
+     * 
      * @param millis Length of time to format, in milliseconds.
-     *
+     * 
      * @return the time as a formatted string.
-     *
+     * 
      * @see DateUtils#formatElapsedTime(long)
      */
     protected static String formatTime(final long millis) {
@@ -342,49 +333,48 @@ public class DefaultLogger implements BuildLogger {
 
     /**
      * Prints a message to a PrintStream.
-     *
-     * @param message  The message to print.
-     *                 Should not be <code>null</code>.
-     * @param stream   A PrintStream to print the message to.
-     *                 Must not be <code>null</code>.
-     * @param priority The priority of the message.
-     *                 (Ignored in this implementation.)
+     * 
+     * @param message The message to print. Should not be <code>null</code>.
+     * @param stream A PrintStream to print the message to. Must not be
+     *            <code>null</code>.
+     * @param priority The priority of the message. (Ignored in this
+     *            implementation.)
      */
-    protected void printMessage(final String message,
-                                final PrintStream stream,
-                                final int priority) {
+    protected void printMessage(final String message, final PrintStream stream, final int priority) {
         stream.println(message);
     }
 
     /**
-     * Empty implementation which allows subclasses to receive the
-     * same output that is generated here.
-     *
+     * Empty implementation which allows subclasses to receive the same output
+     * that is generated here.
+     * 
      * @param message Message being logged. Should not be <code>null</code>.
      */
-    protected void log(String message) {
+    protected void log(final String message) {
     }
 
     /**
      * Get the current time.
+     * 
      * @return the current time as a formatted string.
      * @since Ant1.7.1
      */
     protected String getTimestamp() {
-        Date date = new Date(System.currentTimeMillis());
-        DateFormat formatter = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT);
-        String finishTime = formatter.format(date);
+        final Date date = new Date(System.currentTimeMillis());
+        final DateFormat formatter = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT);
+        final String finishTime = formatter.format(date);
         return finishTime;
     }
 
     /**
      * Get the project name or null
+     * 
      * @param event the event
      * @return the project that raised this event
      * @since Ant1.7.1
      */
-    protected String extractProjectName(BuildEvent event) {
-        Project project = event.getProject();
+    protected String extractProjectName(final BuildEvent event) {
+        final Project project = event.getProject();
         return (project != null) ? project.getName() : null;
     }
 }
