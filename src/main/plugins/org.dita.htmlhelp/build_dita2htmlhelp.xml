@@ -52,7 +52,8 @@
               includesfile="${dita.temp.dir}${file.separator}${user.input.file.listfile}"
               extension=".hhp"
               classpathref="dost.class.path"
-              style="${dita.plugin.org.dita.htmlhelp.dir}/xsl/map2hhp.xsl">
+              style="${dita.plugin.org.dita.htmlhelp.dir}/xsl/map2hhp.xsl"
+              filedirparameter="FILEDIR">
         	<excludesfile name="${dita.temp.dir}${file.separator}${resourceonlyfile}" if="resourceonlyfile"/>
             <param name="DITAEXT" expression="${dita.ext}" if="dita.ext" />
             <param name="OUTEXT" expression="${out.ext}" if="out.ext" />
@@ -72,7 +73,8 @@
             destdir="${output.dir}"
             includesfile="${dita.temp.dir}${file.separator}${user.input.file.listfile}"
             classpathref="dost.class.path"
-            style="${dita.plugin.org.dita.htmlhelp.dir}/xsl/map2hhp.xsl">
+            style="${dita.plugin.org.dita.htmlhelp.dir}/xsl/map2hhp.xsl"
+            filedirparameter="FILEDIR">
         	<excludesfile name="${dita.temp.dir}${file.separator}${resourceonlyfile}" if="resourceonlyfile"/>
             <param name="DITAEXT" expression="${dita.ext}" if="dita.ext" />
             <param name="OUTEXT" expression="${out.ext}" if="out.ext" />
@@ -94,7 +96,8 @@
               includesfile="${dita.temp.dir}${file.separator}${user.input.file.listfile}"
               extension=".hhc"
               classpathref="dost.class.path"
-              style="${dita.plugin.org.dita.htmlhelp.dir}/xsl/map2hhc.xsl">
+              style="${dita.plugin.org.dita.htmlhelp.dir}/xsl/map2hhc.xsl"
+              filedirparameter="FILEDIR">
         	<excludesfile name="${dita.temp.dir}${file.separator}${resourceonlyfile}" if="resourceonlyfile"/>
             <param name="DITAEXT" expression="${dita.ext}" if="dita.ext" />
             <param name="OUTEXT" expression="${out.ext}" if="out.ext" />
@@ -110,7 +113,8 @@
             destdir="${output.dir}"
             includesfile="${dita.temp.dir}${file.separator}${user.input.file.listfile}"
             classpathref="dost.class.path"
-            style="${dita.plugin.org.dita.htmlhelp.dir}/xsl/map2hhc.xsl">
+            style="${dita.plugin.org.dita.htmlhelp.dir}/xsl/map2hhc.xsl"
+            filedirparameter="FILEDIR">
         	<excludesfile name="${dita.temp.dir}${file.separator}${resourceonlyfile}" if="resourceonlyfile"/>
             <param name="DITAEXT" expression="${dita.ext}" if="dita.ext" />
             <param name="OUTEXT" expression="${out.ext}" if="out.ext" />

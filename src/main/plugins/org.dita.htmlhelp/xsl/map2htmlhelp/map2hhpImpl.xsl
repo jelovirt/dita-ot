@@ -45,7 +45,7 @@
 <xsl:param name="HELPALIAS" />
 <xsl:param name="HELPMAP" />
 <xsl:param name="DITAEXT" select="'.xml'"/>
-
+<xsl:param name="FILEDIR"/>
 
 <!-- Is there a way to prevent re-issuing the same filename, using keys? Doubt it... -->
 <!-- <xsl:key name="amap" match="topicref" use="@href"/>
@@ -288,7 +288,12 @@ Default topic=</xsl:text>
     <file>
       <xsl:attribute name="href">
         <xsl:call-template name="removeAllExtraRelpath">
-          <xsl:with-param name="remainingPath" select="$thisFilename"/>
+          <xsl:with-param name="remainingPath">
+            <xsl:if test="string-length($FILEDIR) != 0">
+              <xsl:value-of select="concat($FILEDIR, '/')"/>
+            </xsl:if>
+            <xsl:value-of select="$thisFilename"/>
+          </xsl:with-param>
         </xsl:call-template>
       </xsl:attribute>
     </file>
@@ -304,6 +309,7 @@ Default topic=</xsl:text>
      ********************************************************************************* -->
 <xsl:template match="*[contains(@class, ' map/topicref ')]" mode="defaulttopic">
   <xsl:param name="pathFromMaplist"/>
+  <xsl:variable name="thisFilename">
   <xsl:choose>
     <!-- If copy-to is specified, that copy should be used in place of the original -->
     <xsl:when test="@copy-to and (not(@format) or @format = 'dita')">
@@ -333,6 +339,17 @@ Default topic=</xsl:text>
     <xsl:when test="contains(@href,'.htm')"><xsl:value-of select="@href"/><xsl:text>
 </xsl:text></xsl:when>
   </xsl:choose>
+  </xsl:variable>
+  <xsl:if test="string-length($thisFilename)>0">
+    <xsl:call-template name="removeAllExtraRelpath">
+      <xsl:with-param name="remainingPath">
+        <xsl:if test="string-length($FILEDIR) != 0">
+          <xsl:value-of select="concat($FILEDIR, '/')"/>
+        </xsl:if>
+        <xsl:value-of select="$thisFilename"/>
+      </xsl:with-param>
+    </xsl:call-template>
+  </xsl:if>
 </xsl:template>
 
 <xsl:template match="*[contains(@class, ' map/reltable ')]">
@@ -361,83 +378,6 @@ Default topic=</xsl:text>
   <xsl:apply-templates/>
 </xsl:template>
 
-<!-- Template to get the relative path to a map -->
-<xsl:template name="getRelativePath">
-  <xsl:param name="remainingPath" select="@file"/>
-  <xsl:choose>
-    <xsl:when test="contains($remainingPath,'/')">
-      <xsl:value-of select="substring-before($remainingPath,'/')"/><xsl:text>/</xsl:text>
-      <xsl:call-template name="getRelativePath">
-        <xsl:with-param name="remainingPath" select="substring-after($remainingPath,'/')"/>
-      </xsl:call-template>
-    </xsl:when>
-    <xsl:when test="contains($remainingPath,'\')">
-      <xsl:value-of select="substring-before($remainingPath,'\')"/><xsl:text>/</xsl:text>
-      <xsl:call-template name="getRelativePath">
-        <xsl:with-param name="remainingPath" select="substring-after($remainingPath,'\')"/>
-      </xsl:call-template>
-    </xsl:when>
-  </xsl:choose>
-</xsl:template>
-
-<!-- Remove all extra relpaths (as in './multiple/directories/../../other/') -->
-<xsl:template name="removeAllExtraRelpath">
-  <xsl:param name="remainingPath"><xsl:value-of select="@href"/></xsl:param>
-  <xsl:variable name="firstRoundRemainingPath">
-    <xsl:call-template name="removeExtraRelpath">
-      <xsl:with-param name="remainingPath">
-        <xsl:value-of select="$remainingPath"/>
-      </xsl:with-param>
-    </xsl:call-template>
-  </xsl:variable>
-  <xsl:variable name="secondRoundRemainingPath">
-    <xsl:call-template name="removeExtraRelpath">
-      <xsl:with-param name="remainingPath">
-        <xsl:value-of select="$firstRoundRemainingPath"/>
-      </xsl:with-param>
-    </xsl:call-template>
-  </xsl:variable>
-  <xsl:choose>
-    <xsl:when test="contains($secondRoundRemainingPath, '../') and not($firstRoundRemainingPath=$secondRoundRemainingPath)">
-      <xsl:call-template name="removeAllExtraRelpath">
-        <xsl:with-param name="remainingPath" select="$secondRoundRemainingPath"/>
-      </xsl:call-template>
-    </xsl:when>
-    <xsl:otherwise><xsl:value-of select="$secondRoundRemainingPath"/></xsl:otherwise>
-  </xsl:choose>
-</xsl:template>
-
-<!-- Remove extra relpaths (as in abc/../def) -->
-<xsl:template name="removeExtraRelpath">
-  <xsl:param name="remainingPath"><xsl:value-of select="@href"/></xsl:param>
-  <xsl:choose>
-    <xsl:when test="contains($remainingPath,'\')">
-      <xsl:call-template name="removeExtraRelpath">
-        <xsl:with-param name="remainingPath"><xsl:value-of 
-          select="substring-before($remainingPath,'\')"/>/<xsl:value-of 
-          select="substring-after($remainingPath,'\')"/></xsl:with-param>
-      </xsl:call-template>
-    </xsl:when>
-    <xsl:when test="starts-with($remainingPath,'./')">
-      <xsl:call-template name="removeExtraRelpath">
-        <xsl:with-param name="remainingPath" select="substring-after($remainingPath,'./')"/>
-      </xsl:call-template>
-    </xsl:when>
-    <xsl:when test="not(contains($remainingPath,'../'))"><xsl:value-of select="$remainingPath"/></xsl:when>
-    <xsl:when test="not(starts-with($remainingPath,'../')) and
-                    starts-with(substring-after($remainingPath,'/'),'../')">
-      <xsl:call-template name="removeExtraRelpath">
-        <xsl:with-param name="remainingPath" select="substring-after($remainingPath,'../')"/>
-      </xsl:call-template>
-    </xsl:when>
-    <xsl:when test="contains($remainingPath,'/')">
-      <xsl:value-of select="substring-before($remainingPath,'/')"/>/<xsl:text/>
-      <xsl:call-template name="removeExtraRelpath">
-        <xsl:with-param name="remainingPath" select="substring-after($remainingPath,'/')"/>
-      </xsl:call-template>
-    </xsl:when>
-    <xsl:otherwise><xsl:value-of select="$remainingPath"/></xsl:otherwise>
-  </xsl:choose>
-</xsl:template>
+<xsl:include href="common.xsl"/>
 
 </xsl:stylesheet>

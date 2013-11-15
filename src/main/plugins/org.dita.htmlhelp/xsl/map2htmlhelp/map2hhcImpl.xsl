@@ -41,6 +41,7 @@
 <xsl:param name="OUTEXT" select="'.html'"/><!-- "htm" and "html" are valid values -->
 <xsl:param name="WORKDIR" select="'./'"/>
 <xsl:param name="DITAEXT" select="'.xml'"/>
+<xsl:param name="FILEDIR"/>
 
 <!-- *********************************************************************************
      Setup the HTML wrapper for the table of contents
@@ -282,21 +283,35 @@
             <xsl:choose> <!-- What if targeting a nested topic? Need to keep the ID? -->
               <xsl:when test="@copy-to and (not(@format) or @format = 'dita')">
                 <xsl:attribute name="value">
-                  <xsl:value-of select="$pathFromMaplist"/>
-                  <xsl:call-template name="replace-extension">
-                    <xsl:with-param name="filename" select="@copy-to"/>
-                    <xsl:with-param name="extension" select="$OUTEXT"/>
-                    <xsl:with-param name="ignore-fragment" select="true()"/>
+                  <xsl:call-template name="removeAllExtraRelpath">
+                    <xsl:with-param name="remainingPath">
+                      <xsl:if test="string-length($FILEDIR) != 0">
+                        <xsl:value-of select="concat($FILEDIR, '/')"/>
+                      </xsl:if>
+                      <xsl:value-of select="$pathFromMaplist"/>
+                      <xsl:call-template name="replace-extension">
+                        <xsl:with-param name="filename" select="@copy-to"/>
+                        <xsl:with-param name="extension" select="$OUTEXT"/>
+                        <xsl:with-param name="ignore-fragment" select="true()"/>
+                      </xsl:call-template>
+                      <xsl:value-of select="$topicID"/>
+                    </xsl:with-param>
                   </xsl:call-template>
-                  <xsl:value-of select="$topicID"/>
                 </xsl:attribute>
               </xsl:when>
               <xsl:when test="@href and (not(@format) or @format = 'dita')">
                 <xsl:attribute name="value">
-                  <xsl:value-of select="$pathFromMaplist"/>
-                  <xsl:call-template name="replace-extension">
-                    <xsl:with-param name="filename" select="@href"/>
-                    <xsl:with-param name="extension" select="$OUTEXT"/>
+                  <xsl:call-template name="removeAllExtraRelpath">
+                    <xsl:with-param name="remainingPath">
+                      <xsl:if test="string-length($FILEDIR) != 0">
+                        <xsl:value-of select="concat($FILEDIR, '/')"/>
+                      </xsl:if>
+                      <xsl:value-of select="$pathFromMaplist"/>
+                      <xsl:call-template name="replace-extension">
+                        <xsl:with-param name="filename" select="@href"/>
+                        <xsl:with-param name="extension" select="$OUTEXT"/>
+                      </xsl:call-template>
+                    </xsl:with-param>
                   </xsl:call-template>
                 </xsl:attribute>
               </xsl:when>
@@ -340,23 +355,6 @@
   <xsl:apply-templates/>
 </xsl:template>
 
-<!-- Template to get the relative path to a map -->
-<xsl:template name="getRelativePath">
-  <xsl:param name="remainingPath" select="@file"/>
-  <xsl:choose>
-    <xsl:when test="contains($remainingPath,'/')">
-      <xsl:value-of select="substring-before($remainingPath,'/')"/><xsl:text>/</xsl:text>
-      <xsl:call-template name="getRelativePath">
-        <xsl:with-param name="remainingPath" select="substring-after($remainingPath,'/')"/>
-      </xsl:call-template>
-    </xsl:when>
-    <xsl:when test="contains($remainingPath,'\')">
-      <xsl:value-of select="substring-before($remainingPath,'\')"/><xsl:text>/</xsl:text>
-      <xsl:call-template name="getRelativePath">
-        <xsl:with-param name="remainingPath" select="substring-after($remainingPath,'\')"/>
-      </xsl:call-template>
-    </xsl:when>
-  </xsl:choose>
-</xsl:template>
+<xsl:include href="common.xsl"/>
 
 </xsl:stylesheet>
