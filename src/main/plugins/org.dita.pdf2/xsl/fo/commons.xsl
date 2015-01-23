@@ -1364,6 +1364,15 @@ See the accompanying license.txt file for applicable licenses.
         </fo:inline>
     </xsl:template>
 
+  <xsl:template match="*[contains(@class,' topic/cite ') or
+                         contains(@class,' topic/dt ') or
+                         contains(@class,' topic/keyword ') or
+                         contains(@class,' topic/term ') or
+                         contains(@class,' topic/ph ') or
+                         contains(@class,' topic/indexterm ') or
+                         contains(@class,' topic/index-base ') or
+                         contains(@class,' topic/indextermref ')]/*[contains(@class,' topic/desc ')]" priority="1000"/>
+
     <xsl:template match="*[contains(@class,' topic/prolog ')]"/>
 <!--
         <fo:block xsl:use-attribute-sets="prolog">
