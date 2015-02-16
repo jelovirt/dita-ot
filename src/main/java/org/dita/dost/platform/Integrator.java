@@ -8,11 +8,11 @@
  */
 package org.dita.dost.platform;
 
-import static javax.xml.XMLConstants.*;
 import static org.apache.commons.io.IOUtils.closeQuietly;
 import static org.dita.dost.util.Constants.*;
 import static org.dita.dost.util.Configuration.*;
 import static org.dita.dost.util.URLUtils.toFile;
+import static org.dita.dost.platform.PluginParser.*;
 
 import java.io.*;
 import java.util.*;
@@ -20,6 +20,9 @@ import java.util.Map.Entry;
 import java.util.regex.Pattern;
 
 import org.dita.dost.util.XMLUtils;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 import org.xml.sax.*;
 
 import org.dita.dost.log.DITAOTJavaLogger;
@@ -27,12 +30,14 @@ import org.dita.dost.log.DITAOTLogger;
 import org.dita.dost.log.MessageUtils;
 import org.dita.dost.util.FileUtils;
 import org.dita.dost.util.StringUtils;
-import org.xml.sax.helpers.AttributesImpl;
 
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.sax.SAXTransformerFactory;
-import javax.xml.transform.sax.TransformerHandler;
+import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
 /**
@@ -69,8 +74,8 @@ public final class Integrator {
     /** Plugin configuration file. */
     private final Set<File> descSet;
     private final XMLReader reader;
-    private final TransformerHandler pluginsHandler;
-    private final DescParser parser;
+    private final Document pluginsDoc;
+    private final PluginParser parser;
     private DITAOTLogger logger;
     private final Set<String> loadedPlugin;
     private final Hashtable<String, List<String>> featureTable;
@@ -110,15 +115,13 @@ public final class Integrator {
                 throw e;
             }
         });
-        parser = new DescParser(ditaDir);
-        parser.setParent(reader);
+        parser = new PluginParser(ditaDir);
         try {
-            pluginsHandler = ((SAXTransformerFactory) TransformerFactory.newInstance()).newTransformerHandler();
-        } catch (final TransformerConfigurationException e) {
-            throw new RuntimeException("Failed to initializer plugins serializer: " + e.getMessage(), e);
+            pluginsDoc = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
+        } catch (final ParserConfigurationException e) {
+            throw new RuntimeException("Failed to create compound document: " + e.getMessage(), e);
         }
-        pluginsHandler.setResult(new StreamResult(new File(ditaDir, RESOURCES_DIR + File.separator + "plugins.xml")));
-        parser.setContentHandler(pluginsHandler);
+//        pluginsDoc.setResult(new StreamResult(new File(ditaDir, RESOURCES_DIR + File.separator + "plugins.xml")));
     }
 
     /**
@@ -197,7 +200,9 @@ public final class Integrator {
     /**
      * Generate and process plugin files.
      */
-    private void integrate() {
+    private void integrate() throws Exception {
+        writePlugins();
+
         // Collect information for each feature id and generate a feature table.
         final FileGenerator fileGen = new FileGenerator(featureTable, pluginTable);
         fileGen.setLogger(logger);
@@ -263,6 +268,7 @@ public final class Integrator {
                 configuration.put(name, FileUtils.getRelativePath(new File(ditaDir, "dummy"), f.getPluginDir()).getPath());
             }
         }
+        configuration.putAll(getParserConfiguration());
         
         OutputStream out = null;
         try {
@@ -294,6 +300,22 @@ public final class Integrator {
         writeEnvBatch(jars);
     }
 
+    private Map<String, String> getParserConfiguration() {
+        final Map<String, String> res = new HashMap<String, String>();
+        final NodeList features = pluginsDoc.getElementsByTagName(FEATURE_ELEM);
+        for (int i = 0; i < features.getLength(); i++) {
+            final Element feature = (Element) features.item(i);
+            if (feature.getAttribute(FEATURE_ID_ATTR).equals("dita.parser")) {
+                final NodeList parsers = feature.getElementsByTagName("parser");
+                for (int j = 0; j < parsers.getLength(); j++) {
+                    final Element parser = (Element) parsers.item(j);
+                    res.put("parser." + parser.getAttribute("format"), parser.getAttribute("class"));
+                }
+            }
+        }
+        return res;
+    }
+
     private Collection<File> relativize(final Collection<String> src) {
         final Collection<File> res = new ArrayList<File>(src.size());
         final File base = new File(ditaDir, "dummy");
@@ -314,14 +336,8 @@ public final class Integrator {
             out = new BufferedWriter(new FileWriter(outFile));
 
             out.write("#!/bin/sh\n");
-            boolean first = true;
             for (final File relativeLib: jars) {
-                out.write("LOCALCLASSPATH=\"");
-                if (first) {
-                    first = false;
-                } else {
-                    out.write("$LOCALCLASSPATH:");
-                }
+                out.write("CLASSPATH=\"$CLASSPATH:");
                 if (!relativeLib.isAbsolute()) {
                     out.write("$DITA_HOME" + UNIX_SEPARATOR);
                 }
@@ -349,14 +365,8 @@ public final class Integrator {
             logger.debug("Generate environment batch " + outFile.getPath());
             out = new BufferedWriter(new FileWriter(outFile));
 
-            boolean first = true;
             for (final File relativeLib: jars) {
-                out.write("set \"CLASSPATH=");
-                if (first) {
-                    first = false;
-                } else {
-                    out.write("%CLASSPATH%;");
-                }
+                out.write("set \"CLASSPATH=%CLASSPATH%;");
                 if (!relativeLib.isAbsolute()) {
                     out.write("%DITA_HOME%" + WINDOWS_SEPARATOR);
                 }
@@ -477,17 +487,29 @@ public final class Integrator {
     /**
      * Parse plugin configuration files.
      */
-    private void parsePlugin() throws SAXException {
-        pluginsHandler.startDocument();
-        pluginsHandler.startElement(NULL_NS_URI, ELEM_PLUGINS, ELEM_PLUGINS, new AttributesImpl());
+    private void parsePlugin() throws TransformerException {
+        final Element root = pluginsDoc.createElement(ELEM_PLUGINS);
+        pluginsDoc.appendChild(root);
         if (!descSet.isEmpty()) {
             for (final File descFile : descSet) {
                 logger.debug("Read plug-in configuration " + descFile.getPath());
-                parseDesc(descFile);
+                final Element plugin = parseDesc(descFile);
+                if (plugin != null) {
+                    root.appendChild(pluginsDoc.importNode(plugin, true));
+                }
             }
         }
-        pluginsHandler.endElement(NULL_NS_URI, ELEM_PLUGINS, ELEM_PLUGINS);
-        pluginsHandler.endDocument();
+    }
+
+    private void writePlugins() throws TransformerException {
+        final File plugins = new File(ditaDir, RESOURCES_DIR + File.separator + "plugins.xml");
+        logger.debug("Writing " + plugins);
+        try {
+            final Transformer serializer = TransformerFactory.newInstance().newTransformer();
+            serializer.transform(new DOMSource(pluginsDoc), new StreamResult(plugins));
+        } catch (final TransformerConfigurationException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
@@ -495,16 +517,18 @@ public final class Integrator {
      * 
      * @param descFile plugin configuration
      */
-    private void parseDesc(final File descFile) {
+    private Element parseDesc(final File descFile) {
         try {
             parser.setPluginDir(descFile.getParentFile());
-            parser.parse(descFile.getAbsolutePath());
+            final Element root = parser.parse(descFile.getAbsoluteFile());
             final Features f = parser.getFeatures();
             final String id = f.getPluginId();
             validatePlugin(f);
-            setDefaultValues(f);
             extensionPoints.addAll(f.getExtensionPoints().keySet());
             pluginTable.put(id, f);
+            return root;
+        } catch (final RuntimeException e) {
+            throw e;
         } catch (final SAXParseException e) {
             final RuntimeException ex = new RuntimeException("Failed to parse " + descFile.getAbsolutePath() + ": " + e.getMessage(), e);
             if (strict) {
@@ -519,6 +543,7 @@ public final class Integrator {
                 logger.error(e.getMessage(), e) ;
             }
         }
+        return null;
     }
 
     /**
@@ -564,17 +589,6 @@ public final class Integrator {
             } else {
                 logger.warn(msg);
             }
-        }
-    }
-
-    /**
-     * Set default values.
-     * 
-     * @param f Features to set defaults to
-     */
-    private void setDefaultValues(final Features f) {
-        if (f.getFeature("package.version") == null) {
-            f.addFeature("package.version", "0.0.0", null);
         }
     }
 
