@@ -953,7 +953,7 @@
     </xsl:choose>
     <!-- Use flags from parent dlentry, if present -->
     <xsl:apply-templates select="../*[contains(@class, ' ditaot-d/ditaval-startprop ')]" mode="out-of-line"/>
-    <xsl:apply-templates select="node() except *[contains(@class, ' topic/desc ')]"/>
+    <xsl:apply-templates/>
     <xsl:apply-templates select="../*[contains(@class, ' ditaot-d/ditaval-endprop ')]" mode="out-of-line"/>
   </dt>
 </xsl:template>
@@ -1201,7 +1201,7 @@
         <xsl:value-of select="$displaytext"/>
       </xsl:when>
       <xsl:otherwise>
-        <xsl:apply-templates select="node() except *[contains(@class, ' topic/desc ')]"/>
+        <xsl:apply-templates/>
       </xsl:otherwise>
     </xsl:choose>
   </dfn>
@@ -1364,7 +1364,7 @@
       <xsl:variable name="displaytext">
         <xsl:choose>
           <xsl:when test="normalize-space(.) != '' and empty(processing-instruction('ditaot')[. = 'gentext'])">
-            <xsl:apply-templates select="node() except *[contains(@class, ' topic/desc ')]" mode="dita-ot:text-only"/>
+            <xsl:apply-templates mode="dita-ot:text-only"/>
           </xsl:when>
           <xsl:when test="exists(ancestor::*[contains(@class, ' topic/copyright ')]) or generate-id(.) = generate-id(key('keyref', @keyref)[1])">
             <xsl:apply-templates select="." mode="getMatchingSurfaceForm">
@@ -1490,7 +1490,7 @@
     <xsl:call-template name="setscale"/>
     <xsl:call-template name="setidaname"/>
     <xsl:call-template name="place-fig-lbl"/>
-    <xsl:apply-templates select="*[not(contains(@class, ' topic/title '))][not(contains(@class, ' topic/desc '))] |text()|comment()|processing-instruction()"/>
+    <xsl:apply-templates select="node() except *[contains(@class, ' topic/title ') or contains(@class, ' topic/desc ')]"/>
   </figure>
   <xsl:apply-templates select="*[contains(@class, ' ditaot-d/ditaval-endprop ')]" mode="out-of-line"/>
   <xsl:value-of select="$newline"/>
@@ -4093,7 +4093,7 @@
             </xsl:if>
           </xsl:with-param>
         </xsl:call-template>
-        <xsl:apply-templates select="node() except *[contains(@class, ' topic/desc ')]"/>
+        <xsl:apply-templates/>
       </xsl:element>
     </a>
   </xsl:template>

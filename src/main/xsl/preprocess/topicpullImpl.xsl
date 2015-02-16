@@ -855,7 +855,8 @@ mode="topicpull:figure-linktext" and mode="topicpull:table-linktext"
   </xsl:template>
 
   <!-- Get the short description for a link or xref -->
-  <xsl:template match="*" mode="topicpull:get-stuff_get-shortdesc">
+  <xsl:template match="*" mode="topicpull:get-stuff_get-shortdesc" priority="0"/>
+  <xsl:template match="*[contains(@class, ' topic/xref ')]" mode="topicpull:get-stuff_get-shortdesc">
     <xsl:param name="type"/>
     <xsl:param name="scope"/>
     <xsl:param name="format"/>
