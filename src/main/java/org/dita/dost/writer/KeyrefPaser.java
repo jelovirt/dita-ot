@@ -467,7 +467,7 @@ public final class KeyrefPaser extends AbstractXMLFilter {
                         } else {
                             // @keyref not in topicref
                             // different elements have different attributes
-                            if (true || currentElement.isRefType) {
+//                            if (currentElement.isRefType) {
                                 // current element with href attribute
                                 for (int index = 0; index < attrs.getLength(); index++) {
                                     final Attr attr = (Attr) attrs.item(index);
@@ -477,20 +477,20 @@ public final class KeyrefPaser extends AbstractXMLFilter {
                                         XMLUtils.addOrSetAttribute(resAtts, attr);
                                     }
                                 }
-                            } else {
-                                // current element without href attribute
-                                // so attributes about href should not be copied.
-                                for (int index = 0; index < attrs.getLength(); index++) {
-                                    final Attr attr = (Attr) attrs.item(index);
-                                    if (!no_copy_topic.contains(attr.getNodeName())
-                                            && !(attr.getNodeName().equals(ATTRIBUTE_NAME_SCOPE)
-                                            || attr.getNodeName().equals(ATTRIBUTE_NAME_FORMAT)
-                                            || attr.getNodeName().equals(ATTRIBUTE_NAME_TYPE))) {
-                                        XMLUtils.removeAttribute(resAtts, attr.getNodeName());
-                                        XMLUtils.addOrSetAttribute(resAtts, attr);
-                                    }
-                                }
-                            }
+//                            } else {
+//                                // current element without href attribute
+//                                // so attributes about href should not be copied.
+//                                for (int index = 0; index < attrs.getLength(); index++) {
+//                                    final Attr attr = (Attr) attrs.item(index);
+//                                    if (!no_copy_topic.contains(attr.getNodeName())
+//                                            && !(attr.getNodeName().equals(ATTRIBUTE_NAME_SCOPE)
+//                                            || attr.getNodeName().equals(ATTRIBUTE_NAME_FORMAT)
+//                                            || attr.getNodeName().equals(ATTRIBUTE_NAME_TYPE))) {
+//                                        XMLUtils.removeAttribute(resAtts, attr.getNodeName());
+//                                        XMLUtils.addOrSetAttribute(resAtts, attr);
+//                                    }
+//                                }
+//                            }
 
                         }
                     } else {
