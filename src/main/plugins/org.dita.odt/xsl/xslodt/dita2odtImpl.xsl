@@ -209,8 +209,8 @@
             <!-- start add flagging styles -->
             <xsl:apply-templates select="." mode="start-add-odt-flags"/>
             <!-- if has title tag -->
-            <xsl:if test="child::*[contains(@class, ' topic/title ')]">
-              <xsl:apply-templates select="child::*[contains(@class, ' topic/title ')]" mode="render_section_title"/>
+            <xsl:if test="*[contains(@class, ' topic/title ')]">
+              <xsl:apply-templates select="*[contains(@class, ' topic/title ')]" mode="render_section_title"/>
             </xsl:if>
             <xsl:apply-templates select="*[not(contains(@class,' topic/title '))] | text() | comment() | processing-instruction()"/>
             <!-- end add flagging styles -->
@@ -462,7 +462,7 @@
       <!-- nested by entry -->
       <xsl:when test="parent::*[contains(@class, ' topic/entry ')]">
         <!-- create p tag -->
-        <text:p>
+        <text:p text:style-name="indent_paragraph_style">
           <!-- alignment styles -->
           <xsl:if test="parent::*[contains(@class, ' topic/entry ')]/@align">
             <xsl:call-template name="set_align_value"/>
@@ -515,9 +515,7 @@
       </xsl:when>
       <!-- nested by other tags -->
       <xsl:otherwise>
-        <!-- imitate a paragraph -->
-        <text:line-break/>
-        <text:span>
+        <text:p>
           <text:span>
             <!-- start add flagging styles -->
             <xsl:apply-templates select="." mode="start-add-odt-flags"/>
@@ -525,7 +523,7 @@
             <!-- end add flagging styles -->
             <xsl:apply-templates select="." mode="end-add-odt-flags"/>
           </text:span>
-        </text:span>
+        </text:p>
       </xsl:otherwise>
     </xsl:choose>
   </xsl:template>
@@ -1318,20 +1316,18 @@
       <text:line-break/>
       <!-- Insert citation as link, use @href as-is -->
       <text:span text:style-name="right">
-        <text:a>
-          <xsl:choose>
-            <xsl:when test="$samefile='true'">
-              <xsl:attribute name="xlink:href">
+        <text:a xlink:type="simple">
+          <xsl:attribute name="xlink:href">
+            <xsl:choose>
+              <xsl:when test="$samefile='true'">
                 <xsl:value-of select="$href-value"/>
-              </xsl:attribute>
-            </xsl:when>
-            <xsl:otherwise>
-              <xsl:variable name="NORMAMLIZEDOUTPUT" select="translate($OUTPUTDIR, '\', '/')"/>
-              <xsl:attribute name="xlink:href">
+              </xsl:when>
+              <xsl:otherwise>
+                <xsl:variable name="NORMAMLIZEDOUTPUT" select="translate($OUTPUTDIR, '\', '/')"/>
                 <xsl:value-of select="concat($FILEREF, $NORMAMLIZEDOUTPUT, '/', $href-value)"/>
-              </xsl:attribute>
-            </xsl:otherwise>
-          </xsl:choose>
+              </xsl:otherwise>
+            </xsl:choose>
+          </xsl:attribute>
           <xsl:choose>
             <xsl:when test="@reftitle">
               <xsl:value-of select="@reftitle"/>
@@ -1448,7 +1444,7 @@
     <xsl:apply-templates/>
   </text:span>
   <!-- 
-  <xsl:apply-templates select="child::*[@class]"/>
+  <xsl:apply-templates select="*[@class]"/>
   -->
 </xsl:template>
 
@@ -1517,7 +1513,7 @@
   
   <xsl:choose>
     <!-- has child tags -->
-    <xsl:when test="child::*|text()">
+    <xsl:when test="*|text()">
       <xsl:choose>
         <!-- if the parent tag is body or li-->
         <xsl:when test="parent::*[contains(@class, ' topic/body ')]            or parent::*[contains(@class, ' topic/li ')] or parent::*[contains(@class, ' topic/sli ')]">

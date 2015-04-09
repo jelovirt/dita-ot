@@ -155,7 +155,7 @@
             <xsl:with-param name="theVariableID" select="'Figure'"/>
             <xsl:with-param name="theParameters">
                 <text:span>
-                    <xsl:value-of select="count(preceding::*[contains(@class, ' topic/fig ')][child::*[contains(@class, ' topic/title ')]]) + 1"/>
+                    <xsl:value-of select="count(preceding::*[contains(@class, ' topic/fig ')][*[contains(@class, ' topic/title ')]]) + 1"/>
                 </text:span>
                 <text:h>
                     <xsl:apply-templates select="*[contains(@class, ' topic/title ')]" mode="insert-text"/>
@@ -165,7 +165,7 @@
     	-->
     	
     	<text:span>
-    		<xsl:value-of select="count(preceding::*[contains(@class, ' topic/fig ')][child::*[contains(@class, ' topic/title ')]]) + 1"/>
+    		<xsl:value-of select="count(preceding::*[contains(@class, ' topic/fig ')][*[contains(@class, ' topic/title ')]]) + 1"/>
     	</text:span>
     	<text:h>
     		<xsl:apply-templates select="*[contains(@class, ' topic/title ')]" mode="insert-text"/>
@@ -185,7 +185,7 @@
             <xsl:with-param name="theVariableID" select="'Table'"/>
             <xsl:with-param name="theParameters">
                 <text:span>
-                    <xsl:value-of select="count(preceding::*[contains(@class, ' topic/table ')][child::*[contains(@class, ' topic/title ')]]) + 1"/>
+                    <xsl:value-of select="count(preceding::*[contains(@class, ' topic/table ')][*[contains(@class, ' topic/title ')]]) + 1"/>
                 </text:span>
                 <text:h>
                     <xsl:apply-templates select="*[contains(@class, ' topic/title ')]" mode="insert-text"/>
@@ -194,7 +194,7 @@
         </xsl:call-template>
         -->
     	<text:span>
-    		<xsl:value-of select="count(preceding::*[contains(@class, ' topic/table ')][child::*[contains(@class, ' topic/title ')]]) + 1"/>
+    		<xsl:value-of select="count(preceding::*[contains(@class, ' topic/table ')][*[contains(@class, ' topic/title ')]]) + 1"/>
     	</text:span>
     	<text:h>
     		<xsl:apply-templates select="*[contains(@class, ' topic/title ')]" mode="insert-text"/>
@@ -263,7 +263,7 @@
     		<xsl:text disable-output-escaping="yes">&lt;text:p&gt;</xsl:text>
     	</xsl:if>
 
-		<text:a>
+    <text:a xlink:type="simple">
 			<xsl:call-template name="buildBasicLinkDestination">
 				<xsl:with-param name="scope" select="@scope"/>
 				<xsl:with-param name="href" select="@href"/>
@@ -439,7 +439,7 @@
             <!--<xsl:text>&#x2022; </xsl:text>-->
     			<text:line-break/>
     			<text:tab/>
-                <text:a>
+              <text:a xlink:type="simple">
                     <xsl:call-template name="buildBasicLinkDestination">
                         <xsl:with-param name="scope" select="$linkScope"/>
                         <xsl:with-param name="href" select="@href"/>
@@ -991,8 +991,8 @@
 					<xsl:when test="$listType = 'none'">
 						<text:p text:style-name="Default_20_Text">
 							<xsl:for-each select="$nodeSet">
-									<text:a xlink:href="concat('#', @id)">
-										<xsl:apply-templates select="child::*[contains(@class, ' topic/title ')]" mode="insert-text"/>
+									<text:a xlink:href="concat('#', @id)" xlink:type="simple">
+										<xsl:apply-templates select="*[contains(@class, ' topic/title ')]" mode="insert-text"/>
 									</text:a>
 								<text:line-break/>
 							</xsl:for-each>
@@ -1027,8 +1027,8 @@
 							</text:span>
 						</text:p>
 						<text:p text:style-name="Default_20_Text">
-							<text:a xlink:href="concat('#' , @id)">
-								<xsl:apply-templates select="child::*[contains(@class, ' topic/title ')]" mode="insert-text"/>
+							<text:a xlink:href="concat('#' , @id)" xlink:type="simple">
+								<xsl:apply-templates select="*[contains(@class, ' topic/title ')]" mode="insert-text"/>
 							</text:a>
 						</text:p>
 				</text:list-item>
@@ -1047,8 +1047,8 @@
 						</text:p>
 					
 						<text:p text:style-name="Default_20_Text">
-							<text:a xlink:href="concat('#', @id)">
-								<xsl:apply-templates select="child::*[contains(@class, ' topic/title ')]" mode="insert-text"/>
+						  <text:a xlink:href="concat('#', @id)" xlink:type="simple">
+								<xsl:apply-templates select="*[contains(@class, ' topic/title ')]" mode="insert-text"/>
 							</text:a>
 						</text:p>
 					
@@ -1078,7 +1078,7 @@
 									<xsl:for-each select="ancestor::*[contains(@class, ' map/relrow ')]/*[contains(@class, ' map/relcell ')][position() = $position]//*[contains(@class, ' map/topicref ')]">
 										<xsl:variable name="relatedTopic" select="key('key_anchor',@id)[1]"/>
 										<text:p text:style-name="Default_20_Text">
-											<text:a xlink:href="concat('#', $id)">
+										  <text:a xlink:href="concat('#', $id)" xlink:type="simple">
 												<xsl:apply-templates select="$relatedTopic/*[contains(@class,' topic/title ')]" mode="insert-text"/>
 											</text:a>
 										</text:p>
@@ -1093,7 +1093,7 @@
 									<xsl:when test="$linkType = 'topic'">
 										<xsl:if test="contains($relatedTopic/@class, ' topic/topic ') and not(contains($relatedTopic/@class, ' concept/concept ') or contains($relatedTopic/@class, ' task/task ') or contains($relatedTopic/@class, ' reference/reference '))">
 											<text:p text:style-name="Default_20_Text">
-												<text:a xlink:href="concat('#', $id)">
+											  <text:a xlink:href="concat('#', $id)" xlink:type="simple">
 													<xsl:apply-templates select="$relatedTopic/*[contains(@class,' topic/title ')]" mode="insert-text"/>
 												</text:a>
 											</text:p>
@@ -1102,7 +1102,7 @@
 									<xsl:when test="$linkType = 'task'">
 										<xsl:if test="contains($relatedTopic/@class, ' task/task ')">
 											<text:p text:style-name="Default_20_Text">
-												<text:a xlink:href="concat('#', $id)">
+											  <text:a xlink:href="concat('#', $id)" xlink:type="simple">
 													<xsl:apply-templates select="$relatedTopic/*[contains(@class,' topic/title ')]" mode="insert-text"/>
 												</text:a>
 											</text:p>
@@ -1111,7 +1111,7 @@
 									<xsl:when test="$linkType = 'concept'">
 										<xsl:if test="contains($relatedTopic/@class, ' concept/concept ')">
 											<text:p text:style-name="Default_20_Text">
-												<text:a xlink:href="concat('#', $id)">
+											  <text:a xlink:href="concat('#', $id)"  xlink:type="simple">
 													<xsl:apply-templates select="$relatedTopic/*[contains(@class,' topic/title ')]" mode="insert-text"/>
 												</text:a>
 											</text:p>
@@ -1120,7 +1120,7 @@
 									<xsl:when test="$linkType = 'reference'">
 										<xsl:if test="contains($relatedTopic/@class, ' reference/reference ')">
 											<text:p text:style-name="Default_20_Text">
-												<text:a xlink:href="concat('#', $id)">
+											  <text:a xlink:href="concat('#', $id)" xlink:type="simple">
 													<xsl:apply-templates select="$relatedTopic/*[contains(@class,' topic/title ')]" mode="insert-text"/>
 												</text:a>
 											</text:p>
@@ -1168,7 +1168,7 @@
 			</text:p>
 			
 			<!--only create link if there is an href, its importance is required, and the role is compatible (don't want a prereq showing up for a "next" or "parent" link, for example) - remove dups-->
-			<xsl:apply-templates mode="prereqs" select="descendant::*[generate-id(.)=generate-id(key('link',concat(ancestor::*[contains(@class, ' topic/related-links ')]/parent::*[contains(@class, ' topic/topic ')]/@id, ' ', @href,@type,@role,@platform,@audience,@importance,@outputclass,@keyref,@scope,@format,@otherrole,@product,@otherprops,@rev,@class,normalize-space(child::*[1])))[1])]     [@href]     [@importance='required' and (not(@role) or @role='sibling' or @role='friend' or @role='previous' or @role='cousin')]     [not(ancestor::*[contains(@class, ' topic/linklist ')])]"/>
+			<xsl:apply-templates mode="prereqs" select="descendant::*[generate-id(.)=generate-id(key('link',concat(ancestor::*[contains(@class, ' topic/related-links ')]/parent::*[contains(@class, ' topic/topic ')]/@id, ' ', @href,@type,@role,@platform,@audience,@importance,@outputclass,@keyref,@scope,@format,@otherrole,@product,@otherprops,@rev,@class,normalize-space(*[1])))[1])]     [@href]     [@importance='required' and (not(@role) or @role='sibling' or @role='friend' or @role='previous' or @role='cousin')]     [not(ancestor::*[contains(@class, ' topic/linklist ')])]"/>
 		</xsl:if>
 	</xsl:template>
 	

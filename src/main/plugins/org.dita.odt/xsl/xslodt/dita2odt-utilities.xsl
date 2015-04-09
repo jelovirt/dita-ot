@@ -1280,20 +1280,18 @@
     
     <xsl:choose>
       <xsl:when test="@href and not(@href='')">
-        <text:a>
-          <xsl:choose>
-            <xsl:when test="$samefile='true'">
-              <xsl:attribute name="xlink:href">
+        <text:a xlink:type="simple">
+          <xsl:attribute name="xlink:href">
+            <xsl:choose>
+              <xsl:when test="$samefile='true'">
                 <xsl:value-of select="$href-value"/>
-              </xsl:attribute>
-            </xsl:when>
-            <xsl:otherwise>
-              <xsl:variable name="NORMAMLIZEDOUTPUT" select="translate($OUTPUTDIR, '\', '/')"/>
-              <xsl:attribute name="xlink:href">
+              </xsl:when>
+              <xsl:otherwise>
+                <xsl:variable name="NORMAMLIZEDOUTPUT" select="translate($OUTPUTDIR, '\', '/')"/>
                 <xsl:value-of select="concat($FILEREF, $NORMAMLIZEDOUTPUT, '/', $href-value)"/>
-              </xsl:attribute>
-            </xsl:otherwise>
-          </xsl:choose>
+              </xsl:otherwise>
+            </xsl:choose>
+          </xsl:attribute>
           <xsl:call-template name="gen-linktxt"/>
           <xsl:if test="contains(@class,' topic/link ')">
             <xsl:apply-templates select="*[contains(@class,' topic/desc ')]"/>

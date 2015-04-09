@@ -164,10 +164,10 @@
         </text:index-title>
         <xsl:choose>
           <xsl:when test="$map and not($map = '')">
-            <xsl:apply-templates select="$map/child::*[contains(@class, ' map/topicref ')]" mode="toc"/>
+            <xsl:apply-templates select="$map/*[contains(@class, ' map/topicref ')]" mode="toc"/>
           </xsl:when>
           <xsl:otherwise>
-            <xsl:apply-templates select="child::*[contains(@class, ' topic/topic ')]" mode="toc"/>
+            <xsl:apply-templates select="*[contains(@class, ' topic/topic ')]" mode="toc"/>
           </xsl:otherwise>
         </xsl:choose>
       </text:index-body>
@@ -188,9 +188,9 @@
       <!-- navtitle value -->
       <xsl:variable name="navtitle">
         <!-- 
-        <xsl:value-of select="child::*[contains(@class, ' map/topicmeta ')]/child::*[contains(@class, ' topic/navtitle ')]"/>
+        <xsl:value-of select="*[contains(@class, ' map/topicmeta ')]/*[contains(@class, ' topic/navtitle ')]"/>
         -->
-        <xsl:apply-templates select="child::*[contains(@class, ' map/topicmeta ')]/child::*[contains(@class, ' topic/navtitle ')]" mode="dita-ot:text-only"/>
+        <xsl:apply-templates select="*[contains(@class, ' map/topicmeta ')]/*[contains(@class, ' topic/navtitle ')]" mode="dita-ot:text-only"/>
       </xsl:variable>
       <!-- href value -->
       <xsl:variable name="href" select="@href"/>
@@ -213,7 +213,7 @@
         </text:a>
       </text:p>
     </xsl:if>
-    <xsl:apply-templates select="child::*[contains(@class, ' map/topicref ')]" mode="toc"/>
+    <xsl:apply-templates select="*[contains(@class, ' map/topicref ')]" mode="toc"/>
   </xsl:template>
   
   
@@ -224,9 +224,9 @@
       <!-- title value -->
       <xsl:variable name="title">
         <!-- 
-        <xsl:value-of select="child::*[contains(@class, ' topic/title ')]"/>
+        <xsl:value-of select="*[contains(@class, ' topic/title ')]"/>
         -->
-        <xsl:apply-templates select="child::*[contains(@class, ' topic/title ')]" mode="dita-ot:text-only"/>
+        <xsl:apply-templates select="*[contains(@class, ' topic/title ')]" mode="dita-ot:text-only"/>
       </xsl:variable>
       <!-- href value -->
       <xsl:variable name="href" select="concat('#', @id)"/>
@@ -249,7 +249,7 @@
         </text:a>
       </text:p>
     </xsl:if>
-    <xsl:apply-templates select="child::*[contains(@class, ' topic/topic ')]" mode="toc"/>
+    <xsl:apply-templates select="*[contains(@class, ' topic/topic ')]" mode="toc"/>
   </xsl:template>
   
   <!-- create map title -->

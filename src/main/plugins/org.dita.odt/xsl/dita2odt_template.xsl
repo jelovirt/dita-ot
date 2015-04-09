@@ -151,7 +151,7 @@
   <xsl:strip-space elements="*"/>
 
   <xsl:attribute-set name="root">
-    <xsl:attribute name="office:version">1.1</xsl:attribute>
+    <xsl:attribute name="office:version">1.2</xsl:attribute>
   </xsl:attribute-set>
   
   <xsl:template match="/">

@@ -281,12 +281,6 @@
       </xsl:when>
       <xsl:otherwise>
         <text:span>
-          <!-- 
-          <xsl:attribute name="xlink:href">
-            <xsl:value-of select="translate($imgsrc, '\', '/')"/>
-          </xsl:attribute>
-          <xsl:attribute name="xlink:type">simple</xsl:attribute>
-          -->
           <xsl:call-template name="gen-img-txt">
             <xsl:with-param name="alttext" select="$alttext"/>
           </xsl:call-template>

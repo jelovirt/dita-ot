@@ -91,21 +91,21 @@
       <xsl:when test="@cols">
         <xsl:value-of select="@cols"/>
       </xsl:when>
-      <xsl:when test="not(child::*[contains(@class, ' topic/colspec ')])">
+      <xsl:when test="not(*[contains(@class, ' topic/colspec ')])">
         <xsl:choose>
-          <xsl:when test="child::*[contains(@class, ' topic/thead ')]">
-            <xsl:value-of select="count(child::*[contains(@class, ' topic/thead ')][1]
-              /child::*[contains(@class, ' topic/row ')][1]
-              /child::*[contains(@class, ' topic/entry ')])"/>
+          <xsl:when test="*[contains(@class, ' topic/thead ')]">
+            <xsl:value-of select="count(*[contains(@class, ' topic/thead ')][1]
+              /*[contains(@class, ' topic/row ')][1]
+              /*[contains(@class, ' topic/entry ')])"/>
           </xsl:when>
           <xsl:otherwise>
             <xsl:value-of select="count(descendant::*[contains(@class, ' topic/row ')][1]
-              /child::*[contains(@class, ' topic/entry ')])"/>
+              /*[contains(@class, ' topic/entry ')])"/>
           </xsl:otherwise>
         </xsl:choose>
       </xsl:when>
       <xsl:otherwise>
-        <xsl:value-of select="count(child::*[contains(@class, ' topic/colspec ')])"/>
+        <xsl:value-of select="count(*[contains(@class, ' topic/colspec ')])"/>
       </xsl:otherwise>
     </xsl:choose>
   </xsl:template>
@@ -255,9 +255,9 @@
       </xsl:if>
       <xsl:call-template name="create_style_table"/>
       
-      <text:p text:style-name="indent_paragraph_style">
+      <!--text:p text:style-name="indent_paragraph_style"-->
       	<xsl:apply-templates/>
-      </text:p>
+      <!--/text:p-->
       
     </table:table-cell>
     <!-- render col spanned cell.-->
@@ -583,13 +583,13 @@
 
 <xsl:template name="count_columns_for_simpletable">
   <xsl:choose>
-    <xsl:when test="child::*[contains(@class, ' topic/sthead ')]">
-      <xsl:value-of select="count(child::*[contains(@class, ' topic/sthead ')][1]
-        /child::*[contains(@class, ' topic/stentry ')])"/>
+    <xsl:when test="*[contains(@class, ' topic/sthead ')]">
+      <xsl:value-of select="count(*[contains(@class, ' topic/sthead ')][1]
+        /*[contains(@class, ' topic/stentry ')])"/>
     </xsl:when>
     <xsl:otherwise>
-      <xsl:value-of select="count(child::*[contains(@class, ' topic/strow ')][1]
-        /child::*[contains(@class, ' topic/stentry ')])"/>
+      <xsl:value-of select="count(*[contains(@class, ' topic/strow ')][1]
+        /*[contains(@class, ' topic/stentry ')])"/>
     </xsl:otherwise>
   </xsl:choose>
 </xsl:template>
