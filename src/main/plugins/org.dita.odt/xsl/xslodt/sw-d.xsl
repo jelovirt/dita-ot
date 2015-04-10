@@ -262,12 +262,10 @@
       <xsl:when test="parent::*[contains(@class, ' topic/body ')]">
         <text:p>
           <text:span>
-            <!-- start add flagging styles -->
             <xsl:apply-templates select="." mode="start-add-odt-flags"/>
 
             <xsl:call-template name="create_msgblock_content"/>
             <xsl:apply-templates/>
-            <!-- end add flagging styles -->
             <xsl:apply-templates select="." mode="end-add-odt-flags"/>
           </text:span>
         </text:p>
@@ -275,24 +273,20 @@
       <xsl:when test="parent::*[contains(@class, ' topic/li ')] or parent::*[contains(@class, ' topic/sli ')]">
         <text:p>
           <text:span>
-            <!-- start add flagging styles -->
             <xsl:apply-templates select="." mode="start-add-odt-flags"/>
 
             <xsl:call-template name="create_msgblock_content"/>
             <xsl:apply-templates/>
-            <!-- end add flagging styles -->
             <xsl:apply-templates select="." mode="end-add-odt-flags"/>
           </text:span>
         </text:p>
       </xsl:when>
       <xsl:when test="parent::*[contains(@class, ' topic/linkinfo ')]">
         <text:span>
-          <!-- start add flagging styles -->
           <xsl:apply-templates select="." mode="start-add-odt-flags"/>
 
           <xsl:call-template name="create_msgblock_content"/>
           <xsl:apply-templates/>
-          <!-- end add flagging styles -->
           <xsl:apply-templates select="." mode="end-add-odt-flags"/>
         </text:span>
         <text:line-break/>
@@ -312,24 +306,20 @@
               <text:span text:style-name="bold">
 
                 <text:span>
-                  <!-- start add flagging styles -->
                   <xsl:apply-templates select="." mode="start-add-odt-flags"/>
 
                   <xsl:call-template name="create_msgblock_content"/>
                   <xsl:apply-templates/>
-                  <!-- end add flagging styles -->
                   <xsl:apply-templates select="." mode="end-add-odt-flags"/>
                 </text:span>
               </text:span>
             </xsl:when>
             <xsl:otherwise>
               <text:span>
-                <!-- start add flagging styles -->
                 <xsl:apply-templates select="." mode="start-add-odt-flags"/>
 
                 <xsl:call-template name="create_msgblock_content"/>
                 <xsl:apply-templates/>
-                <!-- end add flagging styles -->
                 <xsl:apply-templates select="." mode="end-add-odt-flags"/>
               </text:span>
             </xsl:otherwise>
@@ -345,24 +335,20 @@
               <text:span text:style-name="bold">
 
                 <text:span>
-                  <!-- start add flagging styles -->
                   <xsl:apply-templates select="." mode="start-add-odt-flags"/>
 
                   <xsl:call-template name="create_msgblock_content"/>
                   <xsl:apply-templates/>
-                  <!-- end add flagging styles -->
                   <xsl:apply-templates select="." mode="end-add-odt-flags"/>
                 </text:span>
               </text:span>
             </xsl:when>
             <xsl:otherwise>
               <text:span>
-                <!-- start add flagging styles -->
                 <xsl:apply-templates select="." mode="start-add-odt-flags"/>
 
                 <xsl:call-template name="create_msgblock_content"/>
                 <xsl:apply-templates/>
-                <!-- end add flagging styles -->
                 <xsl:apply-templates select="." mode="end-add-odt-flags"/>
               </text:span>
             </xsl:otherwise>
@@ -372,12 +358,10 @@
       <!-- other tags -->
       <xsl:otherwise>
         <text:span>
-          <!-- start add flagging styles -->
           <xsl:apply-templates select="." mode="start-add-odt-flags"/>
 
           <xsl:call-template name="create_msgblock_content"/>
           <xsl:apply-templates/>
-          <!-- end add flagging styles -->
           <xsl:apply-templates select="." mode="end-add-odt-flags"/>
         </text:span>
         <text:line-break/>

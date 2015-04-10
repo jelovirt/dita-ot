@@ -139,10 +139,8 @@
    <xsl:template match="*[contains(@class,' topic/dthd ')]" name="topic.dthd">
      <text:p text:style-name="bold_paragraph">
        <text:span>
-         <!-- start add flagging styles -->
          <xsl:apply-templates select="." mode="start-add-odt-flags"/>
          <xsl:apply-templates/>
-         <!-- end add flagging styles -->
          <xsl:apply-templates select="." mode="end-add-odt-flags"/>
        </text:span>
      </text:p>
@@ -152,11 +150,9 @@
    <xsl:template match="*[contains(@class,' topic/ddhd ')]" name="topic.ddhd">
      <text:p text:style-name="bold_paragraph">
        <text:span>
-         <!-- start add flagging styles -->
          <xsl:apply-templates select="." mode="start-add-odt-flags"/>
          <text:tab/>
          <xsl:apply-templates/>
-         <!-- end add flagging styles -->
          <xsl:apply-templates select="." mode="end-add-odt-flags"/>
        </text:span>
      </text:p>
@@ -173,10 +169,8 @@
    <xsl:template match="*[contains(@class, ' topic/dt ')]">
      <text:p text:style-name="bold_paragraph">
        <text:span>
-         <!-- start add flagging styles -->
          <xsl:apply-templates select="." mode="start-add-odt-flags"/>
          <xsl:apply-templates/>
-         <!-- end add flagging styles -->
          <xsl:apply-templates select="." mode="end-add-odt-flags"/>	
        </text:span>
      </text:p>
@@ -186,11 +180,9 @@
    <xsl:template match="*[contains(@class, ' topic/dd ')]">
      <text:p>
        <text:span>
-         <!-- start add flagging styles -->
          <xsl:apply-templates select="." mode="start-add-odt-flags"/>
          <text:tab/>
            <xsl:apply-templates/>
-         <!-- end add flagging styles -->
          <xsl:apply-templates select="." mode="end-add-odt-flags"/>
        </text:span>
      </text:p>

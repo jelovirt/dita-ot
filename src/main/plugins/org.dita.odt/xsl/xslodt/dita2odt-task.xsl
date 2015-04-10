@@ -248,10 +248,8 @@
   <xsl:template match="*[contains(@class,' task/stepsection ')]">
     
     <text:span>
-      <!-- start add flagging styles -->
       <xsl:apply-templates select="." mode="start-add-odt-flags"/>
       <xsl:apply-templates/>
-      <!-- end add flagging styles -->
       <xsl:apply-templates select="." mode="end-add-odt-flags"/>
     </text:span>
       
@@ -837,12 +835,9 @@
     <text:p text:style-name="indent_paragraph_style">
       
       <text:span>
-        <!-- start add flagging styles -->
         <xsl:apply-templates select="." mode="start-add-odt-flags"/>
         
         <xsl:apply-templates/>
-        
-        <!-- end add flagging styles -->
         <xsl:apply-templates select="." mode="end-add-odt-flags"/>	
       </text:span>
     </text:p>
@@ -861,12 +856,9 @@
     
     <text:p>
       <text:span>
-        <!-- start add flagging styles -->
         <xsl:apply-templates select="." mode="start-add-odt-flags"/>
         
         <xsl:apply-templates/>
-        
-        <!-- end add flagging styles -->
         <xsl:apply-templates select="." mode="end-add-odt-flags"/>	
       </text:span>
     </text:p>
@@ -885,12 +877,9 @@
     
     <text:p>
       <text:span>
-        <!-- start add flagging styles -->
         <xsl:apply-templates select="." mode="start-add-odt-flags"/>
       
       <xsl:apply-templates/>
-      
-      <!-- end add flagging styles -->
       <xsl:apply-templates select="." mode="end-add-odt-flags"/>	
         
       </text:span>

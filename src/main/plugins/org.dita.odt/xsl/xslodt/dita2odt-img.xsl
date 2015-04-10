@@ -121,7 +121,6 @@
                 <xsl:otherwise>
                   <xsl:choose>
                     <xsl:when test="(@placement='break')">
-                      <!-- start add flagging styles -->
                       <xsl:apply-templates select="." mode="start-add-odt-flags"/>
                     </xsl:when>
                     <xsl:otherwise>
@@ -134,7 +133,6 @@
                 <xsl:with-param name="height" select="$height"/>
                 <xsl:with-param name="width" select="$width"/>
               </xsl:call-template>
-              <!-- end add flagging styles -->
               <xsl:apply-templates select="." mode="end-add-odt-flags"/>
             </text:span>
           </text:p>
@@ -152,7 +150,6 @@
                 <xsl:otherwise>
                   <xsl:choose>
                     <xsl:when test="(@placement='break')">
-                      <!-- start add flagging styles -->
                       <xsl:apply-templates select="." mode="start-add-odt-flags"/>
                     </xsl:when>
                     <xsl:otherwise>
@@ -165,7 +162,6 @@
                 <xsl:with-param name="height" select="$height"/>
                 <xsl:with-param name="width" select="$width"/>
               </xsl:call-template>
-              <!-- end add flagging styles -->
               <xsl:apply-templates select="." mode="end-add-odt-flags"/>
             </text:span>
           </text:p>
@@ -182,7 +178,6 @@
                 <xsl:otherwise>
                   <xsl:choose>
                     <xsl:when test="(@placement='break')">
-                      <!-- start add flagging styles -->
                       <xsl:apply-templates select="." mode="start-add-odt-flags"/>
                     </xsl:when>
                     <xsl:otherwise>
@@ -195,7 +190,6 @@
                 <xsl:with-param name="height" select="$height"/>
                 <xsl:with-param name="width" select="$width"/>
               </xsl:call-template>
-              <!-- end add flagging styles -->
               <xsl:apply-templates select="." mode="end-add-odt-flags"/>
             </text:span>
           </text:p>
@@ -210,7 +204,6 @@
               <xsl:otherwise>
                 <xsl:choose>
                   <xsl:when test="(@placement='break')">
-                    <!-- start add flagging styles -->
                     <xsl:apply-templates select="." mode="start-add-odt-flags"/>
                   </xsl:when>
                   <xsl:otherwise>
@@ -223,7 +216,6 @@
               <xsl:with-param name="height" select="$height"/>
               <xsl:with-param name="width" select="$width"/>
             </xsl:call-template>
-            <!-- end add flagging styles -->
             <xsl:apply-templates select="." mode="end-add-odt-flags"/>
           </text:span>
         </xsl:otherwise>

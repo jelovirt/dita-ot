@@ -118,10 +118,8 @@
       <xsl:when test="parent::*[contains(@class, ' topic/linkinfo ')]">
         <text:span>
           <text:span>
-            <!-- start add flagging styles -->
             <xsl:apply-templates select="." mode="start-add-odt-flags"/>
             <xsl:apply-templates/>
-            <!-- end add flagging styles -->
             <xsl:apply-templates select="." mode="end-add-odt-flags"/>
           </text:span>
         </text:span>
@@ -132,10 +130,8 @@
         <text:span text:style-name="Code_Text">
 
           <text:span>
-            <!-- start add flagging styles -->
             <xsl:apply-templates select="." mode="start-add-odt-flags"/>
             <xsl:apply-templates/>
-            <!-- end add flagging styles -->
             <xsl:apply-templates select="." mode="end-add-odt-flags"/>
           </text:span>
         </text:span>

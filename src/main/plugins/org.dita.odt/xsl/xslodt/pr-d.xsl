@@ -141,11 +141,9 @@
     <xsl:choose>
       <xsl:when test="parent::*[contains(@class, ' topic/itemgroup ')]">
         <text:span>
-          <!-- start add flagging styles -->
           <xsl:apply-templates select="." mode="start-add-odt-flags"/>
           <xsl:call-template name="create_spec_title"/>
           <xsl:apply-templates/>
-          <!-- end add flagging styles -->
           <xsl:apply-templates select="." mode="end-add-odt-flags"/>
         </text:span>
         <text:line-break/>
@@ -154,11 +152,9 @@
         <text:p text:style-name="Code_Style_Paragraph">
 
           <text:span>
-            <!-- start add flagging styles -->
             <xsl:apply-templates select="." mode="start-add-odt-flags"/>
             <xsl:call-template name="create_spec_title"/>
             <xsl:apply-templates/>
-            <!-- end add flagging styles -->
             <xsl:apply-templates select="." mode="end-add-odt-flags"/>
           </text:span>
         </text:p>
@@ -167,11 +163,9 @@
         <text:p text:style-name="Code_Style_Paragraph">
 
           <text:span>
-            <!-- start add flagging styles -->
             <xsl:apply-templates select="." mode="start-add-odt-flags"/>
             <xsl:call-template name="create_spec_title"/>
             <xsl:apply-templates/>
-            <!-- end add flagging styles -->
             <xsl:apply-templates select="." mode="end-add-odt-flags"/>
           </text:span>
         </text:p>
@@ -190,11 +184,9 @@
               <text:span text:style-name="bold">
 
                 <text:span>
-                  <!-- start add flagging styles -->
                   <xsl:apply-templates select="." mode="start-add-odt-flags"/>
                   <xsl:call-template name="create_spec_title"/>
                   <xsl:apply-templates/>
-                  <!-- end add flagging styles -->
                   <xsl:apply-templates select="." mode="end-add-odt-flags"/>
                 </text:span>
               </text:span>
@@ -203,11 +195,9 @@
               <text:span text:style-name="Code_Text">
 
                 <text:span>
-                  <!-- start add flagging styles -->
                   <xsl:apply-templates select="." mode="start-add-odt-flags"/>
                   <xsl:call-template name="create_spec_title"/>
                   <xsl:apply-templates/>
-                  <!-- end add flagging styles -->
                   <xsl:apply-templates select="." mode="end-add-odt-flags"/>
                 </text:span>
               </text:span>
@@ -225,11 +215,9 @@
               <text:span text:style-name="bold">
 
                 <text:span>
-                  <!-- start add flagging styles -->
                   <xsl:apply-templates select="." mode="start-add-odt-flags"/>
                   <xsl:call-template name="create_spec_title"/>
                   <xsl:apply-templates/>
-                  <!-- end add flagging styles -->
                   <xsl:apply-templates select="." mode="end-add-odt-flags"/>
                 </text:span>
               </text:span>
@@ -238,11 +226,9 @@
               <text:span text:style-name="Code_Text">
 
                 <text:span>
-                  <!-- start add flagging styles -->
                   <xsl:apply-templates select="." mode="start-add-odt-flags"/>
                   <xsl:call-template name="create_spec_title"/>
                   <xsl:apply-templates/>
-                  <!-- end add flagging styles -->
                   <xsl:apply-templates select="." mode="end-add-odt-flags"/>
                 </text:span>
               </text:span>
@@ -255,11 +241,9 @@
         <text:span text:style-name="Code_Text">
 
           <text:span>
-            <!-- start add flagging styles -->
             <xsl:apply-templates select="." mode="start-add-odt-flags"/>
             <xsl:call-template name="create_spec_title"/>
             <xsl:apply-templates/>
-            <!-- end add flagging styles -->
             <xsl:apply-templates select="." mode="end-add-odt-flags"/>
           </text:span>
         </text:span>
@@ -333,7 +317,6 @@
 
     <text:span>
       <text:span>
-        <!-- start add flagging styles -->
         <xsl:apply-templates select="." mode="start-add-odt-flags"/>
 
         <xsl:if test="parent::*[contains(@class,' pr-d/groupchoice ')]">
@@ -347,8 +330,6 @@
         <!-- repid processed here before -->
         <xsl:if test="name()='groupchoice'">}</xsl:if>
         <xsl:if test="@importance='optional'">]</xsl:if>
-
-        <!-- end add flagging styles -->
         <xsl:apply-templates select="." mode="end-add-odt-flags"/>
       </text:span>
     </text:span>
@@ -432,10 +413,8 @@
         <text:p text:style-name="syntaxdiagram_paragraph">
 
           <text:span>
-            <!-- start add flagging styles -->
             <xsl:apply-templates select="." mode="start-add-odt-flags"/>
             <xsl:apply-templates/>
-            <!-- end add flagging styles -->
             <xsl:apply-templates select="." mode="end-add-odt-flags"/>
           </text:span>
         </text:p>
@@ -454,10 +433,8 @@
               <text:span text:style-name="bold">
 
                 <text:span>
-                  <!-- start add flagging styles -->
                   <xsl:apply-templates select="." mode="start-add-odt-flags"/>
                   <xsl:apply-templates/>
-                  <!-- end add flagging styles -->
                   <xsl:apply-templates select="." mode="end-add-odt-flags"/>
 
                 </text:span>
@@ -465,10 +442,8 @@
             </xsl:when>
             <xsl:otherwise>
               <text:span>
-                <!-- start add flagging styles -->
                 <xsl:apply-templates select="." mode="start-add-odt-flags"/>
                 <xsl:apply-templates/>
-                <!-- end add flagging styles -->
                 <xsl:apply-templates select="." mode="end-add-odt-flags"/>
 
               </text:span>
@@ -484,10 +459,8 @@
             <xsl:when test="parent::*[contains(@class, ' topic/stentry ')]/                               parent::*[contains(@class, ' topic/sthead ')]">
               <text:span text:style-name="bold">
                 <text:span>
-                  <!-- start add flagging styles -->
                   <xsl:apply-templates select="." mode="start-add-odt-flags"/>
                   <xsl:apply-templates/>
-                  <!-- end add flagging styles -->
                   <xsl:apply-templates select="." mode="end-add-odt-flags"/>
 
                 </text:span>
@@ -495,10 +468,8 @@
             </xsl:when>
             <xsl:otherwise>
               <text:span>
-                <!-- start add flagging styles -->
                 <xsl:apply-templates select="." mode="start-add-odt-flags"/>
                 <xsl:apply-templates/>
-                <!-- end add flagging styles -->
                 <xsl:apply-templates select="." mode="end-add-odt-flags"/>
               </text:span>
             </xsl:otherwise>
@@ -509,10 +480,8 @@
       <xsl:otherwise>
         <text:span>
           <text:span>
-            <!-- start add flagging styles -->
             <xsl:apply-templates select="." mode="start-add-odt-flags"/>
             <xsl:apply-templates/>
-            <!-- end add flagging styles -->
             <xsl:apply-templates select="." mode="end-add-odt-flags"/>
 
           </text:span>
