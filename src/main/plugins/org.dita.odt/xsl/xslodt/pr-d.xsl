@@ -136,8 +136,6 @@
   </xsl:template>
 
   <xsl:template match="*[contains(@class,' pr-d/codeblock ')]" name="create_codeblock">
-
-
     <xsl:choose>
       <xsl:when test="parent::*[contains(@class, ' topic/itemgroup ')]">
         <text:span>

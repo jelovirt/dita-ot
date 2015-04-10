@@ -146,8 +146,8 @@
     <xsl:apply-templates select="document($currentfile, /)/processing-instruction('path2project-uri')[1]" mode="get-path2project"/>
   </xsl:variable>
   
+  <xsl:output method="xml" encoding="UTF-8" indent="no"/>
   
-  <xsl:output method="xml" encoding="UTF-8" indent="yes"/>
   <xsl:strip-space elements="*"/>
 
   <xsl:attribute-set name="root">

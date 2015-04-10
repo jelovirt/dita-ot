@@ -942,9 +942,10 @@
   </xsl:template>
   
   <xsl:template name="create_q_content">
-    <xsl:variable name="style_name">
+    <xsl:variable name="styles" as="xs:string*">
       <xsl:call-template name="get_style_name"/> 
     </xsl:variable>
+    <xsl:variable name="style_name" select="string-join($styles, '')" as="xs:string?"/>
     <xsl:variable name="trueStyleName" select="styleUtils:getHiStyleName($style_name)"/>
     <text:span>
       <xsl:if test="$trueStyleName!=''">
@@ -2115,15 +2116,18 @@
 </xsl:template>
 
 <xsl:template match="text()">
-  <xsl:variable name="style_name">
+  <xsl:variable name="styles" as="xs:string*">
     <xsl:call-template name="get_style_name"/> 
   </xsl:variable>
+  <xsl:variable name="style_name" select="string-join($styles, '')" as="xs:string?"/>
   <xsl:variable name="trueStyleName" select="styleUtils:getHiStyleName($style_name)"/>
   <xsl:choose>
     <!-- parent is entry, stentry -->
-    <xsl:when test="parent::*[contains(@class, ' topic/entry ')] or                     parent::*[contains(@class, ' topic/stentry ')]">
+    <xsl:when test="parent::*[contains(@class, ' topic/entry ')] or
+                    parent::*[contains(@class, ' topic/stentry ')]">
         <xsl:choose>
-          <xsl:when test="ancestor::*[contains(@class, ' topic/thead ')] or              ancestor::*[contains(@class, ' topic/sthead')]">
+          <xsl:when test="ancestor::*[contains(@class, ' topic/thead ')] or
+                          ancestor::*[contains(@class, ' topic/sthead')]">
             <text:span>
               <!-- 
               <xsl:attribute name="text:style-name">bold</xsl:attribute>
@@ -2156,7 +2160,8 @@
         </xsl:choose>
     </xsl:when>
     <!-- parent is li, sli add p tag otherwise text is invaild. -->
-    <xsl:when test="parent::*[contains(@class, ' topic/li ')] or parent::*[contains(@class, ' topic/sli ')] or        parent::*[contains(@class, ' topic/sli ')]">
+    <xsl:when test="parent::*[contains(@class, ' topic/li ')] or parent::*[contains(@class, ' topic/sli ')] or
+                    parent::*[contains(@class, ' topic/sli ')]">
       <text:p text:style-name="indent_paragraph_style">
           <text:span>
             <xsl:call-template name="start_flagging_text_of_table_or_list"/>            
@@ -2173,7 +2178,8 @@
       </text:p>
     </xsl:when>
     <!-- text is not allowed under these tags -->
-    <xsl:when test="parent::*[contains(@class,' topic/ul ')] | parent::*[contains(@class,' topic/ol ')]       | parent::*[contains(@class,' topic/sl ')] | parent::*[contains(@class,' topic/dl ')]"/>
+    <xsl:when test="parent::*[contains(@class,' topic/ul ')] | parent::*[contains(@class,' topic/ol ')] |
+                    parent::*[contains(@class,' topic/sl ')] | parent::*[contains(@class,' topic/dl ')]"/>
     <!-- for other tags -->
     <xsl:otherwise>
       <text:span>
@@ -2235,13 +2241,11 @@
 
 
 <xsl:template match="*[contains(@class,' topic/boolean ')]">
-  
-  <xsl:variable name="style_name">
+  <xsl:variable name="styles" as="xs:string*">
     <xsl:call-template name="get_style_name"/> 
   </xsl:variable>
-  
+  <xsl:variable name="style_name" select="string-join($styles, '')" as="xs:string?"/>
   <xsl:variable name="trueStyleName" select="styleUtils:getHiStyleName($style_name)"/>
-  
   <xsl:choose>
     <!-- parent is li -->
     <xsl:when test="parent::*[contains(@class, ' topic/li ')] or parent::*[contains(@class, ' topic/sli ')]">
@@ -2322,9 +2326,10 @@
 </xsl:template>
   
   <xsl:template match="*[contains(@class,' topic/state ')]">  
-    <xsl:variable name="style_name">
+    <xsl:variable name="styles" as="xs:string*">
       <xsl:call-template name="get_style_name"/> 
     </xsl:variable>
+    <xsl:variable name="style_name" select="string-join($styles, '')" as="xs:string?"/>
     <xsl:variable name="trueStyleName" select="styleUtils:getHiStyleName($style_name)"/>
     <text:span>
       <xsl:if test="$trueStyleName!=''">
