@@ -30,13 +30,7 @@
 	xmlns:opentopic-func="http://www.idiominc.com/opentopic/exsl/function"
 	exclude-result-prefixes="opentopic-mapmerge opentopic-func dita-ot"
 	version="2.0">
-	
-  <xsl:import href="plugin:org.dita.base:xsl/common/output-message.xsl"/>
-	<xsl:variable name="msgprefix">DOTX</xsl:variable>
-    <!-- 
-	<xsl:include href="../../cfg/fo/attrs/links-attr.xsl"/>
-    -->
-	
+		
 	<xsl:param name="chapterLayout" select="''"/>
     <xsl:key name="key_anchor" match="*[@id][not(contains(@class,' map/topicref '))]" use="@id"/>
 <!--[not(contains(@class,' map/topicref '))]-->

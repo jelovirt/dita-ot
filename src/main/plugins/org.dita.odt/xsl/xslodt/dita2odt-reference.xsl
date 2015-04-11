@@ -31,10 +31,6 @@
   xmlns:related-links="http://dita-ot.sourceforge.net/ns/200709/related-links"
   exclude-result-prefixes="xs related-links">
   
-  <xsl:output method="xml"/>
-  <xsl:output indent="yes"/>
-  <xsl:strip-space elements="*"/>
-
   <!-- == REFERENCE UNIQUE SUBSTRUCTURES == -->
    
   <!-- Simple Table -->
@@ -59,13 +55,13 @@
         </table:table>
       </xsl:when>
     	  <xsl:otherwise>
-        <xsl:variable name="span_depth">
+        <xsl:variable name="span_depth" as="xs:integer">
           <xsl:call-template name="calculate_span_depth"/>
         </xsl:variable>
         <!-- break span tags -->
         <xsl:call-template name="break_span_tags">
           <xsl:with-param name="depth" select="$span_depth"/>
-          <xsl:with-param name="order" select="'0'"/>
+          <xsl:with-param name="order" select="0"/>
         </xsl:call-template>
         <!-- break first p tag if there are span tags -->
         <xsl:if test="$span_depth &gt;= 0">
@@ -89,7 +85,7 @@
         <!--  span tags span tags again-->
         <xsl:call-template name="break_span_tags">
           <xsl:with-param name="depth" select="$span_depth"/>
-          <xsl:with-param name="order" select="'1'"/>
+          <xsl:with-param name="order" select="1"/>
         </xsl:call-template>
       </xsl:otherwise>
     	</xsl:choose>

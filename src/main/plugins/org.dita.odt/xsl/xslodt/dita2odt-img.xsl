@@ -38,10 +38,6 @@
   version="2.0" 
   exclude-result-prefixes="xs dita-ot">
 
-  <xsl:output method="xml"/>
-  <xsl:output indent="yes"/>
-  <xsl:strip-space elements="*"/>
-  
   <xsl:function name="dita-ot:to-inch" as="xs:double">
     <xsl:param name="length" as="xs:string?"/>
     <xsl:choose>

@@ -3,31 +3,9 @@
      See the accompanying license.txt file for applicable licenses. -->
 <!-- (c) Copyright IBM Corp. 2009, 2010 All Rights Reserved. -->
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-    xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0"
-    xmlns:style="urn:oasis:names:tc:opendocument:xmlns:style:1.0"
-    xmlns:text="urn:oasis:names:tc:opendocument:xmlns:text:1.0"
-    xmlns:table="urn:oasis:names:tc:opendocument:xmlns:table:1.0"
-    xmlns:draw="urn:oasis:names:tc:opendocument:xmlns:drawing:1.0"
-    xmlns:fo="urn:oasis:names:tc:opendocument:xmlns:xsl-fo-compatible:1.0"
-    xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:dc="http://purl.org/dc/elements/1.1/"
-    xmlns:number="urn:oasis:names:tc:opendocument:xmlns:datastyle:1.0"
-    xmlns:presentation="urn:oasis:names:tc:opendocument:xmlns:presentation:1.0"
-    xmlns:svg="urn:oasis:names:tc:opendocument:xmlns:svg-compatible:1.0"
-    xmlns:chart="urn:oasis:names:tc:opendocument:xmlns:chart:1.0"
-    xmlns:dr3d="urn:oasis:names:tc:opendocument:xmlns:dr3d:1.0"
-    xmlns:math="http://www.w3.org/1998/Math/MathML"
-    xmlns:form="urn:oasis:names:tc:opendocument:xmlns:form:1.0"
-    xmlns:script="urn:oasis:names:tc:opendocument:xmlns:script:1.0"
-    xmlns:dom="http://www.w3.org/2001/xml-events" xmlns:xforms="http://www.w3.org/2002/xforms"
-    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xmlns:anim="urn:oasis:names:tc:opendocument:xmlns:animation:1.0"
-    xmlns:smil="urn:oasis:names:tc:opendocument:xmlns:smil-compatible:1.0"
-    xmlns:prodtools="http://www.ibm.com/xmlns/prodtools"
-    xmlns:dita2xslfo="http://dita-ot.sourceforge.net/ns/200910/dita2xslfo"
-    xmlns:opentopic="http://www.idiominc.com/opentopic"
-    xmlns:opentopic-index="http://www.idiominc.com/opentopic/index"
-    exclude-result-prefixes="opentopic opentopic-index dita2xslfo"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    xmlns:dita-ot="http://dita-ot.sourceforge.net/ns/201007/dita-ot"
+    exclude-result-prefixes="xs dita-ot"
     version="2.0">
     
     <xsl:template name="determineTopicType">
@@ -112,7 +90,7 @@
                             <xsl:number format="1"/>
                         </fo:marker>
                         <fo:marker marker-class-name="current-header">
-                            <xsl:for-each select="child::*[contains(@class,' topic/title ')]">
+                            <xsl:for-each select="*[contains(@class,' topic/title ')]">
                                 <xsl:call-template name="getTitle"/>
                             </xsl:for-each>
                         </fo:marker>
@@ -129,5 +107,158 @@
                 </fo:block>
         -->
     </xsl:template>
+  
+  <!-- Flatten templates -->
+  
+  <!-- Flatten -->
+  
+  <xsl:function name="dita-ot:is-container-block" as="xs:boolean">
+    <xsl:param name="element" as="node()"/>
+    <xsl:variable name="class" select="$element/@class" as="xs:string?"/>
+    <xsl:choose>
+    <xsl:when test="exists($class)">
+      <xsl:sequence select="contains($class, ' topic/body ') or
+                            contains($class, ' topic/pre ') or
+                            contains($class, ' topic/note ') or
+                            contains($class, ' topic/fig ') or
+                            contains($class, ' topic/li ') or
+                            contains($class, ' topic/sli ') or
+                            contains($class, ' topic/dt ') or
+                            contains($class, ' topic/dd ') or
+                            contains($class, ' topic/itemgroup ') or
+                            contains($class, ' topic/draft-comment ') or
+                            contains($class, ' topic/section ') or
+                            contains($class, ' topic/entry ') or
+                            contains($class, ' topic/stentry ') or
+                            contains($class, ' topic/example ')"/>
+      <!--
+      contains($class, ' topic/p ') or
+      contains($class, ' topic/table ') or
+      contains($class, ' topic/simpletable ') or
+      contains($class, ' topic/dl ') or
+      contains($class, ' topic/sl ') or
+      contains($class, ' topic/ol ') or
+      contains($class, ' topic/ul ') or
+    -->
+    </xsl:when>
+      <xsl:otherwise>
+        <xsl:sequence select="false()"/>
+      </xsl:otherwise>
+    </xsl:choose>
+  </xsl:function>
+  
+  <xsl:function name="dita-ot:is-block" as="xs:boolean">
+    <xsl:param name="element" as="node()"/>
+    <xsl:variable name="class" select="$element/@class" as="xs:string?"/>
+    <xsl:choose>
+    <xsl:when test="exists($class)">
+      <xsl:sequence select="contains($class, ' topic/body ') or
+                            contains($class, ' topic/title ') or
+                            contains($class, ' topic/section ') or 
+                            contains($class, ' task/info ') or
+                            contains($class, ' topic/p ') or
+                            (contains($class, ' topic/image ') and $element/@placement = 'break') or
+                            contains($class, ' topic/pre ') or
+                            contains($class, ' topic/note ') or
+                            contains($class, ' topic/fig ') or
+                            contains($class, ' topic/dl ') or
+                            contains($class, ' topic/sl ') or
+                            contains($class, ' topic/ol ') or
+                            contains($class, ' topic/ul ') or
+                            contains($class, ' topic/li ') or
+                            contains($class, ' topic/sli ') or
+                            contains($class, ' topic/itemgroup ') or
+                            contains($class, ' topic/section ') or
+                            contains($class, ' topic/table ') or
+                            contains($class, ' topic/entry ') or
+                            contains($class, ' topic/simpletable ') or
+                            contains($class, ' topic/stentry ') or
+                            contains($class, ' topic/example ') or
+                            contains($class, ' task/cmd ')"/>
+    </xsl:when>
+      <xsl:otherwise>
+        <xsl:sequence select="false()"/>
+      </xsl:otherwise>
+    </xsl:choose>
+  </xsl:function>
+  
+  
+  <xsl:template match="@* | node()" mode="flatten" priority="-1000">
+    <xsl:copy>
+      <xsl:apply-templates select="@* | node()" mode="flatten"/>
+    </xsl:copy>
+  </xsl:template>
+  
+  
+  <!--xsl:template match="*[contains(@class, ' task/step ') or
+                         contains(@class, ' task/substep ')]" mode="flatten" priority="100">
+    <xsl:copy>
+      <xsl:apply-templates select="@* | *" mode="flatten"/>
+    </xsl:copy>
+  </xsl:template-->
+  
+  <xsl:template match="*[contains(@class, ' topic/p ')]" mode="flatten" priority="100">
+    <xsl:choose>
+      <xsl:when test="empty(node())"/>
+      <xsl:when test="count(*) eq 1 and
+                      (*[dita-ot:is-container-block(.)]) and 
+                      empty(text()[normalize-space(.)])">
+        <xsl:apply-templates mode="flatten"/>
+      </xsl:when>
+      <xsl:when test="descendant::*[dita-ot:is-block(.)]">
+        <xsl:variable name="current" select="." as="element()"/>
+        <xsl:variable name="first" select="node()[1]" as="node()?"/>
+        <xsl:for-each-group select="node()" group-adjacent="dita-ot:is-block(.)">
+          <xsl:choose>
+            <xsl:when test="current-grouping-key()">
+              <xsl:apply-templates select="current-group()" mode="flatten"/>
+            </xsl:when>
+            <xsl:when test="count(current-group()) eq 1 and current-group()/self::text() and not(normalize-space(current-group()))"/>
+            <xsl:when test="parent::*[contains(@class, ' topic/li ')] and $first is current-group()[1]">
+              <p gen="4" class="- topic/p ">
+                <xsl:apply-templates select="current-group()" mode="flatten"/>
+              </p>
+            </xsl:when>
+            <xsl:otherwise>
+              <p gen="1" class="- topic/p ">
+                <xsl:apply-templates select="$current/@* except $current/@id | current-group()" mode="flatten"/>
+              </p>
+            </xsl:otherwise>  
+          </xsl:choose>
+        </xsl:for-each-group>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:copy>
+          <xsl:apply-templates select="@* | node()" mode="flatten"/>
+        </xsl:copy>
+      </xsl:otherwise>
+    </xsl:choose>
+  </xsl:template>
+  
+  <!-- wrapper elements -->
+  <xsl:template match="*[dita-ot:is-container-block(.)]" mode="flatten" priority="10">
+    <xsl:copy>
+      <xsl:apply-templates select="@*" mode="flatten"/>
+      <xsl:variable name="first" select="node()[1]" as="node()?"/>
+      <xsl:for-each-group select="node()" group-adjacent="dita-ot:is-block(.)">
+        <xsl:choose>
+          <xsl:when test="current-grouping-key()">
+            <xsl:apply-templates select="current-group()" mode="flatten"/>
+          </xsl:when>
+          <xsl:when test="count(current-group()) eq 1 and current-group()/self::text() and not(normalize-space(current-group()))"/>
+          <xsl:when test="parent::*[contains(@class, ' topic/li ')] and $first is current-group()[1]">
+            <p gen="2" class="- topic/p ">
+              <xsl:apply-templates select="current-group()" mode="flatten"/>
+            </p>
+          </xsl:when>
+          <xsl:otherwise>
+            <p gen="3" class="- topic/p ">
+              <xsl:apply-templates select="current-group()" mode="flatten"/>
+            </p>
+          </xsl:otherwise>  
+        </xsl:choose>
+      </xsl:for-each-group>
+    </xsl:copy>
+  </xsl:template>
     
 </xsl:stylesheet>

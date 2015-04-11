@@ -32,10 +32,6 @@
   version="2.0"
   exclude-result-prefixes="xs related-links dita2html ditamsg">
 
-  <xsl:output method="xml"/>
-  <xsl:output indent="yes"/>
-  <xsl:strip-space elements="*"/>
-
   <!-- Determines whether to generate titles for task sections. Values are YES and NO. -->
   <xsl:param name="GENERATE-TASK-LABELS" select="'NO'"/>
 
@@ -73,12 +69,9 @@
     <!-- Title is not allowed now, but if we add it, make sure it is processed as in section -->
     <text:p>
       <text:span>
-        <!-- start add rev flagging styles -->
         <xsl:apply-templates select="." mode="start-add-odt-revflags"/>
         
         <xsl:apply-templates select="*[not(contains(@class,' topic/title '))] | text() | comment() | processing-instruction()"/>
-        
-        <!-- end add rev flagging styles -->
         <xsl:apply-templates select="." mode="end-add-odt-revflags"/>
       </text:span>
     </text:p>
@@ -745,10 +738,8 @@
     <text:p text:style-name="indent_paragraph_style">
       
       <text:span>
-        <!-- start add rev flagging styles -->
         <xsl:apply-templates select="." mode="start-add-odt-revflags"/>
         <xsl:apply-templates/>
-        <!-- end add rev flagging styles -->
         <xsl:apply-templates select="." mode="end-add-odt-revflags"/>
       </text:span>
     </text:p>
@@ -760,12 +751,9 @@
     <text:p text:style-name="indent_paragraph_style">
       
       <text:span>
-        <!-- start add rev flagging styles -->
         <xsl:apply-templates select="." mode="start-add-odt-revflags"/>
         
         <xsl:apply-templates/>
-        
-        <!-- end add rev flagging styles -->
         <xsl:apply-templates select="." mode="end-add-odt-revflags"/>
       </text:span>
     </text:p>
@@ -776,12 +764,9 @@
     <text:p text:style-name="indent_paragraph_style">
       
       <text:span>
-        <!-- start add rev flagging styles -->
         <xsl:apply-templates select="." mode="start-add-odt-revflags"/>
         
         <xsl:apply-templates/>
-        
-        <!-- end add rev flagging styles -->
         <xsl:apply-templates select="." mode="end-add-odt-revflags"/>
       </text:span>
     </text:p>
@@ -792,12 +777,9 @@
     <text:p text:style-name="indent_paragraph_style">
       
        <text:span>
-         <!-- start add rev flagging styles -->
          <xsl:apply-templates select="." mode="start-add-odt-revflags"/>
          
           <xsl:apply-templates/>
-         
-         <!-- end add rev flagging styles -->
          <xsl:apply-templates select="." mode="end-add-odt-revflags"/>
        </text:span>
     </text:p>
@@ -811,12 +793,9 @@
     <text:p text:style-name="indent_paragraph_style">
       
       <text:span>
-        <!-- start add rev flagging styles -->
         <xsl:apply-templates select="." mode="start-add-odt-revflags"/>
         
         <xsl:apply-templates/>
-        
-        <!-- end add rev flagging styles -->
         <xsl:apply-templates select="." mode="end-add-odt-revflags"/>
       </text:span>
     </text:p>

@@ -617,7 +617,6 @@
   <!-- header styles -->
   <xsl:template name="create-header-styles">
     <xsl:param name="depth" as="xs:integer"/>
-    <xsl:value-of select="$newline"/>
     <style:style style:family="paragraph" style:parent-style-name="Heading" style:next-style-name="Common_Heading_Style">
       <!-- create book mark -->
       <xsl:choose>
@@ -679,7 +678,6 @@
   <!--Create styles for list-->
   <xsl:template name="create_ul_style">
         <xsl:comment>Create styles for list</xsl:comment>
-        <xsl:value-of select="$newline"/>
         <text:list-style style:name="list_style" style:display-name="list_style">
           <text:list-level-style-bullet text:level="1" text:style-name="list_style_1"
             style:num-suffix="." text:bullet-char="●">
@@ -803,7 +801,6 @@
   <!-- Simple list style -->
   <xsl:template name="create_sl_style">
     <xsl:comment>Simple list style</xsl:comment>
-    <xsl:value-of select="$newline"/>
     <text:list-style style:name="simple_list_style">
       <text:list-level-style-number text:level="1" text:style-name="Numbering_20_Symbols"
         style:num-format="">
@@ -820,7 +817,6 @@
   <!-- Ordered list style. -->
   <xsl:template name="create_ol_style">
     <xsl:comment>Ordered list style.</xsl:comment>
-    <xsl:value-of select="$newline"/>
     <text:list-style style:name="ordered_list_style">
       <text:list-level-style-number text:level="1"
         style:num-suffix="." style:num-format="1">
@@ -877,7 +873,6 @@
   <!-- fig style -->
   <xsl:template match="*[contains(@class,' topic/fig ')]/*[contains(@class,' topic/title ')]">
     <xsl:comment>fig style</xsl:comment>
-    <xsl:value-of select="$newline"/>
     <style:style style:name="center" style:family="paragraph">
       <style:paragraph-properties fo:text-align="center" style:justify-single-word="false"/>
     </style:style>
@@ -886,7 +881,6 @@
   <!-- Alignment style -->
   <xsl:template name="create-aligment-style">
     <xsl:comment>Alignment style</xsl:comment>
-    <xsl:value-of select="$newline"/>
     <style:style style:name="left" style:family="paragraph">
       <style:paragraph-properties fo:text-align="left" style:justify-single-word="false"/>
     </style:style>
@@ -908,7 +902,6 @@
   <!-- boolean style -->
   <xsl:template name="create-boolean-style">
     <xsl:comment>boolean style</xsl:comment>
-    <xsl:value-of select="$newline"/>
     <style:style style:name="boolean_style" style:family="text" style:parent-style-name="default_text_style">
       <style:text-properties fo:color="#00ff00" style:font-name="Arial1"
         style:font-name-complex="Arial1"/>
@@ -924,7 +917,6 @@
   <!-- font style -->
   <xsl:template name="create-font">
     <xsl:comment>font style</xsl:comment>
-    <xsl:value-of select="$newline"/>
     <style:style style:name="Courier_New" style:family="text">
       <style:text-properties style:font-name="Courier New"/>
     </style:style>
@@ -943,7 +935,6 @@
   <!-- footnote style -->
   <xsl:template name="create-footnote-style">
     <xsl:comment>footnote style</xsl:comment>
-    <xsl:value-of select="$newline"/>
     <style:style style:name="footnote" style:family="paragraph"
       style:parent-style-name="Default_20_Text" style:class="extra">
       <style:paragraph-properties fo:margin-left="0.1965in" fo:margin-right="0in"

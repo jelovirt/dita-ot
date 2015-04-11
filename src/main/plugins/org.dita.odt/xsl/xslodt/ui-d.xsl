@@ -30,8 +30,6 @@
 
   <!-- Screen -->
   <xsl:template match="*[contains(@class,' ui-d/screen ')]">
-
-
     <xsl:choose>
       <!-- nested by body, li -->
       <xsl:when test="parent::*[contains(@class, ' topic/li ')] or parent::*[contains(@class, ' topic/sli ')] or                    parent::*[contains(@class, ' topic/body ')]">
@@ -94,7 +92,6 @@
           <xsl:choose>
             <xsl:when test="parent::*[contains(@class, ' topic/stentry ')]/       parent::*[contains(@class, ' topic/sthead ')]">
               <text:span text:style-name="Code_Text">
-
                 <text:span>
                   <!-- add flagging styles -->
                   <xsl:apply-templates select="." mode="add-odt-flagging"/>
@@ -114,7 +111,6 @@
         <!-- end add flagging images -->
         <xsl:apply-templates select="." mode="end-add-odt-imgrevflags"/>
       </xsl:when>
-
       <xsl:when test="parent::*[contains(@class, ' topic/linkinfo ')]">
         <text:span>
           <text:span>
@@ -128,7 +124,6 @@
       <!-- other tags -->
       <xsl:otherwise>
         <text:span text:style-name="Code_Text">
-
           <text:span>
             <xsl:apply-templates select="." mode="start-add-odt-flags"/>
             <xsl:apply-templates/>
@@ -140,277 +135,31 @@
     </xsl:choose>
   </xsl:template>
 
-  <!-- ui-domain.ent domain: uicontrol | wintitle | menucascade | shortcut -->
-
-
   <xsl:template match="*[contains(@class,' ui-d/menucascade ')]">
-    <xsl:choose>
-      <xsl:when test="parent::*[contains(@class, ' topic/li ')] or parent::*[contains(@class, ' topic/sli ')]">
-        <text:p>
-          <text:span>
-            <!-- start add rev flagging styles -->
-            <xsl:apply-templates select="." mode="start-add-odt-revflags"/>
-            <xsl:apply-templates/>
-            <!-- end add rev flagging styles -->
-            <xsl:apply-templates select="." mode="end-add-odt-revflags"/>
-          </text:span>
-        </text:p>
-      </xsl:when>
-      <!-- nested by entry -->
-      <xsl:when test="parent::*[contains(@class, ' topic/entry ')]">
-        <!-- create p tag -->
-        <text:p>
-          <!-- alignment styles -->
-          <xsl:if test="parent::*[contains(@class, ' topic/entry ')]/@align">
-            <xsl:call-template name="set_align_value"/>
-          </xsl:if>
-          <!-- cell belongs to thead -->
-          <xsl:choose>
-            <xsl:when test="parent::*[contains(@class, ' topic/entry ')]        /parent::*[contains(@class, ' topic/row ')]/parent::*[contains(@class, ' topic/thead ')]">
-              <text:span text:style-name="bold">
-
-                <text:span>
-                  <!-- start add rev flagging styles -->
-                  <xsl:apply-templates select="." mode="start-add-odt-revflags"/>
-                  <xsl:apply-templates/>
-                  <!-- end add rev flagging styles -->
-                  <xsl:apply-templates select="." mode="end-add-odt-revflags"/>
-                </text:span>
-              </text:span>
-            </xsl:when>
-            <xsl:otherwise>
-              <text:span>
-                <!-- start add rev flagging styles -->
-                <xsl:apply-templates select="." mode="start-add-odt-revflags"/>
-                <xsl:apply-templates/>
-                <!-- end add rev flagging styles -->
-                <xsl:apply-templates select="." mode="end-add-odt-revflags"/>
-              </text:span>
-            </xsl:otherwise>
-          </xsl:choose>
-        </text:p>
-      </xsl:when>
-      <!-- nested by stentry -->
-      <xsl:when test="parent::*[contains(@class, ' topic/stentry ')]">
-        <text:p>
-          <!-- cell belongs to sthead -->
-          <xsl:choose>
-            <xsl:when test="parent::*[contains(@class, ' topic/stentry ')]/        parent::*[contains(@class, ' topic/sthead ')]">
-              <text:span text:style-name="bold">
-
-                <text:span>
-                  <!-- start add rev flagging styles -->
-                  <xsl:apply-templates select="." mode="start-add-odt-revflags"/>
-                  <xsl:apply-templates/>
-                  <!-- end add rev flagging styles -->
-                  <xsl:apply-templates select="." mode="end-add-odt-revflags"/>
-                </text:span>
-              </text:span>
-            </xsl:when>
-            <xsl:otherwise>
-              <text:span>
-                <!-- start add rev flagging styles -->
-                <xsl:apply-templates select="." mode="start-add-odt-revflags"/>
-                <xsl:apply-templates/>
-                <!-- end add rev flagging styles -->
-                <xsl:apply-templates select="." mode="end-add-odt-revflags"/>
-              </text:span>
-            </xsl:otherwise>
-          </xsl:choose>
-        </text:p>
-      </xsl:when>
-      <!-- nested by other tags -->
-      <xsl:otherwise>
-        <text:span>
-          <!-- start add rev flagging styles -->
-          <xsl:apply-templates select="." mode="start-add-odt-revflags"/>
-          <xsl:apply-templates/>
-          <!-- end add rev flagging styles -->
-          <xsl:apply-templates select="." mode="end-add-odt-revflags"/>
-        </text:span>
-      </xsl:otherwise>
-    </xsl:choose>
-
+    <text:span>
+      <xsl:apply-templates select="." mode="start-add-odt-revflags"/>
+      <xsl:apply-templates/>
+      <xsl:apply-templates select="." mode="end-add-odt-revflags"/>
+    </text:span>
   </xsl:template>
 
   <xsl:template match="*[contains(@class,' ui-d/uicontrol ')]" priority="2">
-
-    <xsl:choose>
-      <!-- nested by li -->
-      <xsl:when test="parent::*[contains(@class, ' topic/li ')] or parent::*[contains(@class, ' topic/sli ')]">
-        <text:p>
-          <!-- insert an arrow with leading/trailing spaces before all but the first uicontrol in a menucascade -->
-          <xsl:if test="ancestor::*[contains(@class,' ui-d/menucascade ')]">
-            <xsl:variable name="uicontrolcount">
-              <xsl:number count="*[contains(@class,' ui-d/uicontrol ')]"/>
-            </xsl:variable>
-            <xsl:if test="$uicontrolcount &gt; '1'">
-              <xsl:text> &gt; </xsl:text>
-            </xsl:if>
-          </xsl:if>
-          <text:span text:style-name="bold">
-
-            <text:span>
-              <!-- start add rev flagging styles -->
-              <xsl:apply-templates select="." mode="start-add-odt-revflags"/>
-              <xsl:apply-templates/>
-              <!-- end add rev flagging styles -->
-              <xsl:apply-templates select="." mode="end-add-odt-revflags"/>
-            </text:span>
-          </text:span>
-        </text:p>
-      </xsl:when>
-      <!-- nested by entry -->
-      <xsl:when test="parent::*[contains(@class, ' topic/entry ')]">
-        <!-- create p tag -->
-        <text:p>
-          <!-- alignment styles -->
-          <xsl:if test="parent::*[contains(@class, ' topic/entry ')]/@align">
-            <xsl:call-template name="set_align_value"/>
-          </xsl:if>
-          <!-- cell belongs to thead -->
-          <xsl:choose>
-            <xsl:when test="parent::*[contains(@class, ' topic/entry ')]           /parent::*[contains(@class, ' topic/row ')]/parent::*[contains(@class, ' topic/thead ')]">
-              <text:span text:style-name="bold">
-
-                <!-- insert an arrow with leading/trailing spaces before all but the first uicontrol in a menucascade -->
-                <xsl:if test="ancestor::*[contains(@class,' ui-d/menucascade ')]">
-                  <xsl:variable name="uicontrolcount">
-                    <xsl:number count="*[contains(@class,' ui-d/uicontrol ')]"/>
-                  </xsl:variable>
-                  <xsl:if test="$uicontrolcount &gt; '1'">
-                    <xsl:text> &gt; </xsl:text>
-                  </xsl:if>
-                </xsl:if>
-                <text:span text:style-name="bold">
-
-                  <text:span>
-                    <!-- start add rev flagging styles -->
-                    <xsl:apply-templates select="." mode="start-add-odt-revflags"/>
-                    <xsl:apply-templates/>
-                    <!-- end add rev flagging styles -->
-                    <xsl:apply-templates select="." mode="end-add-odt-revflags"/>
-                  </text:span>
-                </text:span>
-              </text:span>
-            </xsl:when>
-            <xsl:otherwise>
-              <!-- insert an arrow with leading/trailing spaces before all but the first uicontrol in a menucascade -->
-              <xsl:if test="ancestor::*[contains(@class,' ui-d/menucascade ')]">
-                <xsl:variable name="uicontrolcount">
-                  <xsl:number count="*[contains(@class,' ui-d/uicontrol ')]"/>
-                </xsl:variable>
-                <xsl:if test="$uicontrolcount &gt; '1'">
-                  <xsl:text> &gt; </xsl:text>
-                </xsl:if>
-              </xsl:if>
-              <text:span text:style-name="bold">
-
-                <text:span>
-                  <!-- start add rev flagging styles -->
-                  <xsl:apply-templates select="." mode="start-add-odt-revflags"/>
-                  <xsl:apply-templates/>
-                  <!-- end add rev flagging styles -->
-                  <xsl:apply-templates select="." mode="end-add-odt-revflags"/>
-                </text:span>
-              </text:span>
-            </xsl:otherwise>
-          </xsl:choose>
-        </text:p>
-      </xsl:when>
-      <!-- nested by stentry -->
-      <xsl:when test="parent::*[contains(@class, ' topic/stentry ')]">
-        <text:p>
-          <!-- cell belongs to sthead -->
-          <xsl:choose>
-            <xsl:when test="parent::*[contains(@class, ' topic/stentry ')]/           parent::*[contains(@class, ' topic/sthead ')]">
-              <text:span text:style-name="bold">
-
-                <!-- insert an arrow with leading/trailing spaces before all but the first uicontrol in a menucascade -->
-                <xsl:if test="ancestor::*[contains(@class,' ui-d/menucascade ')]">
-                  <xsl:variable name="uicontrolcount">
-                    <xsl:number count="*[contains(@class,' ui-d/uicontrol ')]"/>
-                  </xsl:variable>
-                  <xsl:if test="$uicontrolcount &gt; '1'">
-                    <xsl:text> &gt; </xsl:text>
-                  </xsl:if>
-                </xsl:if>
-                <text:span text:style-name="bold">
-
-                  <text:span>
-                    <!-- start add rev flagging styles -->
-                    <xsl:apply-templates select="." mode="start-add-odt-revflags"/>
-                    <xsl:apply-templates/>
-                    <!-- end add rev flagging styles -->
-                    <xsl:apply-templates select="." mode="end-add-odt-revflags"/>
-                  </text:span>
-                </text:span>
-              </text:span>
-            </xsl:when>
-            <xsl:otherwise>
-              <!-- insert an arrow with leading/trailing spaces before all but the first uicontrol in a menucascade -->
-              <xsl:if test="ancestor::*[contains(@class,' ui-d/menucascade ')]">
-                <xsl:variable name="uicontrolcount">
-                  <xsl:number count="*[contains(@class,' ui-d/uicontrol ')]"/>
-                </xsl:variable>
-                <xsl:if test="$uicontrolcount &gt; '1'">
-                  <xsl:text> &gt; </xsl:text>
-                </xsl:if>
-              </xsl:if>
-              <text:span text:style-name="bold">
-
-                <text:span>
-                  <!-- start add rev flagging styles -->
-                  <xsl:apply-templates select="." mode="start-add-odt-revflags"/>
-                  <xsl:apply-templates/>
-                  <!-- end add rev flagging styles -->
-                  <xsl:apply-templates select="." mode="end-add-odt-revflags"/>
-                </text:span>
-              </text:span>
-            </xsl:otherwise>
-          </xsl:choose>
-        </text:p>
-      </xsl:when>
-      <!-- nested by other tags -->
-      <xsl:otherwise>
-        <!-- insert an arrow with leading/trailing spaces before all but the first uicontrol in a menucascade -->
-        <xsl:if test="ancestor::*[contains(@class,' ui-d/menucascade ')]">
-          <xsl:variable name="uicontrolcount">
-            <xsl:number count="*[contains(@class,' ui-d/uicontrol ')]"/>
-          </xsl:variable>
-          <xsl:if test="$uicontrolcount &gt; '1'">
-            <xsl:text> &gt; </xsl:text>
-          </xsl:if>
-        </xsl:if>
-        <text:span text:style-name="bold">
-
-          <text:span>
-            <!-- start add rev flagging styles -->
-            <xsl:apply-templates select="." mode="start-add-odt-revflags"/>
-            <xsl:apply-templates/>
-            <!-- end add rev flagging styles -->
-            <xsl:apply-templates select="." mode="end-add-odt-revflags"/>
-          </text:span>
-        </text:span>
-      </xsl:otherwise>
-    </xsl:choose>
-
+    <!-- insert an arrow with leading/trailing spaces before all but the first uicontrol in a menucascade -->
+    <xsl:if test="parent::*[contains(@class,' ui-d/menucascade ')] and following-sibling::*[contains(@class,' ui-d/uicontrol ')]">
+      <xsl:text> &gt; </xsl:text>
+    </xsl:if>
+    <text:span text:style-name="bold">
+      <xsl:apply-templates select="." mode="start-add-odt-revflags"/>
+      <xsl:apply-templates/>
+      <xsl:apply-templates select="." mode="end-add-odt-revflags"/>
+    </text:span>
   </xsl:template>
 
   <xsl:template match="*[contains(@class,' ui-d/shortcut ')]" name="topic.ui-d.shortcut">
-
-
     <text:span text:style-name="underline">
-
-      <text:span>
-        <!-- start add rev flagging styles -->
-        <xsl:apply-templates select="." mode="start-add-odt-revflags"/>
-
-        <xsl:apply-templates/>
-
-        <!-- end add rev flagging styles -->
-        <xsl:apply-templates select="." mode="end-add-odt-revflags"/>
-      </text:span>
+      <xsl:apply-templates select="." mode="start-add-odt-revflags"/>
+      <xsl:apply-templates/>
+      <xsl:apply-templates select="." mode="end-add-odt-revflags"/>
     </text:span>
   </xsl:template>
 

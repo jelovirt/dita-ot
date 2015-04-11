@@ -31,12 +31,7 @@
   version="2.0" 
   xmlns:related-links="http://dita-ot.sourceforge.net/ns/200709/related-links"
   exclude-result-prefixes="related-links dita-ot opentopic">
-  
-  <xsl:output method="xml"/>
-  <xsl:output indent="yes"/>
-  <xsl:strip-space elements="*"/>
-  
-  
+    
   <xsl:variable name="mapType">
     <xsl:choose>
       <xsl:when test="/*[contains(@class, ' map/map ') and contains(@class, ' bookmap/bookmap ')]">

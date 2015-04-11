@@ -61,6 +61,8 @@
   
   <dita:extension id="dita.xsl.odt" behavior="org.dita.dost.platform.ImportXSLAction" xmlns:dita="http://dita-ot.sourceforge.net"/>
   
+  <xsl:variable name="msgprefix">DOTX</xsl:variable>
+  
   <!-- =========== DEFAULT VALUES FOR EXTERNALLY MODIFIABLE PARAMETERS =========== -->
   <xsl:param name="include.rellinks"/>
   <xsl:param name="DRAFT" select="'no'"/>
@@ -161,43 +163,50 @@
   </xsl:template>
   
   <xsl:template name="root">
-    <!--xsl:call-template name="gen-list-table"/-->
-    <office:scripts/>
-    <office:automatic-styles>
-      <xsl:if test="//*[contains(@class, ' topic/table ')]|//*[contains(@class, ' topic/simpletable ')]">
-        <xsl:call-template name="create_table_cell_styles"/>
-      </xsl:if>
-      <xsl:apply-templates select="//text()|//*[contains(@class, ' topic/state ')]" mode="create_hi_style"/>
-      <xsl:call-template name="create_flagging_styles"/>
-    </office:automatic-styles>
-    <office:body>
-      <office:text>
-        <text:sequence-decls>
-          <text:sequence-decl text:display-outline-level="0" text:name="Illustration"/>
-          <text:sequence-decl text:display-outline-level="0" text:name="Table"/>
-          <text:sequence-decl text:display-outline-level="0" text:name="Text"/>
-          <text:sequence-decl text:display-outline-level="0" text:name="Drawing"/>
-        </text:sequence-decls>
-        <xsl:choose>
-          <!-- bookmap -->
-          <xsl:when test="$mapType = 'bookmap'">
-            <xsl:call-template name="create_book_title"/>
-            <xsl:call-template name="create_book_abstract"/>
-            <xsl:call-template name="create_book_notices"/>
-          </xsl:when>
-          <!-- normal map -->
-          <xsl:when test="$mapType = 'ditamap'">
-            <xsl:call-template name="create_map_title"/>
-          </xsl:when>
-          <!-- topic -->
-          <xsl:otherwise>
-            <xsl:call-template name="create_topic_title"/>
-          </xsl:otherwise>
-        </xsl:choose>
-        <xsl:call-template name="create_toc"/>
-        <xsl:apply-templates/>
-      </office:text>
-    </office:body>
+    <xsl:variable name="flat" as="document-node()">
+      <xsl:document>
+        <xsl:apply-templates mode="flatten"/>
+      </xsl:document>
+    </xsl:variable>
+    <xsl:for-each select="$flat">
+      <!--xsl:call-template name="gen-list-table"/-->
+      <office:scripts/>
+      <office:automatic-styles>
+        <xsl:if test="//*[contains(@class, ' topic/table ')]|//*[contains(@class, ' topic/simpletable ')]">
+          <xsl:call-template name="create_table_cell_styles"/>
+        </xsl:if>
+        <xsl:apply-templates select="//text() | //*[contains(@class, ' topic/state ')]" mode="create_hi_style"/>
+        <xsl:call-template name="create_flagging_styles"/>
+      </office:automatic-styles>
+      <office:body>
+        <office:text>
+          <text:sequence-decls>
+            <text:sequence-decl text:display-outline-level="0" text:name="Illustration"/>
+            <text:sequence-decl text:display-outline-level="0" text:name="Table"/>
+            <text:sequence-decl text:display-outline-level="0" text:name="Text"/>
+            <text:sequence-decl text:display-outline-level="0" text:name="Drawing"/>
+          </text:sequence-decls>
+          <xsl:choose>
+            <!-- bookmap -->
+            <xsl:when test="$mapType = 'bookmap'">
+              <xsl:call-template name="create_book_title"/>
+              <xsl:call-template name="create_book_abstract"/>
+              <xsl:call-template name="create_book_notices"/>
+            </xsl:when>
+            <!-- normal map -->
+            <xsl:when test="$mapType = 'ditamap'">
+              <xsl:call-template name="create_map_title"/>
+            </xsl:when>
+            <!-- topic -->
+            <xsl:otherwise>
+              <xsl:call-template name="create_topic_title"/>
+            </xsl:otherwise>
+          </xsl:choose>
+          <xsl:call-template name="create_toc"/>
+          <xsl:apply-templates/>
+        </office:text>
+      </office:body>
+    </xsl:for-each>
   </xsl:template>
   
 </xsl:stylesheet>

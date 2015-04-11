@@ -33,10 +33,8 @@
           <text:span text:style-name="Courier_New">
             
             <text:span>
-              <!-- start add rev flagging styles -->
               <xsl:apply-templates select="." mode="start-add-odt-revflags"/>
               <xsl:apply-templates/>
-              <!-- end add rev flagging styles -->
               <xsl:apply-templates select="." mode="end-add-odt-revflags"/>
             </text:span>
           </text:span>
@@ -58,10 +56,8 @@
                 <text:span text:style-name="Courier_New">
                   
                   <text:span>
-                    <!-- start add rev flagging styles -->
                     <xsl:apply-templates select="." mode="start-add-odt-revflags"/>
                     <xsl:apply-templates/>
-                    <!-- end add rev flagging styles -->
                     <xsl:apply-templates select="." mode="end-add-odt-revflags"/>
                   </text:span>
                 </text:span>
@@ -71,10 +67,8 @@
               <text:span text:style-name="Courier_New">
                 
                 <text:span>
-                  <!-- start add rev flagging styles -->
                   <xsl:apply-templates select="." mode="start-add-odt-revflags"/>
                   <xsl:apply-templates/>
-                  <!-- end add rev flagging styles -->
                   <xsl:apply-templates select="." mode="end-add-odt-revflags"/>
                 </text:span>
               </text:span>
@@ -93,10 +87,8 @@
                 <text:span text:style-name="Courier_New">
                   
                   <text:span>
-                    <!-- start add rev flagging styles -->
                     <xsl:apply-templates select="." mode="start-add-odt-revflags"/>
                     <xsl:apply-templates/>
-                    <!-- end add rev flagging styles -->
                     <xsl:apply-templates select="." mode="end-add-odt-revflags"/>
                   </text:span>
                 </text:span>
@@ -106,10 +98,8 @@
               <text:span text:style-name="Courier_New">
                 
                 <text:span>
-                  <!-- start add rev flagging styles -->
                   <xsl:apply-templates select="." mode="start-add-odt-revflags"/>
                   <xsl:apply-templates/>
-                  <!-- end add rev flagging styles -->
                   <xsl:apply-templates select="." mode="end-add-odt-revflags"/>
                 </text:span>
               </text:span>
@@ -122,10 +112,8 @@
         <text:span text:style-name="Courier_New">
           
           <text:span>
-            <!-- start add rev flagging styles -->
             <xsl:apply-templates select="." mode="start-add-odt-revflags"/>
             <xsl:apply-templates/>
-            <!-- end add rev flagging styles -->
             <xsl:apply-templates select="." mode="end-add-odt-revflags"/>
           </text:span>
         </text:span>

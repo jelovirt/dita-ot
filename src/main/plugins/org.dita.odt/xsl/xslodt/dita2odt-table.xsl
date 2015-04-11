@@ -4,6 +4,7 @@
 <!-- (c) Copyright IBM Corp. 2005 All Rights Reserved. -->
 <xsl:stylesheet 
   xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+  xmlns:xs="http://www.w3.org/2001/XMLSchema"
   xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0"
   xmlns:style="urn:oasis:names:tc:opendocument:xmlns:style:1.0"
   xmlns:text="urn:oasis:names:tc:opendocument:xmlns:text:1.0"
@@ -26,29 +27,11 @@
   xmlns:smil="urn:oasis:names:tc:opendocument:xmlns:smil-compatible:1.0"
   xmlns:prodtools="http://www.ibm.com/xmlns/prodtools"
   version="2.0"
-  >
-
-<xsl:output method="xml"/>
-<xsl:output indent="yes"/>
-<xsl:strip-space elements="*"/>
+  exclude-result-prefixes="xs">
 
 <!-- =========== CALS (OASIS) TABLE =========== -->
 <xsl:template match="*[contains(@class,' topic/table ')]" name="topic.table">
-  
-  <!-- render table -->
-  <xsl:call-template name="render_table"/>
-  
-</xsl:template>
-
-  
-<xsl:template name="create_columns_for_table">
-  <xsl:param name="column" select="0"/>
-  <xsl:if test="$column &gt; 0">
-    <table:table-column/>
-    <xsl:call-template name="create_columns_for_table">
-      <xsl:with-param name="column" select="$column - 1"/>
-    </xsl:call-template>
-  </xsl:if>  
+  <xsl:call-template name="render_table"/>  
 </xsl:template>
 
 <xsl:template name="dotable">
@@ -58,7 +41,7 @@
 <xsl:template match="*[contains(@class,' topic/tgroup ')]" name="topic.tgroup">
   <xsl:variable name="tablenameId" select="generate-id(.)"/>
   
-  <xsl:variable name="columnNum">
+  <xsl:variable name="columnNum" as="xs:integer">
     <xsl:call-template name="count_columns_for_table"/>
   </xsl:variable>
   
@@ -73,9 +56,9 @@
     <xsl:apply-templates select="parent::*[contains(@class, ' topic/table ')]" mode="start-add-odt-flags">
       <xsl:with-param name="family" select="'_table_attr'"/>
     </xsl:apply-templates>
-    <xsl:call-template name="create_columns_for_table">
-      <xsl:with-param name="column" select="$columnNum"/>
-    </xsl:call-template>
+    <xsl:for-each select="1 to $columnNum">
+      <table:table-column/>
+    </xsl:for-each>
     <xsl:call-template name="dotable"/> 
   </table:table>
   <!-- end flagging -->
@@ -86,7 +69,7 @@
 </xsl:template>
   
   
-  <xsl:template name="count_columns_for_table">
+  <xsl:template name="count_columns_for_table" as="xs:integer">
     <xsl:choose>
       <xsl:when test="@cols">
         <xsl:value-of select="@cols"/>
@@ -635,22 +618,20 @@
 </xsl:template>
 
 <xsl:template match="*[contains(@class,' topic/sthead ')]">
-
   <table:table-header-rows>
     <table:table-row>
-      <xsl:apply-templates mode="emit-cell-style"/>
+      <xsl:apply-templates/>
     </table:table-row>
   </table:table-header-rows>
 </xsl:template>
   
 <xsl:template match="*[contains(@class,' topic/strow ')]">
-
   <table:table-row>
-    <xsl:apply-templates mode="emit-cell-style"/>
+    <xsl:apply-templates/>
   </table:table-row>
 </xsl:template>
 
-<xsl:template match="*[contains(@class,' topic/stentry ')]" mode="emit-cell-style">
+<xsl:template match="*[contains(@class,' topic/stentry ')]">
 
   <xsl:variable name="totalcols" select="count(../*[contains(@class,' topic/stentry ')])">
     <!--xsl:apply-templates select="../*[contains(@class,' topic/stentry ')][1]" mode="count-rowwidth"/-->
@@ -661,14 +642,13 @@
    -->
   <table:table-cell office:value-type="string">
     <xsl:call-template name="create_style_stable"/>
-    
-    <text:p text:style-name="indent_paragraph_style">
+    <!--text:p text:style-name="indent_paragraph_style"-->
       <xsl:apply-templates/>
-    </text:p>
+    <!--/text:p-->
   </table:table-cell>
 </xsl:template>
   
-<xsl:template match="text()" mode="tags_in_sthead">
+<!--xsl:template match="text()" mode="tags_in_sthead">
   <text:span text:style-name="bold">
     <xsl:apply-templates select="."/>
   </text:span>  
@@ -676,11 +656,9 @@
   
 <xsl:template match="*" mode="tags_in_sthead">
   <xsl:apply-templates select="."/>
-</xsl:template>
-  
-  
+</xsl:template-->
 
-<xsl:template name="create_style_stable">
+<xsl:template name="create_style_stable" as="attribute()">
   <!-- create style attribute -->
   <xsl:variable name="colpos" select="position()"/>
   
@@ -726,14 +704,16 @@
 
 
 <xsl:template match="*[contains(@class,' topic/stentry ')]" mode="count-rowwidth">
-  <xsl:param name="totalcols">0</xsl:param> <!-- Total counted columns so far -->
+  <xsl:param name="totalcols" select="0" as="xs:integer"/> <!-- Total counted columns so far -->
   <xsl:choose>
     <xsl:when test="following-sibling::*[contains(@class,' topic/stentry ')]">
       <xsl:apply-templates select="following-sibling::*[contains(@class,' topic/stentry ')][1]" mode="count-rowwidth">
         <xsl:with-param name="totalwidth" select="$totalcols + 1"/>
       </xsl:apply-templates>
     </xsl:when>
-    <xsl:otherwise><xsl:value-of select="$totalcols + 1"/></xsl:otherwise>
+    <xsl:otherwise>
+      <xsl:value-of select="$totalcols + 1"/>
+    </xsl:otherwise>
   </xsl:choose>
 </xsl:template>
   

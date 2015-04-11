@@ -31,322 +31,35 @@
      exclude-result-prefixes="styleUtils xs"
      version="2.0">
 
-  <xsl:output method="xml"/>
-  <xsl:output indent="yes"/>
-  <xsl:strip-space elements="*"/>
-
   <xsl:template match="*[contains(@class,' hi-d/b ')]">
-    <xsl:choose>
-      <xsl:when test="parent::*[contains(@class, ' topic/li ')] or parent::*[contains(@class, ' topic/sli ')]">
-        <text:p>
-          <xsl:apply-templates/>
-        </text:p>
-      </xsl:when>
-      <!-- nested by entry -->
-      <xsl:when test="parent::*[contains(@class, ' topic/entry ')]">
-        <!-- alignment styles -->
-        <xsl:if test="parent::*[contains(@class, ' topic/entry ')]/@align">
-          <xsl:call-template name="set_align_value"/>
-        </xsl:if>
-        <xsl:apply-templates/>
-      </xsl:when>
-      <!-- nested by stentry -->
-      <xsl:when test="parent::*[contains(@class, ' topic/stentry ')]">
-        <text:p>
-          <xsl:apply-templates/>
-        </text:p>
-      </xsl:when>
-      <!-- nested by other tags -->
-      <xsl:otherwise>
-        <!-- 
-               <xsl:element name="text:span">
-                    <xsl:attribute name="text:style-name">bold</xsl:attribute>
-               -->
-        <xsl:apply-templates/>
-        <!-- 
-               </xsl:element>
-               -->
-      </xsl:otherwise>
-    </xsl:choose>
-
+    <xsl:apply-templates/>
   </xsl:template>
 
   <xsl:template match="*[contains(@class,' hi-d/i ')]">
-
-    <xsl:choose>
-      <xsl:when test="parent::*[contains(@class, ' topic/li ')] or parent::*[contains(@class, ' topic/sli ')]">
-        <text:p>
-          <xsl:apply-templates/>
-        </text:p>
-      </xsl:when>
-      <!-- nested by entry -->
-      <xsl:when test="parent::*[contains(@class, ' topic/entry ')]">
-        <!-- create p tag -->
-        <text:p>
-          <!-- alignment styles -->
-          <xsl:if test="parent::*[contains(@class, ' topic/entry ')]/@align">
-            <xsl:call-template name="set_align_value"/>
-          </xsl:if>
-          <!-- cell belongs to thead -->
-          <xsl:choose>
-            <xsl:when test="parent::*[contains(@class, ' topic/entry ')]
-                              /parent::*[contains(@class, ' topic/row ')]/parent::*[contains(@class, ' topic/thead ')]">
-              <text:span text:style-name="bold">
-
-                <xsl:apply-templates/>
-              </text:span>
-            </xsl:when>
-            <xsl:otherwise>
-              <xsl:apply-templates/>
-            </xsl:otherwise>
-          </xsl:choose>
-        </text:p>
-      </xsl:when>
-      <!-- nested by stentry -->
-      <xsl:when test="parent::*[contains(@class, ' topic/stentry ')]">
-        <text:p>
-          <!-- cell belongs to sthead -->
-          <xsl:choose>
-            <xsl:when test="parent::*[contains(@class, ' topic/stentry ')]/
-                              parent::*[contains(@class, ' topic/sthead ')]">
-              <text:span text:style-name="bold">
-
-                <xsl:apply-templates/>
-              </text:span>
-            </xsl:when>
-            <xsl:otherwise>
-              <xsl:apply-templates/>
-            </xsl:otherwise>
-          </xsl:choose>
-        </text:p>
-      </xsl:when>
-      <!-- nested by other tags -->
-      <xsl:otherwise>
-        <!-- 
-               <xsl:element name="text:span">
-                    <xsl:attribute name="text:style-name">italic</xsl:attribute>
-                    <xsl:apply-templates/>
-               </xsl:element>
-               -->
-        <xsl:apply-templates/>
-      </xsl:otherwise>
-    </xsl:choose>
+    <xsl:apply-templates/>
   </xsl:template>
 
   <xsl:template match="*[contains(@class,' hi-d/u ')]">
-    <xsl:choose>
-      <xsl:when test="parent::*[contains(@class, ' topic/li ')] or parent::*[contains(@class, ' topic/sli ')]">
-        <text:p>
-          <xsl:apply-templates/>
-        </text:p>
-      </xsl:when>
-      <!-- nested by entry -->
-      <xsl:when test="parent::*[contains(@class, ' topic/entry ')]">
-        <!-- create p tag -->
-        <text:p>
-          <!-- alignment styles -->
-          <xsl:if test="parent::*[contains(@class, ' topic/entry ')]/@align">
-            <xsl:call-template name="set_align_value"/>
-          </xsl:if>
-          <!-- cell belongs to thead -->
-          <xsl:choose>
-            <xsl:when test="parent::*[contains(@class, ' topic/entry ')]
-                              /parent::*[contains(@class, ' topic/row ')]/parent::*[contains(@class, ' topic/thead ')]">
-              <text:span text:style-name="bold">
-                <xsl:apply-templates/>
-              </text:span>
-            </xsl:when>
-            <xsl:otherwise>
-              <xsl:apply-templates/>
-            </xsl:otherwise>
-          </xsl:choose>
-        </text:p>
-      </xsl:when>
-      <!-- nested by stentry -->
-      <xsl:when test="parent::*[contains(@class, ' topic/stentry ')]">
-        <text:p>
-          <!-- cell belongs to sthead -->
-          <xsl:choose>
-            <xsl:when test="parent::*[contains(@class, ' topic/stentry ')]/
-                              parent::*[contains(@class, ' topic/sthead ')]">
-              <text:span text:style-name="bold">
-                <xsl:apply-templates/>
-              </text:span>
-            </xsl:when>
-            <xsl:otherwise>
-              <xsl:apply-templates/>
-            </xsl:otherwise>
-          </xsl:choose>
-        </text:p>
-      </xsl:when>
-      <!-- nested by other tags -->
-      <xsl:otherwise>
-        <!-- 
-               <xsl:element name="text:span">
-                    <xsl:attribute name="text:style-name">underline</xsl:attribute>
-                    <xsl:apply-templates/>
-               </xsl:element>
-               -->
-        <xsl:apply-templates/>
-      </xsl:otherwise>
-    </xsl:choose>
-
+    <text:span text:style-name="bold">
+      <xsl:apply-templates/>
+    </text:span>
   </xsl:template>
 
   <xsl:template match="*[contains(@class,' hi-d/tt ')]">
-    <xsl:choose>
-      <xsl:when test="parent::*[contains(@class, ' topic/li ')] or parent::*[contains(@class, ' topic/sli ')]">
-        <text:p>
-          <text:span text:style-name="Courier">
-            <xsl:apply-templates/>
-          </text:span>
-        </text:p>
-      </xsl:when>
-      <!-- nested by entry -->
-      <xsl:when test="parent::*[contains(@class, ' topic/entry ')]">
-        <!-- create p tag -->
-        <text:p>
-          <!-- alignment styles -->
-          <xsl:if test="parent::*[contains(@class, ' topic/entry ')]/@align">
-            <xsl:call-template name="set_align_value"/>
-          </xsl:if>
-          <text:span text:style-name="Courier">
-            <xsl:apply-templates/>
-          </text:span>
-        </text:p>
-      </xsl:when>
-      <!-- nested by stentry -->
-      <xsl:when test="parent::*[contains(@class, ' topic/stentry ')]">
-        <text:p>
-          <text:span text:style-name="Courier">
-            <xsl:apply-templates/>
-          </text:span>
-        </text:p>
-      </xsl:when>
-      <!-- nested by other tags -->
-      <xsl:otherwise>
-        <text:span text:style-name="Courier">
-          <xsl:apply-templates/>
-        </text:span>
-      </xsl:otherwise>
-    </xsl:choose>
+    <text:span text:style-name="Courier">
+      <xsl:apply-templates/>
+    </text:span>
   </xsl:template>
 
   <xsl:template match="*[contains(@class,' hi-d/sup ')]">
-    <xsl:choose>
-      <xsl:when test="parent::*[contains(@class, ' topic/li ')] or parent::*[contains(@class, ' topic/sli ')]">
-        <text:p>
-          <xsl:apply-templates/>
-        </text:p>
-      </xsl:when>
-      <!-- nested by entry -->
-      <xsl:when test="parent::*[contains(@class, ' topic/entry ')]">
-        <!-- create p tag -->
-        <text:p>
-          <!-- alignment styles -->
-          <xsl:if test="parent::*[contains(@class, ' topic/entry ')]/@align">
-            <xsl:call-template name="set_align_value"/>
-          </xsl:if>
-          <!-- cell belongs to thead -->
-          <xsl:choose>
-            <xsl:when test="parent::*[contains(@class, ' topic/entry ')]                               /parent::*[contains(@class, ' topic/row ')]/parent::*[contains(@class, ' topic/thead ')]">
-              <text:span text:style-name="bold">
-                <xsl:apply-templates/>
-              </text:span>
-            </xsl:when>
-            <xsl:otherwise>
-              <xsl:apply-templates/>
-            </xsl:otherwise>
-          </xsl:choose>
-        </text:p>
-      </xsl:when>
-      <!-- nested by stentry -->
-      <xsl:when test="parent::*[contains(@class, ' topic/stentry ')]">
-        <text:p>
-          <!-- cell belongs to sthead -->
-          <xsl:choose>
-            <xsl:when test="parent::*[contains(@class, ' topic/stentry ')]/                               parent::*[contains(@class, ' topic/sthead ')]">
-              <text:span text:style-name="bold">
-                <xsl:apply-templates/>
-              </text:span>
-            </xsl:when>
-            <xsl:otherwise>
-              <xsl:apply-templates/>
-            </xsl:otherwise>
-          </xsl:choose>
-        </text:p>
-      </xsl:when>
-      <!-- nested by other tags -->
-      <xsl:otherwise>
-        <!-- 
-               <xsl:element name="text:span">
-                    <xsl:attribute name="text:style-name">sup</xsl:attribute>
-                    <xsl:apply-templates/>
-               </xsl:element>
-               -->
-        <xsl:apply-templates/>
-      </xsl:otherwise>
-    </xsl:choose>
+    <xsl:apply-templates/>  
   </xsl:template>
 
   <xsl:template match="*[contains(@class,' hi-d/sub ')]">
-    <xsl:choose>
-      <xsl:when test="parent::*[contains(@class, ' topic/li ')] or parent::*[contains(@class, ' topic/sli ')]">
-        <text:p>
-          <xsl:apply-templates/>
-        </text:p>
-      </xsl:when>
-      <!-- nested by entry -->
-      <xsl:when test="parent::*[contains(@class, ' topic/entry ')]">
-        <!-- create p tag -->
-        <text:p>
-          <!-- alignment styles -->
-          <xsl:if test="parent::*[contains(@class, ' topic/entry ')]/@align">
-            <xsl:call-template name="set_align_value"/>
-          </xsl:if>
-          <!-- cell belongs to thead -->
-          <xsl:choose>
-            <xsl:when test="parent::*[contains(@class, ' topic/entry ')]                               /parent::*[contains(@class, ' topic/row ')]/parent::*[contains(@class, ' topic/thead ')]">
-              <text:span text:style-name="bold">
-                <xsl:apply-templates/>
-              </text:span>
-            </xsl:when>
-            <xsl:otherwise>
-              <xsl:apply-templates/>
-            </xsl:otherwise>
-          </xsl:choose>
-        </text:p>
-      </xsl:when>
-      <!-- nested by stentry -->
-      <xsl:when test="parent::*[contains(@class, ' topic/stentry ')]">
-        <text:p>
-          <!-- cell belongs to sthead -->
-          <xsl:choose>
-            <xsl:when test="parent::*[contains(@class, ' topic/stentry ')]/                               parent::*[contains(@class, ' topic/sthead ')]">
-              <text:span text:style-name="bold">
-                <xsl:apply-templates/>
-              </text:span>
-            </xsl:when>
-            <xsl:otherwise>
-              <xsl:apply-templates/>
-            </xsl:otherwise>
-          </xsl:choose>
-        </text:p>
-      </xsl:when>
-      <!-- nested by other tags -->
-      <xsl:otherwise>
-        <!-- 
-               <xsl:element name="text:span">
-                    <xsl:attribute name="text:style-name">sub</xsl:attribute>
-                    <xsl:apply-templates/>
-               </xsl:element>
-               -->
-        <xsl:apply-templates/>
-      </xsl:otherwise>
-    </xsl:choose>
+    <xsl:apply-templates/>
   </xsl:template>
 
-  <xsl:template match="text()|*[contains(@class, ' topic/state ')]" mode="create_hi_style">
+  <xsl:template match="text() | *[contains(@class, ' topic/state ')]" mode="create_hi_style">
     <!-- generating style name based on the styles used on the text. -->
     <xsl:variable name="styles" as="xs:string*">
       <xsl:call-template name="get_style_name"/>

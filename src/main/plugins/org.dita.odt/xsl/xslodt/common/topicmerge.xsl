@@ -38,8 +38,6 @@ See the accompanying license.txt file for applicable licenses.
                 xmlns:xs="http://www.w3.org/2001/XMLSchema"
                 exclude-result-prefixes="xs">
 
-    <xsl:output indent="no"/>
-
     <xsl:key name="topic" match="dita-merge/*[contains(@class,' topic/topic ')]" use="concat('#',@id)"/>
     <xsl:key name="topic" match="dita-merge/dita" use="concat('#',*[contains(@class, ' topic/topic ')][1]/@id)"/>
     <xsl:key name="topicref" match="//*[contains(@class,' map/topicref ')]" use="generate-id()"/>

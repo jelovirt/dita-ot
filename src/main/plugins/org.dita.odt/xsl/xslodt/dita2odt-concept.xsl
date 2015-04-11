@@ -26,10 +26,6 @@
     xmlns:related-links="http://dita-ot.sourceforge.net/ns/200709/related-links"
     exclude-result-prefixes="related-links">
     
-  <xsl:output method="xml"/>
-  <xsl:output indent="yes"/>
-  <xsl:strip-space elements="*"/>
-
   <!-- Concepts have their own group. -->
   <xsl:template match="*[contains(@class, ' topic/link ')][@type='concept']" mode="related-links:get-group" name="related-links:group.concept">
     <xsl:text>concept</xsl:text>

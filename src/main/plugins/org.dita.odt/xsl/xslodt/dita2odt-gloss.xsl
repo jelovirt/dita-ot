@@ -26,10 +26,6 @@
     xmlns:related-links="http://dita-ot.sourceforge.net/ns/200709/related-links"
     exclude-result-prefixes="related-links">
   
-  <xsl:output method="xml"/>
-  <xsl:output indent="yes"/>
-  <xsl:strip-space elements="*"/>
-
   <!-- Glossary entries belong in the group with concepts. -->
   <xsl:template match="*[contains(@class, ' topic/link ')][@type='glossentry']" mode="related-links:get-group" name="related-links:group.glossentry">
     <xsl:call-template name="related-links:group.concept"/>

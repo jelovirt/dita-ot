@@ -3,7 +3,8 @@
      See the accompanying license.txt file for applicable licenses. -->
 <!-- (c) Copyright IBM Corp. 2006 All Rights Reserved. -->
 <xsl:stylesheet 
-  xmlns:xsl="http://www.w3.org/1999/XSL/Transform" 
+  xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+  xmlns:xs="http://www.w3.org/2001/XMLSchema"
   xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0"
   xmlns:style="urn:oasis:names:tc:opendocument:xmlns:style:1.0"
   xmlns:text="urn:oasis:names:tc:opendocument:xmlns:text:1.0"
@@ -27,7 +28,7 @@
   xmlns:prodtools="http://www.ibm.com/xmlns/prodtools"
   version="2.0"
   xmlns:ditamsg="http://dita-ot.sourceforge.net/ns/200704/ditamsg" 
-  exclude-result-prefixes="ditamsg">  
+  exclude-result-prefixes="xs ditamsg">  
   
   <!-- =========== TEMPLATES FOR CALCULATING NESTED TAGS 
       NOTE:SOME TAGS' NUMBER ARE MULTPLIED BY A NUMBER FOR FLAGGING STYLES.=========== -->
@@ -93,45 +94,45 @@
     </xsl:choose>
   </xsl:template>
   
-  <xsl:template name="calculate_span_depth">
-    <xsl:variable name="desc_count" select="count(ancestor::*[contains(@class, ' topic/desc ')])"/>
+  <xsl:template name="calculate_span_depth" as="xs:integer">
+    <xsl:variable name="desc_count" select="count(ancestor::*[contains(@class, ' topic/desc ')])" as="xs:integer"/>
     
-    <xsl:variable name="fig_count" select="count(ancestor::*[contains(@class, ' topic/fig ')]) * 2"/>
+    <xsl:variable name="fig_count" select="count(ancestor::*[contains(@class, ' topic/fig ')]) * 2" as="xs:integer"/>
     
-    <xsl:variable name="figgroup_count" select="count(ancestor::*[contains(@class, ' topic/figgroup ')]) * 2"/>
+    <xsl:variable name="figgroup_count" select="count(ancestor::*[contains(@class, ' topic/figgroup ')]) * 2" as="xs:integer"/>
     
-    <xsl:variable name="lq_count" select="count(ancestor::*[contains(@class, ' topic/lq ')]) * 2"/>
+    <xsl:variable name="lq_count" select="count(ancestor::*[contains(@class, ' topic/lq ')]) * 2" as="xs:integer"/>
     
-    <xsl:variable name="lines_count" select="count(ancestor::*[contains(@class, ' topic/lines ')]) * 2"/>
+    <xsl:variable name="lines_count" select="count(ancestor::*[contains(@class, ' topic/lines ')]) * 2" as="xs:integer"/>
 
     <!-- Add 1 for flagging sytles -->
-    <xsl:variable name="note_count" select="count(ancestor::*[contains(@class, ' topic/note ')]) * 3"/>
+    <xsl:variable name="note_count" select="count(ancestor::*[contains(@class, ' topic/note ')]) * 3" as="xs:integer"/>
     
-    <xsl:variable name="p_count" select="count(ancestor::*[contains(@class, ' topic/p ')]) * 2"/>
+    <xsl:variable name="p_count" select="count(ancestor::*[contains(@class, ' topic/p ')]) * 2" as="xs:integer"/>
     
-    <xsl:variable name="ph_count" select="count(ancestor::*[contains(@class, ' topic/ph ')]) * 2"/>
+    <xsl:variable name="ph_count" select="count(ancestor::*[contains(@class, ' topic/ph ')]) * 2" as="xs:integer"/>
     
-    <xsl:variable name="pre_count" select="count(ancestor::*[contains(@class, ' topic/pre ')]) * 2"/>
+    <xsl:variable name="pre_count" select="count(ancestor::*[contains(@class, ' topic/pre ')]) * 2" as="xs:integer"/>
     
-    <xsl:variable name="draft-comment_count" select="count(ancestor::*[contains(@class, ' topic/draft-comment ')]) * 2"/>
+    <xsl:variable name="draft-comment_count" select="count(ancestor::*[contains(@class, ' topic/draft-comment ')]) * 2" as="xs:integer"/>
     
-    <xsl:variable name="required-cleanup_count" select="count(ancestor::*[contains(@class, ' topic/required-cleanup ')]) * 2"/>
+    <xsl:variable name="required-cleanup_count" select="count(ancestor::*[contains(@class, ' topic/required-cleanup ')]) * 2" as="xs:integer"/>
     
-    <xsl:variable name="itemgroup_count" select="count(ancestor::*[contains(@class, ' topic/itemgroup ')]) * 2"/>
+    <xsl:variable name="itemgroup_count" select="count(ancestor::*[contains(@class, ' topic/itemgroup ')]) * 2" as="xs:integer"/>
     
-    <xsl:variable name="dd_count" select="count(ancestor::*[contains(@class, ' topic/dd ')]) * 2"/>
+    <xsl:variable name="dd_count" select="count(ancestor::*[contains(@class, ' topic/dd ')]) * 2" as="xs:integer"/>
     
-    <xsl:variable name="fn_count" select="count(ancestor::*[contains(@class, ' topic/fn ')]) * 2"/>
+    <xsl:variable name="fn_count" select="count(ancestor::*[contains(@class, ' topic/fn ')]) * 2" as="xs:integer"/>
     
-    <xsl:variable name="abstract_count" select="count(ancestor::*[contains(@class, ' topic/abstract ')])"/>
+    <xsl:variable name="abstract_count" select="count(ancestor::*[contains(@class, ' topic/abstract ')])" as="xs:integer"/>
     
-    <xsl:variable name="bodydiv_count" select="count(ancestor::*[contains(@class, ' topic/bodydiv ')])"/>
+    <xsl:variable name="bodydiv_count" select="count(ancestor::*[contains(@class, ' topic/bodydiv ')])" as="xs:integer"/>
     
-    <xsl:variable name="section_count" select="count(ancestor::*[contains(@class, ' topic/section ')]) * 2"/>
+    <xsl:variable name="section_count" select="count(ancestor::*[contains(@class, ' topic/section ')]) * 2" as="xs:integer"/>
     
-    <xsl:variable name="sectiondiv_count" select="count(ancestor::*[contains(@class, ' topic/sectiondiv ')])"/>
+    <xsl:variable name="sectiondiv_count" select="count(ancestor::*[contains(@class, ' topic/sectiondiv ')])" as="xs:integer"/>
     
-    <xsl:variable name="example_count">
+    <xsl:variable name="example_count" as="xs:integer">
       <xsl:choose>
         <xsl:when test="ancestor::*[contains(@class, ' topic/example ')]">
           <xsl:value-of select="count(ancestor::*[contains(@class, ' topic/example ')]) * 2"/>
@@ -140,11 +141,11 @@
       </xsl:choose>
     </xsl:variable>
     
-    <xsl:variable name="linkinfo_count" select="0"/>
+    <xsl:variable name="linkinfo_count" select="0" as="xs:integer"/>
     
-    <xsl:variable name="related-links_count" select="count(ancestor::*[contains(@class, ' topic/related-links ')])"/>
+    <xsl:variable name="related-links_count" select="count(ancestor::*[contains(@class, ' topic/related-links ')])" as="xs:integer"/>
     
-    <xsl:variable name="pd_count" select="count(ancestor::*[contains(@class, ' topic/pd ')])"/>
+    <xsl:variable name="pd_count" select="count(ancestor::*[contains(@class, ' topic/pd ')])" as="xs:integer"/>
     
     <xsl:variable name="total_count" select="$desc_count + $fig_count + $figgroup_count
       + $lq_count + $lines_count + $note_count + $p_count + $ph_count + $pre_count + $draft-comment_count + $required-cleanup_count
@@ -152,13 +153,13 @@
       + $example_count + $linkinfo_count + $related-links_count + $pd_count"/>
     
     <!-- remove the first one rendered by text:p -->
-    <xsl:value-of select="$total_count - 1"/>
-    
+    <xsl:sequence select="$total_count - 1"/>
   </xsl:template>
   
+  <!-- FIXME: Replace with something that doens't use DOE -->
   <xsl:template name="break_span_tags">
-    <xsl:param name="depth" select="0"/>
-    <xsl:param name="order" select="0"/>
+    <xsl:param name="depth" select="0" as="xs:integer"/>
+    <xsl:param name="order" select="0" as="xs:integer"/>
     <!--1st: move out -->
     <xsl:if test="$depth &gt; 0 and $order = 0">
       <xsl:text disable-output-escaping="yes">&lt;/text:span&gt;</xsl:text>
@@ -177,9 +178,10 @@
     </xsl:if>
   </xsl:template>
   
+  <!-- FIXME: Replace with something that doens't use DOE -->
   <xsl:template name="create_items_for_list">
-    <xsl:param name="depth" select="0"/>
-    <xsl:param name="order" select="0"/>
+    <xsl:param name="depth" select="0" as="xs:integer"/>
+    <xsl:param name="order" select="0" as="xs:integer"/>
     <!--1st: move out -->
     <xsl:if test="$depth &gt; 0 and $order = 0">
       <xsl:text disable-output-escaping="yes">&lt;/text:list-item&gt;</xsl:text>
@@ -211,7 +213,7 @@
     
   </xsl:template>
   
-  <xsl:template name="set_align_value">
+  <xsl:template name="set_align_value" as="attribute()">
     <xsl:choose>
       <xsl:when test="parent::*[contains(@class, ' topic/entry ')]/@align = 'left'">
         <xsl:attribute name="text:style-name">left</xsl:attribute>
@@ -231,21 +233,22 @@
     </xsl:choose>
   </xsl:template>
   
+  <!-- FIXME: Replace with something that doens't use DOE -->
   <xsl:template name="render_simpletable">
     <xsl:variable name="dlentry_count_for_list" select="count(ancestor::*[contains(@class, ' topic/dlentry ')]) -
-      count(ancestor::*[contains(@class, ' topic/li ')][1]/ancestor::*[contains(@class, ' topic/dlentry ')])"/>
+      count(ancestor::*[contains(@class, ' topic/li ')][1]/ancestor::*[contains(@class, ' topic/dlentry ')])" as="xs:integer"/>
     
-    <xsl:variable name="fn_depth" select="count(ancestor::*[contains(@class, ' topic/fn ')][1]/ancestor::*)"/>
+    <xsl:variable name="fn_depth" select="count(ancestor::*[contains(@class, ' topic/fn ')][1]/ancestor::*)" as="xs:integer"/>
     
-    <xsl:variable name="list_depth" select="count(ancestor::*[contains(@class, ' topic/li ')][1]/ancestor::*)"/>
+    <xsl:variable name="list_depth" select="count(ancestor::*[contains(@class, ' topic/li ')][1]/ancestor::*)" as="xs:integer"/>
     
-    <xsl:variable name="dlist_depth" select="count(ancestor::*[contains(@class, ' topic/dlentry ')][1]/ancestor::*)"/>
+    <xsl:variable name="dlist_depth" select="count(ancestor::*[contains(@class, ' topic/dlentry ')][1]/ancestor::*)" as="xs:integer"/>
     
-    <xsl:variable name="table_depth" select="count(ancestor::*[contains(@class, ' topic/entry ')][1]/ancestor::*)"/>
+    <xsl:variable name="table_depth" select="count(ancestor::*[contains(@class, ' topic/entry ')][1]/ancestor::*)" as="xs:integer"/>
     
-    <xsl:variable name="stable_depth" select="count(ancestor::*[contains(@class, ' topic/stentry ')][1]/ancestor::*)"/>
+    <xsl:variable name="stable_depth" select="count(ancestor::*[contains(@class, ' topic/stentry ')][1]/ancestor::*)" as="xs:integer"/>
     
-    <xsl:variable name="max_depth" select="max(($fn_depth, $list_depth, $dlist_depth, $table_depth, $stable_depth))"/>
+    <xsl:variable name="max_depth" select="max(($fn_depth, $list_depth, $dlist_depth, $table_depth, $stable_depth))" as="xs:integer"/>
     
     <!-- if the table is under p(direct child) -->
     <xsl:choose>
@@ -572,6 +575,7 @@
   </xsl:template>
   
   
+  <!-- FIXME: Replace with something that doens't use DOE -->
   <xsl:template name="render_table">
     <xsl:variable name="dlentry_count_for_list" select="count(ancestor::*[contains(@class, ' topic/dlentry ')]) -        count(ancestor::*[contains(@class, ' topic/li ')][1]       /ancestor::*[contains(@class, ' topic/dlentry ')])"/>
     
@@ -913,331 +917,7 @@
     </xsl:choose>
     
   </xsl:template>
-  
-  <xsl:template name="render_list">
-    <xsl:param name="list_style"/>
 
-    <xsl:variable name="li_count_for_table" select="count(ancestor::*[contains(@class, ' topic/li ')]) - 
-      count(ancestor::*[contains(@class, ' topic/entry ')][1]
-      /ancestor::*[contains(@class, ' topic/li ')])"/>
-    
-    <xsl:variable name="li_count_for_simpletable" select="count(ancestor::*[contains(@class, ' topic/li ')]) - 
-      count(ancestor::*[contains(@class, ' topic/stentry ')][1]
-      /ancestor::*[contains(@class, ' topic/li ')])"/>
-    
-    <xsl:variable name="dlentry_count_for_table" select="count(ancestor::*[contains(@class, ' topic/dlentry ')]) - 
-      count(ancestor::*[contains(@class, ' topic/entry ')][1]
-      /ancestor::*[contains(@class, ' topic/dlentry ')])"/>
-    
-    <xsl:variable name="dlentry_count_for_simpletable" select="count(ancestor::*[contains(@class, ' topic/dlentry ')]) - 
-      count(ancestor::*[contains(@class, ' topic/stentry ')][1]
-      /ancestor::*[contains(@class, ' topic/dlentry ')])"/>
-    
-    <xsl:variable name="dlentry_count_for_list" select="count(ancestor::*[contains(@class, ' topic/dlentry ')]) - 
-      count(ancestor::*[contains(@class, ' topic/li ')][1]
-      /ancestor::*[contains(@class, ' topic/dlentry ')])"/>
-    
-    
-    <xsl:choose>
-      <!-- parent tag is body -->
-      <xsl:when test="parent::*[contains(@class, ' topic/body ')]">
-        <!-- start flagging -->
-        <xsl:apply-templates select="." mode="start-add-odt-flags">
-          <xsl:with-param name="family" select="'_list'"/>
-        </xsl:apply-templates>
-        <!-- start render list -->
-        <text:list text:style-name="{$list_style}">
-          <xsl:apply-templates/>
-        </text:list>
-        <!-- end flagging -->
-        <xsl:apply-templates select="." mode="end-add-odt-flags">
-          <xsl:with-param name="family" select="'_list'"/>
-        </xsl:apply-templates>
-      </xsl:when>
-      <!-- parent by list -->
-      <xsl:when test="parent::*[contains(@class, ' topic/li ')] or parent::*[contains(@class, ' topic/sli ')]">
-        <!-- start flagging -->
-        <xsl:apply-templates select="." mode="start-add-odt-flags">
-          <xsl:with-param name="family" select="'_list'"/>
-        </xsl:apply-templates>
-        <!-- start render list -->
-        <text:list text:style-name="{$list_style}">
-          <xsl:apply-templates/>
-        </text:list>
-        <!-- end flagging -->
-        <xsl:apply-templates select="." mode="end-add-odt-flags">
-          <xsl:with-param name="family" select="'_list'"/>
-        </xsl:apply-templates>
-      </xsl:when>
-      <!-- parent by  entry-->
-      <xsl:when test="parent::*[contains(@class, ' topic/entry ')]">
-        <!-- start flagging -->
-        <xsl:apply-templates select="." mode="start-add-odt-flags">
-          <xsl:with-param name="family" select="'_list'"/>
-        </xsl:apply-templates>
-        <!-- start render list -->
-        <text:list text:style-name="{$list_style}">
-          <xsl:apply-templates/>
-        </text:list>
-        <!-- end flagging -->
-        <xsl:apply-templates select="." mode="end-add-odt-flags">
-          <xsl:with-param name="family" select="'_list'"/>
-        </xsl:apply-templates>
-      </xsl:when>
-      <!-- parent by  stentry-->
-      <xsl:when test="parent::*[contains(@class, ' topic/stentry ')]">
-        <!-- start flagging -->
-        <xsl:apply-templates select="." mode="start-add-odt-flags">
-          <xsl:with-param name="family" select="'_list'"/>
-        </xsl:apply-templates>
-        <!-- start render list -->
-        <text:list text:style-name="{$list_style}">
-          <xsl:apply-templates/>
-        </text:list>
-        <!-- end flagging -->
-        <xsl:apply-templates select="." mode="end-add-odt-flags">
-          <xsl:with-param name="family" select="'_list'"/>
-        </xsl:apply-templates>
-      </xsl:when>
-      <!-- parent tag is fn -->
-      <xsl:when test="parent::*[contains(@class, ' topic/fn ')]">
-        <!-- break span tag(for flagging)-->
-        <xsl:call-template name="break_span_tags">
-          <xsl:with-param name="depth" select="1"/>
-          <xsl:with-param name="order" select="0"/>
-        </xsl:call-template>
-        <!-- break p tag -->
-        <xsl:text disable-output-escaping="yes">&lt;/text:p&gt;</xsl:text>
-        <!-- start flagging -->
-        <xsl:apply-templates select="." mode="start-add-odt-flags">
-          <xsl:with-param name="family" select="'_list'"/>
-        </xsl:apply-templates>
-        <!-- start render list -->
-        <text:list text:style-name="{$list_style}">
-          <xsl:apply-templates/>
-        </text:list>
-        <!-- end flagging -->
-        <xsl:apply-templates select="." mode="end-add-odt-flags">
-          <xsl:with-param name="family" select="'_list'"/>
-        </xsl:apply-templates>
-        <!-- start p tag again -->
-        <xsl:text disable-output-escaping="yes">&lt;text:p text:style-name="footnote"&gt;</xsl:text>
-        <!--  start render span tags again-->
-        <xsl:call-template name="break_span_tags">
-          <xsl:with-param name="depth" select="1"/>
-          <xsl:with-param name="order" select="1"/>
-        </xsl:call-template>
-      </xsl:when>
-      
-      <!-- nearest ancestor tag is table -->
-      <xsl:when test="ancestor::*[contains(@class, ' topic/entry ')] and $li_count_for_table = 0 and $dlentry_count_for_table = 0">
-        <xsl:variable name="span_depth">
-          <xsl:call-template name="calculate_span_depth_for_tag">
-            <xsl:with-param name="tag_class" select="' topic/entry '"/>
-          </xsl:call-template>
-        </xsl:variable>
-        
-        <!-- break span tags -->
-        <xsl:call-template name="break_span_tags">
-          <xsl:with-param name="depth" select="$span_depth"/>
-          <xsl:with-param name="order" select="0"/>
-        </xsl:call-template>
-        <!-- break first p tag -->
-        <xsl:text disable-output-escaping="yes">&lt;/text:p&gt;</xsl:text>
-        <!-- start flagging -->
-        <xsl:apply-templates select="." mode="start-add-odt-flags">
-          <xsl:with-param name="family" select="'_list'"/>
-        </xsl:apply-templates>
-        <!-- start render list -->
-        <text:list text:style-name="{$list_style}">
-          <xsl:apply-templates/>
-        </text:list>
-        <!-- end flagging -->
-        <xsl:apply-templates select="." mode="end-add-odt-flags">
-          <xsl:with-param name="family" select="'_list'"/>
-        </xsl:apply-templates>
-        <!-- start first p tag again -->
-        <xsl:text disable-output-escaping="yes">&lt;text:p&gt;</xsl:text>
-        <!--  start render span tags again-->
-        <xsl:call-template name="break_span_tags">
-          <xsl:with-param name="depth" select="$span_depth"/>
-          <xsl:with-param name="order" select="1"/>
-        </xsl:call-template>
-      </xsl:when>
-      
-      <!-- nearest ancestor tag is simpletable -->
-      <xsl:when test="ancestor::*[contains(@class, ' topic/stentry ')] and $li_count_for_simpletable = 0 
-                      and $dlentry_count_for_simpletable = 0">
-        <xsl:variable name="span_depth">
-          <xsl:call-template name="calculate_span_depth_for_tag">
-            <xsl:with-param name="tag_class" select="' topic/stentry '"/>
-          </xsl:call-template>
-        </xsl:variable>
-        
-        <!-- break span tags -->
-        <xsl:call-template name="break_span_tags">
-          <xsl:with-param name="depth" select="$span_depth"/>
-          <xsl:with-param name="order" select="0"/>
-        </xsl:call-template>
-        <!-- break first p tag -->
-        <xsl:text disable-output-escaping="yes">&lt;/text:p&gt;</xsl:text>
-        <!-- start flagging -->
-        <xsl:apply-templates select="." mode="start-add-odt-flags">
-          <xsl:with-param name="family" select="'_list'"/>
-        </xsl:apply-templates>
-        <!-- start render list -->
-        <text:list text:style-name="{$list_style}">
-          <xsl:apply-templates/>
-        </text:list>
-        <!-- end flagging -->
-        <xsl:apply-templates select="." mode="end-add-odt-flags">
-          <xsl:with-param name="family" select="'_list'"/>
-        </xsl:apply-templates>
-        <!-- start first p tag again -->
-        <xsl:text disable-output-escaping="yes">&lt;text:p&gt;</xsl:text>
-        <!--  start render span tags again-->
-        <xsl:call-template name="break_span_tags">
-          <xsl:with-param name="depth" select="$span_depth"/>
-          <xsl:with-param name="order" select="1"/>
-        </xsl:call-template>
-      </xsl:when>
-      
-      <!-- nearest ancestor tag is li -->
-      <xsl:when test="ancestor::*[contains(@class, ' topic/li ')] and $dlentry_count_for_list = 0">
-        <xsl:variable name="span_depth">
-          <xsl:call-template name="calculate_span_depth_for_tag">
-            <xsl:with-param name="tag_class" select="' topic/li '"/>
-          </xsl:call-template>
-        </xsl:variable>
-        <!-- break span tags -->
-        <xsl:call-template name="break_span_tags">
-          <xsl:with-param name="depth" select="$span_depth"/>
-          <xsl:with-param name="order" select="0"/>
-        </xsl:call-template>
-        <!-- break first p tag -->
-        <xsl:text disable-output-escaping="yes">&lt;/text:p&gt;</xsl:text>
-        <!-- start flagging -->
-        <xsl:apply-templates select="." mode="start-add-odt-flags">
-          <xsl:with-param name="family" select="'_list'"/>
-        </xsl:apply-templates>
-        <!-- start render list -->
-        <text:list text:style-name="{$list_style}">
-          <xsl:apply-templates/>
-        </text:list>
-        <!-- end flagging -->
-        <xsl:apply-templates select="." mode="end-add-odt-flags">
-          <xsl:with-param name="family" select="'_list'"/>
-        </xsl:apply-templates>
-        <!-- start first p tag again -->
-        <xsl:text disable-output-escaping="yes">&lt;text:p&gt;</xsl:text>
-        <!--  start render span tags again-->
-        <xsl:call-template name="break_span_tags">
-          <xsl:with-param name="depth" select="$span_depth"/>
-          <xsl:with-param name="order" select="1"/>
-        </xsl:call-template>
-      </xsl:when>
-      
-      <!-- nearest ancestor tag is dlentry -->
-      <xsl:when test="ancestor::*[contains(@class, ' topic/dlentry ')]">
-        <xsl:variable name="span_depth">
-          <xsl:call-template name="calculate_span_depth_for_tag">
-            <xsl:with-param name="tag_class" select="' topic/dlentry '"/>
-          </xsl:call-template>
-        </xsl:variable>
-        <!-- break span tags -->
-        <xsl:call-template name="break_span_tags">
-          <xsl:with-param name="depth" select="$span_depth"/>
-          <xsl:with-param name="order" select="0"/>
-        </xsl:call-template>
-        <!-- break first p tag -->
-        <xsl:text disable-output-escaping="yes">&lt;/text:p&gt;</xsl:text>
-        <!-- start flagging -->
-        <xsl:apply-templates select="." mode="start-add-odt-flags">
-          <xsl:with-param name="family" select="'_list'"/>
-        </xsl:apply-templates>
-        <!-- start render list -->
-        <text:list text:style-name="{$list_style}">
-          <xsl:apply-templates/>
-        </text:list>
-        <!-- end flagging -->
-        <xsl:apply-templates select="." mode="end-add-odt-flags">
-          <xsl:with-param name="family" select="'_list'"/>
-        </xsl:apply-templates>
-        <!-- start first p tag again -->
-        <xsl:text disable-output-escaping="yes">&lt;text:p&gt;</xsl:text>
-        <!--  start render span tags again-->
-        <xsl:call-template name="break_span_tags">
-          <xsl:with-param name="depth" select="$span_depth"/>
-          <xsl:with-param name="order" select="1"/>
-        </xsl:call-template>
-      </xsl:when>
-      <!-- nearest ancestor tag is fn -->
-      <xsl:when test="ancestor::*[contains(@class, ' topic/fn ')]">
-        <xsl:variable name="span_depth">
-          <xsl:call-template name="calculate_span_depth_for_tag"/>
-        </xsl:variable>
-        <!-- break span tags -->
-        <xsl:call-template name="break_span_tags">
-          <xsl:with-param name="depth" select="$span_depth"/>
-          <xsl:with-param name="order" select="0"/>
-        </xsl:call-template>
-        <!-- break first p tag -->
-        <xsl:text disable-output-escaping="yes">&lt;/text:p&gt;</xsl:text>
-        <!-- start flagging -->
-        <xsl:apply-templates select="." mode="start-add-odt-flags">
-          <xsl:with-param name="family" select="'_list'"/>
-        </xsl:apply-templates>
-        <!-- start render list -->
-        <text:list text:style-name="{$list_style}">
-          <xsl:apply-templates/>
-        </text:list>
-        <!-- end flagging -->
-        <xsl:apply-templates select="." mode="end-add-odt-flags">
-          <xsl:with-param name="family" select="'_list'"/>
-        </xsl:apply-templates>
-        <!-- start first p tag again -->
-        <xsl:text disable-output-escaping="yes">&lt;text:p text:style-name="footnote"&gt;</xsl:text>
-        <!--  start render span tags again-->
-        <xsl:call-template name="break_span_tags">
-          <xsl:with-param name="depth" select="$span_depth"/>
-          <xsl:with-param name="order" select="1"/>
-        </xsl:call-template>
-      </xsl:when>
-      <!-- nested by other tags. -->
-      <xsl:otherwise>
-        <xsl:variable name="span_depth">
-          <xsl:call-template name="calculate_span_depth"/>
-        </xsl:variable>
-        <!-- break span tags -->
-        <xsl:call-template name="break_span_tags">
-          <xsl:with-param name="depth" select="$span_depth"/>
-          <xsl:with-param name="order" select="0"/>
-        </xsl:call-template>
-        <!-- break first p tag -->
-        <xsl:text disable-output-escaping="yes">&lt;/text:p&gt;</xsl:text>
-        <!-- start flagging -->
-        <xsl:apply-templates select="." mode="start-add-odt-flags">
-          <xsl:with-param name="family" select="'_list'"/>
-        </xsl:apply-templates>
-        <!-- start render list -->
-        <text:list text:style-name="{$list_style}">
-          <xsl:apply-templates/>
-        </text:list>
-        <!-- end flagging -->
-        <xsl:apply-templates select="." mode="end-add-odt-flags">
-          <xsl:with-param name="family" select="'_list'"/>
-        </xsl:apply-templates>
-        <!-- start first p tag again -->
-        <xsl:text disable-output-escaping="yes">&lt;text:p&gt;</xsl:text>
-        <!--  start render span tags again-->
-        <xsl:call-template name="break_span_tags">
-          <xsl:with-param name="depth" select="$span_depth"/>
-          <xsl:with-param name="order" select="1"/>
-        </xsl:call-template>
-      </xsl:otherwise>
-    </xsl:choose>
-  </xsl:template>
-  
   <!-- =========== FUNCTIONS FOR RELATED-LINKS =========== -->
   <!-- same file or not -->
   <xsl:template name="check_file_location">

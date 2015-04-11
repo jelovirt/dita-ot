@@ -6,11 +6,6 @@
   xmlns:manifest="urn:oasis:names:tc:opendocument:xmlns:manifest:1.0"
   version="2.0">
 
-  <xsl:output method="xml"/>
-  <xsl:output indent="yes"/>
-  
-  <xsl:strip-space elements="*"/>
-
   <xsl:variable name="msgprefix">DOTX</xsl:variable>
   
   <xsl:template match="/">
