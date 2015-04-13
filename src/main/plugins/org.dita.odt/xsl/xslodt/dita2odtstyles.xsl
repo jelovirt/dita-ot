@@ -42,7 +42,6 @@
   </xsl:template>
 
   <xsl:template name="root">
-    <!--xsl:call-template name="gen-list-table"/-->
     <office:font-face-decls>
       <style:font-face style:name="Courier" svg:font-family="Courier"
         style:font-family-generic="modern"/>

@@ -15,7 +15,6 @@
   </xsl:template>
 
   <xsl:template name="root">
-    <!--xsl:call-template name="gen-list-table"/-->
     <manifest:file-entry manifest:media-type="application/vnd.oasis.opendocument.text" manifest:full-path="/"/>
     <manifest:file-entry manifest:media-type="text/xml" manifest:full-path="content.xml"/>
     <manifest:file-entry manifest:media-type="text/xml" manifest:full-path="styles.xml"/>

@@ -57,76 +57,11 @@
   
   <!-- Define a newline character -->
   <xsl:variable name="newline" select="'&#xA;'"/>
-  
-  <!--Check the file Url Definition of HDF HDR FTR-->
-  <!-- 
-  <xsl:variable name="HDFFILE">
-    <xsl:choose>
-      <xsl:when test="not($HDF)"/>
-      <xsl:when test="starts-with($HDF,'file:')">
-        <xsl:value-of select="$HDF"/>
-      </xsl:when>
-      <xsl:otherwise>
-        <xsl:choose>
-          <xsl:when test="starts-with($HDF,'/')">
-            <xsl:text>file://</xsl:text><xsl:value-of select="$HDF"/>
-          </xsl:when>
-          <xsl:otherwise>
-            <xsl:text>file:/</xsl:text><xsl:value-of select="$HDF"/>
-          </xsl:otherwise>
-        </xsl:choose>
-      </xsl:otherwise>
-    </xsl:choose>
-  </xsl:variable>
-  
-  <xsl:variable name="HDRFILE">
-    <xsl:choose>
-      <xsl:when test="not($HDR)"/> 
-      <xsl:when test="starts-with($HDR,'file:')">
-        <xsl:value-of select="$HDR"/>
-      </xsl:when>
-      <xsl:otherwise>
-        <xsl:choose>
-          <xsl:when test="starts-with($HDR,'/')">
-            <xsl:text>file://</xsl:text><xsl:value-of select="$HDR"/>
-          </xsl:when>
-          <xsl:otherwise>
-            <xsl:text>file:/</xsl:text><xsl:value-of select="$HDR"/>
-          </xsl:otherwise>
-        </xsl:choose>
-      </xsl:otherwise>
-    </xsl:choose>
-  </xsl:variable>
-  
-  <xsl:variable name="FTRFILE">
-    <xsl:choose>
-      <xsl:when test="not($FTR)"/> 
-      <xsl:when test="starts-with($FTR,'file:')">
-        <xsl:value-of select="$FTR"/>
-      </xsl:when>
-      <xsl:otherwise>
-        <xsl:choose>
-          <xsl:when test="starts-with($FTR,'/')">
-            <xsl:text>file://</xsl:text><xsl:value-of select="$FTR"/>
-          </xsl:when>
-          <xsl:otherwise>
-            <xsl:text>file:/</xsl:text><xsl:value-of select="$FTR"/>
-          </xsl:otherwise>
-        </xsl:choose>
-      </xsl:otherwise>
-    </xsl:choose>
-  </xsl:variable>
-  -->
-  <!-- Filler for A-name anchors  - was &nbsp;-->
-  <xsl:variable name="afill"/>
-  
+    
   <!-- these elements are never processed in a conventional presentation. can be overridden. -->
   <xsl:template match="*[contains(@class,' topic/no-topic-nesting ')]"/>
   
   <xsl:template match="*[contains(@class,' topic/topic ')]">
-    <!-- 
-      <xsl:apply-templates/>
-    -->
     <xsl:variable name="topicType">
       <xsl:call-template name="determineTopicType"/>
     </xsl:variable>
@@ -159,12 +94,8 @@
   </xsl:template>
   
   <xsl:template match="*[contains(@class, ' topic/body ')]">
-    <!-- Added for DITA 1.1 "Shortdesc proposal" -->
-    <!-- get the abstract para -->
     <xsl:apply-templates select="preceding-sibling::*[contains(@class,' topic/abstract ')]" mode="outofline"/>
-    <!-- get the shortdesc para -->
     <xsl:apply-templates select="preceding-sibling::*[contains(@class,' topic/shortdesc ')]" mode="outofline"/>
-    <!-- Insert pre-req links - after shortdesc - unless there is a prereq section about -->
     <xsl:apply-templates select="following-sibling::*[contains(@class,' topic/related-links ')]" mode="prereqs"/>
     <xsl:apply-templates/>
   </xsl:template>
@@ -180,37 +111,12 @@
     </xsl:call-template>
   </xsl:template>
 
-  <xsl:template match="synsect"/>
-
   <xsl:template match="*[contains(@class,' topic/section ')]">
-    <xsl:choose>
-      <!-- nested by body -->
-      <xsl:when test="parent::*[contains(@class, ' topic/body ')]">
-        <text:p text:style-name="indent_paragraph_style">
-          <text:line-break/>
-          <text:span>
-            <xsl:apply-templates select="." mode="start-add-odt-flags"/>
-            <!-- if has title tag -->
-            <xsl:if test="*[contains(@class, ' topic/title ')]">
-              <xsl:apply-templates select="*[contains(@class, ' topic/title ')]" mode="render_section_title"/>
-            </xsl:if>
-            <xsl:apply-templates select="*[not(contains(@class,' topic/title '))] | text() | comment() | processing-instruction()"/>
-            <xsl:apply-templates select="." mode="end-add-odt-flags"/>	
-          </text:span>
-        </text:p> 
-      </xsl:when>
-      <!-- nested by other tags -->
-      <xsl:otherwise>
-        <text:span>
-          <text:line-break/>
-          <text:span>
-            <xsl:apply-templates select="." mode="start-add-odt-flags"/>
-            <xsl:apply-templates/>
-            <xsl:apply-templates select="." mode="end-add-odt-flags"/>
-          </text:span>
-        </text:span>
-      </xsl:otherwise>
-    </xsl:choose>
+    <xsl:apply-templates select="." mode="start-add-odt-flags"/>
+    <xsl:variable name="title" select="*[contains(@class, ' topic/title ')]"/>
+    <xsl:apply-templates select="$title"/>
+    <xsl:apply-templates select="node() except $title"/>
+    <xsl:apply-templates select="." mode="end-add-odt-flags"/>	
   </xsl:template>
   
   <xsl:template match="*[contains(@class,' topic/sectiondiv ')]">
@@ -219,48 +125,25 @@
     </text:span>
   </xsl:template>
   
-  <xsl:template match="*[contains(@class,' topic/title ')]" mode="render_section_title">
-    <xsl:variable name="headCount" select="count(ancestor::*[contains(@class,' topic/topic ')])+1"/>
+  <xsl:template match="*[contains(@class,' topic/section ') or
+                         contains(@class,' topic/example ')]/
+                          *[contains(@class,' topic/title ')]">
+    <xsl:variable name="headCount" select="count(ancestor::*[contains(@class,' topic/topic ')]) + 1"/>
     <!-- Heading_20_2 -->
-    <text:span text:style-name="bold">
-      <!-- 
-      <xsl:attribute name="text:style-name"><xsl:value-of select="concat('Heading_20_' , $headCount)"/></xsl:attribute>
-      -->
-      <xsl:apply-templates/>
-    </text:span>
-    <text:line-break/>
+    <text:p>
+      <!--xsl:attribute name="text:style-name" select="concat('Heading_20_' , $headCount)"/-->
+      <text:span text:style-name="bold">
+        <xsl:apply-templates/>
+     </text:span>
+    </text:p>
   </xsl:template>
   
-  <xsl:template match="*[contains(@class,' topic/section ')]/*[contains(@class,' topic/note ')]" priority="1">
-    <text:span>
-      <xsl:apply-templates/>
-    </text:span>
-    <text:line-break/>
-  </xsl:template>
-
   <xsl:template match="*[contains(@class,' topic/example ')]">
-    <xsl:choose>
-      <!-- parent is body -->
-      <xsl:when test="parent::*[contains(@class, ' topic/body ')]">
-        <text:p>
-          <text:span>
-            <xsl:apply-templates select="." mode="start-add-odt-flags"/>
-            <xsl:apply-templates/>
-            <xsl:apply-templates select="." mode="end-add-odt-flags"/>
-          </text:span>		
-        </text:p>
-      </xsl:when>
-      <!-- nested by other tags. -->
-      <xsl:otherwise>
-        <text:span>
-          <text:span>
-            <xsl:apply-templates select="." mode="start-add-odt-flags"/>
-            <xsl:apply-templates/>
-            <xsl:apply-templates select="." mode="end-add-odt-flags"/>
-          </text:span>        
-        </text:span>        
-      </xsl:otherwise>
-    </xsl:choose>
+    <xsl:apply-templates select="." mode="start-add-odt-flags"/>
+    <xsl:variable name="title" select="*[contains(@class, ' topic/title ')]"/>
+    <xsl:apply-templates select="$title"/>
+    <xsl:apply-templates select="node() except $title"/>
+    <xsl:apply-templates select="." mode="end-add-odt-flags"/>	
   </xsl:template>
 
   <xsl:template match="*[contains(@class,' topic/example ')]/*[contains(@class,' topic/title ')]">
@@ -366,7 +249,7 @@
     <xsl:variable name="ancestorlang">
       <xsl:call-template name="getLowerCaseLang"/>
     </xsl:variable>
-    <xsl:variable name="fig-count-actual" select="count(preceding::*[contains(@class,' topic/fig ')]/*[contains(@class,' topic/title ')])+1"><!-- Number of fig/title's including this one --></xsl:variable>
+    <xsl:variable name="fig-count-actual" select="count(preceding::*[contains(@class,' topic/fig ')]/*[contains(@class,' topic/title ')]) + 1"/>
    
     <text:line-break/>
     <text:span text:style-name="center">
@@ -404,79 +287,25 @@
 
   <!-- =========== block things ============ -->
 
-  <xsl:template match="*[contains(@class,' topic/p ')]">
-    <xsl:choose>
-      <!-- nested by body or list -->
-      <xsl:when test="parent::*[contains(@class, ' topic/body ')] or
-                      parent::*[contains(@class, ' topic/li ')] or
-                      parent::*[contains(@class, ' topic/sli ')]">
-        <text:p text:style-name="indent_paragraph_style">
-          <!--text:span-->
-            <xsl:apply-templates select="." mode="start-add-odt-flags"/>
-            <xsl:apply-templates/>
-            <xsl:apply-templates select="." mode="end-add-odt-flags"/>	
-          <!--/text:span-->            
-        </text:p>
-      </xsl:when>
-      <!-- nested by entry -->
-      <xsl:when test="parent::*[contains(@class, ' topic/entry ')]">
-        <!-- create p tag -->
-        <text:p text:style-name="indent_paragraph_style">
-          <!-- alignment styles -->
-          <xsl:if test="parent::*[contains(@class, ' topic/entry ')]/@align">
-            <xsl:call-template name="set_align_value"/>
-          </xsl:if>
-          <text:span>
-            <xsl:apply-templates select="." mode="start-add-odt-flags"/>
-              <!-- cell belongs to thead -->
-              <xsl:choose>
-                <xsl:when test="parent::*[contains(@class, ' topic/entry ')]/parent::*[contains(@class, ' topic/row ')]/parent::*[contains(@class, ' topic/thead ')]">
-                  <text:span text:style-name="bold">
-                    <xsl:apply-templates/>
-                  </text:span>
-                </xsl:when>
-                <xsl:otherwise>
-                  <xsl:apply-templates/>
-                </xsl:otherwise>
-              </xsl:choose>
-            <xsl:apply-templates select="." mode="end-add-odt-flags"/>	
-          </text:span>
-        </text:p>
-      </xsl:when>
-      <!-- nested by stentry -->
-      <xsl:when test="parent::*[contains(@class, ' topic/stentry ')]">
-        <text:p>
-          <!-- cell belongs to sthead -->
-          <xsl:choose>
-            <xsl:when test="parent::*[contains(@class, ' topic/stentry ')]/parent::*[contains(@class, ' topic/sthead ')]">
-                <xsl:attribute name="text:style-name">bold_paragraph</xsl:attribute>
-              <text:span>
-                    <xsl:apply-templates select="." mode="start-add-odt-flags"/>
-                <xsl:apply-templates/>
-                <xsl:apply-templates select="." mode="end-add-odt-flags"/>	
-              </text:span>	
-            </xsl:when>
-            <xsl:otherwise>
-              <text:span>
-                    <xsl:apply-templates select="." mode="start-add-odt-flags"/>
-                <xsl:apply-templates/>
-                <xsl:apply-templates select="." mode="end-add-odt-flags"/>
-              </text:span>
-            </xsl:otherwise>
-          </xsl:choose>
-        </text:p>
-      </xsl:when>
-      <!-- nested by other tags -->
-      <xsl:otherwise>
-        <text:p>
-          <!--text:span-->
-            <xsl:apply-templates select="." mode="start-add-odt-flags"/>
-            <xsl:apply-templates/>
-            <xsl:apply-templates select="." mode="end-add-odt-flags"/>
-          <!--/text:span-->
-        </text:p>
-      </xsl:otherwise>
-    </xsl:choose>
+  <xsl:template match="*[contains(@class,' topic/p ')]" name="topic.p">
+    <xsl:param name="prefix" as="node()*"/>
+    <xsl:param name="contents" as="node()*">
+      <xsl:apply-templates/>
+    </xsl:param>
+    <text:p text:style-name="indent_paragraph_style">
+      <xsl:if test="not(ancestor::*[contains(@class, ' topic/table ') or
+                                    contains(@class, ' topic/simpletable ') or
+                                    contains(@class, ' topic/ul ') or
+                                    contains(@class, ' topic/ol ') or
+                                    contains(@class, ' topic/dl ') or
+                                    contains(@class, ' topic/sl ')])">
+        <xsl:attribute name="text:style-name">indent_paragraph_style</xsl:attribute>
+      </xsl:if>
+      <!--xsl:apply-templates select="." mode="start-add-odt-flags"/-->
+      <xsl:copy-of select="$prefix"/>
+      <xsl:copy-of select="$contents"/>
+      <!--xsl:apply-templates select="." mode="end-add-odt-flags"/-->	
+    </text:p>
   </xsl:template>
   
   <xsl:template match="*[contains(@class, ' topic/ph ')]">
@@ -616,16 +445,6 @@
     -->
   </xsl:template>
 
-
-  <!-- phrases -->
-  <xsl:template match="*[contains(@class,' hi-d/tt ')]">
-    <text:span text:style-name="bold">
-      <xsl:apply-templates select="." mode="start-add-odt-revflags"/>
-      <xsl:apply-templates/>
-      <xsl:apply-templates select="." mode="end-add-odt-revflags"/>
-    </text:span>
-  </xsl:template>
-
   <xsl:template match="*[contains(@class,' topic/q ')]">
     <xsl:choose>
       <xsl:when test="parent::*[contains(@class, ' topic/li ')] or
@@ -725,8 +544,6 @@
   </xsl:template>
 
   <!-- named template library -->
-
-<!-- standard RTF library mapped to formatting objects -->
 
 <!--e.g  
   <text:h text:style-name="Heading_20_1" text:outline-level="1">
@@ -1199,358 +1016,153 @@
   </xsl:template>
   
   <xsl:template match="*[contains(@class,' topic/note ')]" name="topic.note" priority="0">
-    <text:p text:style-name="indent_paragraph_style">
-      <xsl:apply-templates select="." mode="start-add-odt-flags">
-        <xsl:with-param name="type" select="'note'"/>
-      </xsl:apply-templates>
-      <xsl:choose>
-        <xsl:when test="contains(@class,' hazard-d/hazardstatement ')">
-          <xsl:call-template name="create_hazards_content"/>
-        </xsl:when>
-        <xsl:otherwise>
-          <xsl:call-template name="create_note_content"/>
-        </xsl:otherwise>
-      </xsl:choose>
-      <xsl:apply-templates select="." mode="end-add-odt-flags">
-        <xsl:with-param name="type" select="'note'"/>
-      </xsl:apply-templates>
-    </text:p>
+    <xsl:apply-templates select="." mode="start-add-odt-flags">
+      <xsl:with-param name="type" select="'note'"/>
+    </xsl:apply-templates>
+    <xsl:call-template name="create_note_content"/>
+    <xsl:apply-templates select="." mode="end-add-odt-flags">
+      <xsl:with-param name="type" select="'note'"/>
+    </xsl:apply-templates>
   </xsl:template>
   
-<xsl:template name="create_note_content">
-  <xsl:choose>
-    <xsl:when test="@type='note' or not(@type)">
-      <text:span text:style-name="bold">
-        <xsl:call-template name="getString">
-          <xsl:with-param name="stringName" select="'Note'"/>
-        </xsl:call-template>
-        <xsl:call-template name="getString">
-          <xsl:with-param name="stringName" select="'ColonSymbol'"/>
-        </xsl:call-template>
-        <xsl:text> </xsl:text>
-      </text:span>
-      <xsl:if test="ancestor::*[contains(@class,' topic/table ') or contains(@class,' topic/simpletable ')]">
-        <text:tab/>
-      </xsl:if>
-      <text:span>
-        <xsl:apply-templates select="." mode="start-add-odt-revflags"/>
+  <xsl:template name="create_note_content">
+    <xsl:variable name="prefix" as="node()">
+      <xsl:apply-templates select="." mode="note-label"/>
+    </xsl:variable>
+    <xsl:apply-templates select="." mode="start-add-odt-revflags"/>
+    <xsl:choose>
+      <xsl:when test="empty($prefix)">
         <xsl:apply-templates/>
-        <xsl:apply-templates select="." mode="end-add-odt-revflags"/>
-      </text:span>
-    </xsl:when>
-    <xsl:when test="@type='tip'">
-      <text:span text:style-name="bold">
-        <xsl:call-template name="getString">
-          <xsl:with-param name="stringName" select="'Tip'"/>
+      </xsl:when>
+      <xsl:when test="*[1][contains(@class, ' topic/p ')]">
+        <xsl:apply-templates select="*[1]">
+          <xsl:with-param name="prefix" select="$prefix"/>
+        </xsl:apply-templates>
+        <xsl:apply-templates select="*[position() gt 1]"/>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:call-template name="topic.p">
+          <xsl:with-param name="contents" select="$prefix"/>
         </xsl:call-template>
-        <xsl:call-template name="getString">
-          <xsl:with-param name="stringName" select="'ColonSymbol'"/>
-        </xsl:call-template>
-        <xsl:text> </xsl:text>
-      </text:span>
-      <text:span>
-        <xsl:apply-templates select="." mode="start-add-odt-revflags"/>
         <xsl:apply-templates/>
-        <xsl:apply-templates select="." mode="end-add-odt-revflags"/>
-      </text:span>
-    </xsl:when>
-    <xsl:when test="@type='fastpath'">
-      <text:span text:style-name="bold">
-        <xsl:call-template name="getString">
-          <xsl:with-param name="stringName" select="'Fastpath'"/>
-        </xsl:call-template>
-        <xsl:call-template name="getString">
-          <xsl:with-param name="stringName" select="'ColonSymbol'"/>
-        </xsl:call-template>
-        <xsl:text> </xsl:text>
-      </text:span>
-      <text:span>
-        <xsl:apply-templates select="." mode="start-add-odt-revflags"/>
-        <xsl:apply-templates/>
-        <xsl:apply-templates select="." mode="end-add-odt-revflags"/>
-      </text:span>
-    </xsl:when>
-    <xsl:when test="@type='important'">
-      <text:span text:style-name="bold">
-        <xsl:call-template name="getString">
-          <xsl:with-param name="stringName" select="'Important'"/>
-        </xsl:call-template>
-        <xsl:call-template name="getString">
-          <xsl:with-param name="stringName" select="'ColonSymbol'"/>
-        </xsl:call-template>
-        <xsl:text> </xsl:text>
-      </text:span>
-      <text:span>
-        <xsl:apply-templates select="." mode="start-add-odt-revflags"/>
-        <xsl:apply-templates/>
-        <xsl:apply-templates select="." mode="end-add-odt-revflags"/>
-      </text:span>
-    </xsl:when>
-    <xsl:when test="@type='remember'">
-      <text:span text:style-name="bold">
-        <xsl:call-template name="getString">
-          <xsl:with-param name="stringName" select="'Remember'"/>
-        </xsl:call-template>
-        <xsl:call-template name="getString">
-          <xsl:with-param name="stringName" select="'ColonSymbol'"/>
-        </xsl:call-template>
-        <xsl:text> </xsl:text>
-      </text:span>
-      <text:span>
-        <xsl:apply-templates select="." mode="start-add-odt-revflags"/>
-        <xsl:apply-templates/>
-        <xsl:apply-templates select="." mode="end-add-odt-revflags"/>
-      </text:span>
-    </xsl:when>
-    <xsl:when test="@type='restriction'">
-      <text:span text:style-name="bold">
-        <xsl:call-template name="getString">
-          <xsl:with-param name="stringName" select="'Restriction'"/>
-        </xsl:call-template>
-        <xsl:call-template name="getString">
-          <xsl:with-param name="stringName" select="'ColonSymbol'"/>
-        </xsl:call-template>
-        <xsl:text> </xsl:text>
-      </text:span>
-      <text:span>
-        <xsl:apply-templates select="." mode="start-add-odt-revflags"/>
-        <xsl:apply-templates/>
-        <xsl:apply-templates select="." mode="end-add-odt-revflags"/>
-      </text:span>
-    </xsl:when>
-    <xsl:when test="@type='attention'">
-      <text:span text:style-name="bold">
-        <xsl:call-template name="getString">
-          <xsl:with-param name="stringName" select="'Attention'"/>
-        </xsl:call-template>
-        <xsl:call-template name="getString">
-          <xsl:with-param name="stringName" select="'ColonSymbol'"/>
-        </xsl:call-template>
-        <xsl:text> </xsl:text>
-      </text:span>
-      <text:span>
-        <xsl:apply-templates select="." mode="start-add-odt-revflags"/>
-        <xsl:apply-templates/>
-        <xsl:apply-templates select="." mode="end-add-odt-revflags"/>
-      </text:span>
-    </xsl:when>
-    <xsl:when test="@type='caution'">
-      <text:span text:style-name="bold">
-        <xsl:call-template name="getString">
-          <xsl:with-param name="stringName" select="'Caution'"/>
-        </xsl:call-template>
-        <xsl:call-template name="getString">
-          <xsl:with-param name="stringName" select="'ColonSymbol'"/>
-        </xsl:call-template>
-        <xsl:text> </xsl:text>
-      </text:span>
-      <text:span>
-        <xsl:apply-templates select="." mode="start-add-odt-revflags"/>
-        <xsl:apply-templates/>
-        <xsl:apply-templates select="." mode="end-add-odt-revflags"/>
-      </text:span>
-    </xsl:when>
-    <xsl:when test="@type='danger'">
-      <text:span text:style-name="bold">
-        <xsl:call-template name="getString">
-          <xsl:with-param name="stringName" select="'Danger'"/>
-        </xsl:call-template>
-        <xsl:call-template name="getString">
-          <xsl:with-param name="stringName" select="'ColonSymbol'"/>
-        </xsl:call-template>
-        <xsl:text> </xsl:text>
-      </text:span>
-      <text:span>
-        <xsl:apply-templates select="." mode="start-add-odt-revflags"/>
-        <xsl:apply-templates/>
-        <xsl:apply-templates select="." mode="end-add-odt-revflags"/>
-      </text:span>
-    </xsl:when>
-    <xsl:when test="@type='trouble'">
-      <text:span text:style-name="bold">
-        <xsl:call-template name="getString">
-          <xsl:with-param name="stringName" select="'Trouble'"/>
-        </xsl:call-template>
-        <xsl:call-template name="getString">
-          <xsl:with-param name="stringName" select="'ColonSymbol'"/>
-        </xsl:call-template>
-        <xsl:text> </xsl:text>
-      </text:span>
-      <text:span>
-        <xsl:apply-templates select="." mode="start-add-odt-revflags"/>
-        <xsl:apply-templates/>
-        <xsl:apply-templates select="." mode="end-add-odt-revflags"/>
-      </text:span>
-    </xsl:when>
-    <xsl:when test="@type='other'">
-      <text:span text:style-name="bold">
-        <xsl:choose>
-          <xsl:when test="@othertype and           not(@othertype='')">
-            <xsl:value-of select="@othertype"/>
-          </xsl:when>
-          <xsl:otherwise>
-            <xsl:text>[other]</xsl:text>
-          </xsl:otherwise>
-        </xsl:choose>
-        <xsl:call-template name="getString">
-          <xsl:with-param name="stringName" select="'ColonSymbol'"/>
-        </xsl:call-template>
-        <xsl:text> </xsl:text>
-      </text:span>
-      <text:span>
-        <xsl:apply-templates select="." mode="start-add-odt-revflags"/>
-        <xsl:apply-templates/>
-        <xsl:apply-templates select="." mode="end-add-odt-revflags"/>
-      </text:span>
-    </xsl:when>
-    <xsl:otherwise>
-      <xsl:apply-templates/>
-    </xsl:otherwise>
-  </xsl:choose>
-</xsl:template>
+      </xsl:otherwise>
+    </xsl:choose>
+    <xsl:apply-templates select="." mode="end-add-odt-revflags"/>
+  </xsl:template>
   
-<xsl:template name="create_hazards_content">
-  <xsl:choose>
-    <xsl:when test="@type='note'">
-        <xsl:attribute name="text:style-name">bold</xsl:attribute>
-        <xsl:call-template name="getString">
-          <xsl:with-param name="stringName" select="'Note'"/>
-        </xsl:call-template>
-        <xsl:call-template name="getString">
-          <xsl:with-param name="stringName" select="'ColonSymbol'"/>
-        </xsl:call-template>
-        <xsl:text> </xsl:text>
-        <xsl:if test="ancestor::*[contains(@class,' topic/table ')            or contains(@class,' topic/simpletable ')]">
-          <text:tab/>
-        </xsl:if>
-        <text:span>
-          <xsl:apply-templates select="." mode="start-add-odt-revflags"/>
-          <xsl:apply-templates/>
-          <xsl:apply-templates select="." mode="end-add-odt-revflags"/>
-        </text:span>
-    </xsl:when>
-    <xsl:when test="@type='tip'">
-        <xsl:attribute name="text:style-name">bold</xsl:attribute>
-        <xsl:call-template name="getString">
-          <xsl:with-param name="stringName" select="'Tip'"/>
-        </xsl:call-template>
-        <xsl:call-template name="getString">
-          <xsl:with-param name="stringName" select="'ColonSymbol'"/>
-        </xsl:call-template>
-        <xsl:text> </xsl:text>
-        <text:span>
-          <xsl:apply-templates select="." mode="start-add-odt-revflags"/>
-          <xsl:apply-templates/>
-          <xsl:apply-templates select="." mode="end-add-odt-revflags"/>
-        </text:span>
-    </xsl:when>
-    <xsl:when test="@type='fastpath'">
-        <xsl:attribute name="text:style-name">bold</xsl:attribute>
-        <xsl:call-template name="getString">
-          <xsl:with-param name="stringName" select="'Fastpath'"/>
-        </xsl:call-template>
-        <xsl:call-template name="getString">
-          <xsl:with-param name="stringName" select="'ColonSymbol'"/>
-        </xsl:call-template>
-        <xsl:text> </xsl:text>
-        <text:span>
-          <xsl:apply-templates select="." mode="start-add-odt-revflags"/>
-          <xsl:apply-templates/>
-          <xsl:apply-templates select="." mode="end-add-odt-revflags"/>
-        </text:span>
-    </xsl:when>
-    <xsl:when test="@type='important'">
-        <xsl:attribute name="text:style-name">bold</xsl:attribute>
-        <xsl:call-template name="getString">
-          <xsl:with-param name="stringName" select="'Important'"/>
-        </xsl:call-template>
-        <xsl:call-template name="getString">
-          <xsl:with-param name="stringName" select="'ColonSymbol'"/>
-        </xsl:call-template>
-        <xsl:text> </xsl:text>
-        <text:span>
-          <xsl:apply-templates select="." mode="start-add-odt-revflags"/>
-          <xsl:apply-templates/>
-          <xsl:apply-templates select="." mode="end-add-odt-revflags"/>
-        </text:span>
-    </xsl:when>
-    <xsl:when test="@type='remember'">
-        <xsl:attribute name="text:style-name">bold</xsl:attribute>
-        <xsl:call-template name="getString">
-          <xsl:with-param name="stringName" select="'Remember'"/>
-        </xsl:call-template>
-        <xsl:call-template name="getString">
-          <xsl:with-param name="stringName" select="'ColonSymbol'"/>
-        </xsl:call-template>
-        <xsl:text> </xsl:text>
-        <text:span>
-          <xsl:apply-templates select="." mode="start-add-odt-revflags"/>
-          <xsl:apply-templates/>
-          <xsl:apply-templates select="." mode="end-add-odt-revflags"/>
-        </text:span>
-    </xsl:when>
-    <xsl:when test="@type='restriction'">
-        <xsl:attribute name="text:style-name">bold</xsl:attribute>
-        <xsl:call-template name="getString">
-          <xsl:with-param name="stringName" select="'Restriction'"/>
-        </xsl:call-template>
-        <xsl:call-template name="getString">
-          <xsl:with-param name="stringName" select="'ColonSymbol'"/>
-        </xsl:call-template>
-        <xsl:text> </xsl:text>
-        <text:span>
-          <xsl:apply-templates select="." mode="start-add-odt-revflags"/>
-          <xsl:apply-templates/>
-          <xsl:apply-templates select="." mode="end-add-odt-revflags"/>
-        </text:span>
-    </xsl:when>
-    <xsl:when test="@type='attention'">
-        <xsl:attribute name="text:style-name">bold</xsl:attribute>
-        <xsl:call-template name="getString">
-          <xsl:with-param name="stringName" select="'Attention'"/>
-        </xsl:call-template>
-        <xsl:call-template name="getString">
-          <xsl:with-param name="stringName" select="'ColonSymbol'"/>
-        </xsl:call-template>
-        <xsl:text> </xsl:text>
-        <text:span>
-          <xsl:apply-templates select="." mode="start-add-odt-revflags"/>
-          <xsl:apply-templates/>
-          <xsl:apply-templates select="." mode="end-add-odt-revflags"/>
-        </text:span>
-    </xsl:when>
-    <xsl:when test="@type='caution'">
-        <xsl:attribute name="text:style-name">bold</xsl:attribute>
-        <xsl:call-template name="getString">
-          <xsl:with-param name="stringName" select="'Caution'"/>
-        </xsl:call-template>
-        <xsl:call-template name="getString">
-          <xsl:with-param name="stringName" select="'ColonSymbol'"/>
-        </xsl:call-template>
-        <xsl:text> </xsl:text>
-        <text:span>
-          <xsl:apply-templates select="." mode="start-add-odt-revflags"/>
-          <xsl:apply-templates/>
-          <xsl:apply-templates select="." mode="end-add-odt-revflags"/>
-        </text:span>
-    </xsl:when>
-    <xsl:when test="@type='danger'">
-        <xsl:attribute name="text:style-name">bold</xsl:attribute>
-        <xsl:call-template name="getString">
-          <xsl:with-param name="stringName" select="'Danger'"/>
-        </xsl:call-template>
-        <xsl:call-template name="getString">
-          <xsl:with-param name="stringName" select="'ColonSymbol'"/>
-        </xsl:call-template>
-        <xsl:text> </xsl:text>
-        <text:span>
-          <xsl:apply-templates select="." mode="start-add-odt-revflags"/>
-          <xsl:apply-templates/>
-          <xsl:apply-templates select="." mode="end-add-odt-revflags"/>
-        </text:span>
-    </xsl:when>
-    <xsl:when test="@type='trouble'">
-      <xsl:attribute name="text:style-name">bold</xsl:attribute>
+  <xsl:template match="*[@type = 'note' or empty(@type)]" mode="note-label">
+    <text:span text:style-name="bold">
+      <xsl:call-template name="getString">
+        <xsl:with-param name="stringName" select="'Note'"/>
+      </xsl:call-template>
+      <xsl:call-template name="getString">
+        <xsl:with-param name="stringName" select="'ColonSymbol'"/>
+      </xsl:call-template>
+      <xsl:text> </xsl:text>
+    </text:span>
+    <xsl:if test="ancestor::*[contains(@class,' topic/table ') or contains(@class,' topic/simpletable ')]">
+      <text:tab/>
+    </xsl:if>
+  </xsl:template>
+
+  <xsl:template match="*[@type = 'tip']" mode="note-label">
+    <text:span text:style-name="bold">
+      <xsl:call-template name="getString">
+        <xsl:with-param name="stringName" select="'Tip'"/>
+      </xsl:call-template>
+      <xsl:call-template name="getString">
+        <xsl:with-param name="stringName" select="'ColonSymbol'"/>
+      </xsl:call-template>
+      <xsl:text> </xsl:text>
+    </text:span>
+  </xsl:template>
+  
+  <xsl:template match="*[@type = 'fastpath']" mode="note-label">
+    <text:span text:style-name="bold">
+      <xsl:call-template name="getString">
+        <xsl:with-param name="stringName" select="'Fastpath'"/>
+      </xsl:call-template>
+      <xsl:call-template name="getString">
+        <xsl:with-param name="stringName" select="'ColonSymbol'"/>
+      </xsl:call-template>
+      <xsl:text> </xsl:text>
+    </text:span>
+  </xsl:template>
+
+  <xsl:template match="*[@type = 'important']" mode="note-label">
+    <text:span text:style-name="bold">
+      <xsl:call-template name="getString">
+        <xsl:with-param name="stringName" select="'Important'"/>
+      </xsl:call-template>
+      <xsl:call-template name="getString">
+        <xsl:with-param name="stringName" select="'ColonSymbol'"/>
+      </xsl:call-template>
+      <xsl:text> </xsl:text>
+    </text:span>
+  </xsl:template>
+  
+  <xsl:template match="*[@type = 'remember']" mode="note-label">
+    <text:span text:style-name="bold">
+      <xsl:call-template name="getString">
+        <xsl:with-param name="stringName" select="'Remember'"/>
+      </xsl:call-template>
+      <xsl:call-template name="getString">
+        <xsl:with-param name="stringName" select="'ColonSymbol'"/>
+      </xsl:call-template>
+      <xsl:text> </xsl:text>
+    </text:span>
+  </xsl:template>
+  
+  <xsl:template match="*[@type = 'restriction']" mode="note-label">
+    <text:span text:style-name="bold">
+      <xsl:call-template name="getString">
+        <xsl:with-param name="stringName" select="'Restriction'"/>
+      </xsl:call-template>
+      <xsl:call-template name="getString">
+        <xsl:with-param name="stringName" select="'ColonSymbol'"/>
+      </xsl:call-template>
+      <xsl:text> </xsl:text>
+    </text:span>
+  </xsl:template>
+  
+  <xsl:template match="*[@type = 'attention']" mode="note-label">
+    <text:span text:style-name="bold">
+      <xsl:call-template name="getString">
+        <xsl:with-param name="stringName" select="'Attention'"/>
+      </xsl:call-template>
+      <xsl:call-template name="getString">
+        <xsl:with-param name="stringName" select="'ColonSymbol'"/>
+      </xsl:call-template>
+      <xsl:text> </xsl:text>
+    </text:span>
+  </xsl:template>
+
+  <xsl:template match="*[@type = 'caution']" mode="note-label">
+    <text:span text:style-name="bold">
+      <xsl:call-template name="getString">
+        <xsl:with-param name="stringName" select="'Caution'"/>
+      </xsl:call-template>
+      <xsl:call-template name="getString">
+        <xsl:with-param name="stringName" select="'ColonSymbol'"/>
+      </xsl:call-template>
+      <xsl:text> </xsl:text>
+    </text:span>
+  </xsl:template>
+
+  <xsl:template match="*[@type = 'danger']" mode="note-label">
+    <text:span text:style-name="bold">
+      <xsl:call-template name="getString">
+        <xsl:with-param name="stringName" select="'Danger'"/>
+      </xsl:call-template>
+      <xsl:call-template name="getString">
+        <xsl:with-param name="stringName" select="'ColonSymbol'"/>
+      </xsl:call-template>
+      <xsl:text> </xsl:text>
+    </text:span>
+  </xsl:template>
+  
+  <xsl:template match="*[@type = 'trouble']" mode="note-label">
+    <text:span text:style-name="bold">
       <xsl:call-template name="getString">
         <xsl:with-param name="stringName" select="'Trouble'"/>
       </xsl:call-template>
@@ -1558,37 +1170,27 @@
         <xsl:with-param name="stringName" select="'ColonSymbol'"/>
       </xsl:call-template>
       <xsl:text> </xsl:text>
-      <text:span>
-        <xsl:apply-templates select="." mode="start-add-odt-revflags"/>
-        <xsl:apply-templates/>
-        <xsl:apply-templates select="." mode="end-add-odt-revflags"/>
-      </text:span>
-    </xsl:when>
-    <xsl:when test="@type='other'">
-        <xsl:attribute name="text:style-name">bold</xsl:attribute>
-        <xsl:choose>
-          <xsl:when test="@othertype and not(@othertype='')">
-            <xsl:value-of select="@othertype"/>
-          </xsl:when>
-          <xsl:otherwise>
-            <xsl:text>[other]</xsl:text>
-          </xsl:otherwise>
-        </xsl:choose>
-        <xsl:call-template name="getString">
-          <xsl:with-param name="stringName" select="'ColonSymbol'"/>
-        </xsl:call-template>
-        <xsl:text> </xsl:text>
-        <text:span>
-          <xsl:apply-templates select="." mode="start-add-odt-revflags"/>
-          <xsl:apply-templates/>
-          <xsl:apply-templates select="." mode="end-add-odt-revflags"/>
-        </text:span>
-    </xsl:when>
-    <xsl:otherwise>
-      <xsl:apply-templates/>
-    </xsl:otherwise>
-  </xsl:choose>
-</xsl:template>
+    </text:span>
+  </xsl:template>
+  
+  <xsl:template match="*[@type = 'other']" mode="note-label">
+    <text:span text:style-name="bold">
+      <xsl:choose>
+        <xsl:when test="@othertype and not(@othertype = '')">
+          <xsl:value-of select="@othertype"/>
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:text>[other]</xsl:text>
+        </xsl:otherwise>
+      </xsl:choose>
+      <xsl:call-template name="getString">
+        <xsl:with-param name="stringName" select="'ColonSymbol'"/>
+      </xsl:call-template>
+      <xsl:text> </xsl:text>
+    </text:span>
+  </xsl:template>
+  
+  <xsl:template match="*" mode="note-label" priority="-10"/>
 
 <xsl:template name="gen-txt1">
   <xsl:param name="txt"/>
@@ -1775,6 +1377,7 @@
   </xsl:choose>
 </xsl:template>
   
+<!-- TODO: Refactor this out -->
 <xsl:template name="gen_txt_content">
   <xsl:choose>
     <xsl:when test="ancestor::*[contains(@class,' topic/pre ')]">
@@ -1947,6 +1550,25 @@
       </xsl:choose>
     </text:span>
   </xsl:template>
+
+
+<!--
+<office:annotation>
+  <dc:creator>Jarno Elovirta</dc:creator>
+  <dc:date>2015-04-13T21:13:55.986404000</dc:date>
+  <text:list text:style-name="">
+    <text:list-item>
+      <text:p text:style-name="P14"><text:span text:style-name="T2">Comment and</text:span></text:p>
+    </text:list-item>
+    <text:list-item>
+      <text:p text:style-name="P14"><text:span text:style-name="T2"/></text:p>
+    </text:list-item>
+    <text:list-item>
+      <text:p text:style-name="P14"><text:span text:style-name="T2">Contents.</text:span></text:p>
+    </text:list-item>
+  </text:list>
+</office:annotation>  
+-->
 
 <xsl:template match="*[contains(@class,' topic/draft-comment ')]">
   <xsl:if test="$DRAFT='yes'">

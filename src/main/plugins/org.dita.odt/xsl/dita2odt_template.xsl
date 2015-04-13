@@ -169,7 +169,6 @@
       </xsl:document>
     </xsl:variable>
     <xsl:for-each select="$flat">
-      <!--xsl:call-template name="gen-list-table"/-->
       <office:scripts/>
       <office:automatic-styles>
         <xsl:if test="//*[contains(@class, ' topic/table ')]|//*[contains(@class, ' topic/simpletable ')]">
