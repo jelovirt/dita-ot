@@ -2,14 +2,6 @@
 <!-- This file is part of the DITA Open Toolkit project.
      See the accompanying license.txt file for applicable licenses. -->
 <!-- (c) Copyright IBM Corp. 2005, 2006 All Rights Reserved. -->
-<!-- 
-  <draw:frame text:anchor-type="as-char"
-  svg:width="6in" svg:height="3.2736in" draw:z-index="0">
-  <draw:image xlink:href="Pictures/100000000000027A0000015A35A01F85.jpg"
-  xlink:type="simple" xlink:show="embed" xlink:actuate="onLoad"/>
-  </draw:frame>
-
--->
 <xsl:stylesheet 
   xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
   xmlns:xs="http://www.w3.org/2001/XMLSchema"
@@ -82,7 +74,7 @@
           </xsl:otherwise>
         </xsl:choose>
       </xsl:variable>
-      <xsl:variable name="height">
+      <xsl:variable name="height" as="xs:double?">
         <xsl:choose>
           <xsl:when test="@height">
             <xsl:value-of select="dita-ot:to-inch(@height) * $scale"/>
@@ -93,7 +85,7 @@
           <xsl:otherwise/>
         </xsl:choose>
       </xsl:variable>
-      <xsl:variable name="width">
+      <xsl:variable name="width" as="xs:double?">
         <xsl:choose>
           <xsl:when test="@width">
             <xsl:value-of select="dita-ot:to-inch(@width) * $scale"/>
@@ -105,178 +97,53 @@
         </xsl:choose>
       </xsl:variable>
       <xsl:choose>
-        <!-- nested by body or list -->
-        <xsl:when test="parent::*[contains(@class, ' topic/body ')] or        parent::*[contains(@class, ' topic/li ')] or parent::*[contains(@class, ' topic/sli ')]">
-          <text:p>
-            <text:span>
-              <xsl:choose>
-                <!-- FIXME: this will never match due to parent xsl:when -->
-                <xsl:when test="parent::*[contains(@class, ' topic/fig ')][contains(@frame,'top ')]">
-                  <!-- NOP if there is already a break implied by a parent property -->
-                </xsl:when>
-                <xsl:otherwise>
-                  <xsl:choose>
-                    <xsl:when test="(@placement='break')">
-                      <xsl:apply-templates select="." mode="start-add-odt-flags"/>
-                    </xsl:when>
-                    <xsl:otherwise>
-                      <xsl:call-template name="flagcheck"/>
-                    </xsl:otherwise>
-                  </xsl:choose>
-                </xsl:otherwise>
-              </xsl:choose>
+        <xsl:when test="@placement = 'break'">
+          <xsl:call-template name="topic.p">
+            <xsl:with-param name="contents">
               <xsl:call-template name="draw_image">
                 <xsl:with-param name="height" select="$height"/>
                 <xsl:with-param name="width" select="$width"/>
               </xsl:call-template>
-              <xsl:apply-templates select="." mode="end-add-odt-flags"/>
-            </text:span>
-          </text:p>
+            </xsl:with-param>
+          </xsl:call-template>
         </xsl:when>
-        <!-- nested by entry -->
-        <xsl:when test="parent::*[contains(@class, ' topic/entry ')]">
-          <!-- create p tag -->
-          <text:p>
-            <text:span>
-              <xsl:choose>
-                <!-- FIXME: this will never match due to parent xsl:when -->
-                <xsl:when test="parent::*[contains(@class, ' topic/fig ')][contains(@frame,'top ')]">
-                  <!-- NOP if there is already a break implied by a parent property -->
-                </xsl:when>
-                <xsl:otherwise>
-                  <xsl:choose>
-                    <xsl:when test="(@placement='break')">
-                      <xsl:apply-templates select="." mode="start-add-odt-flags"/>
-                    </xsl:when>
-                    <xsl:otherwise>
-                      <xsl:call-template name="flagcheck"/>
-                    </xsl:otherwise>
-                  </xsl:choose>
-                </xsl:otherwise>
-              </xsl:choose>
-              <xsl:call-template name="draw_image">
-                <xsl:with-param name="height" select="$height"/>
-                <xsl:with-param name="width" select="$width"/>
-              </xsl:call-template>
-              <xsl:apply-templates select="." mode="end-add-odt-flags"/>
-            </text:span>
-          </text:p>
-        </xsl:when>
-        <!-- nested by stentry -->
-        <xsl:when test="parent::*[contains(@class, ' topic/stentry ')]">
-          <text:p>
-            <text:span>
-              <xsl:choose>
-                <!-- FIXME: this will never match due to parent xsl:when -->
-                <xsl:when test="parent::*[contains(@class, ' topic/fig ')][contains(@frame,'top ')]">
-                  <!-- NOP if there is already a break implied by a parent property -->
-                </xsl:when>
-                <xsl:otherwise>
-                  <xsl:choose>
-                    <xsl:when test="(@placement='break')">
-                      <xsl:apply-templates select="." mode="start-add-odt-flags"/>
-                    </xsl:when>
-                    <xsl:otherwise>
-                      <xsl:call-template name="flagcheck"/>
-                    </xsl:otherwise>
-                  </xsl:choose>
-                </xsl:otherwise>
-              </xsl:choose>
-              <xsl:call-template name="draw_image">
-                <xsl:with-param name="height" select="$height"/>
-                <xsl:with-param name="width" select="$width"/>
-              </xsl:call-template>
-              <xsl:apply-templates select="." mode="end-add-odt-flags"/>
-            </text:span>
-          </text:p>
-        </xsl:when>
-        <!-- nested by other tags -->
         <xsl:otherwise>
-          <text:span>
-            <xsl:choose>
-              <xsl:when test="parent::*[contains(@class, ' topic/fig ')][contains(@frame,'top ')]">
-                <!-- NOP if there is already a break implied by a parent property -->
-              </xsl:when>
-              <xsl:otherwise>
-                <xsl:choose>
-                  <xsl:when test="(@placement='break')">
-                    <xsl:apply-templates select="." mode="start-add-odt-flags"/>
-                  </xsl:when>
-                  <xsl:otherwise>
-                    <xsl:call-template name="flagcheck"/>
-                  </xsl:otherwise>
-                </xsl:choose>
-              </xsl:otherwise>
-            </xsl:choose>
-            <xsl:call-template name="draw_image">
-              <xsl:with-param name="height" select="$height"/>
-              <xsl:with-param name="width" select="$width"/>
-            </xsl:call-template>
-            <xsl:apply-templates select="." mode="end-add-odt-flags"/>
-          </text:span>
+          <xsl:apply-templates select="." mode="start-add-odt-flags"/>
+          <xsl:call-template name="draw_image">
+            <xsl:with-param name="height" select="$height"/>
+            <xsl:with-param name="width" select="$width"/>
+          </xsl:call-template>
+          <xsl:apply-templates select="." mode="end-add-odt-flags"/>    
         </xsl:otherwise>
       </xsl:choose>
     </xsl:if>
   </xsl:template>
   
+  <xsl:attribute-set name="image">
+    <xsl:attribute name="xlink:type">simple</xsl:attribute>
+    <xsl:attribute name="xlink:show">embed</xsl:attribute>
+    <xsl:attribute name="xlink:actuate">onLoad</xsl:attribute>
+  </xsl:attribute-set>
+  
   <xsl:template name="draw_image">
-    <xsl:param name="height"/>
-    <xsl:param name="width"/>
+    <xsl:param name="height" as="xs:double?"/>
+    <xsl:param name="width" as="xs:double?"/>
     <xsl:choose>
-      <xsl:when test="not(contains(@href,'://')) and ($height &gt; 0) and ($width &gt; 0)">
-        <draw:frame text:anchor-type="as-char" svg:y="-0.1in" svg:height="{$height}in">  
-          <xsl:attribute name="svg:width">
-            <xsl:choose>
-              <xsl:when test="$width &gt; 6">6</xsl:when>
-              <xsl:otherwise>
-                <xsl:value-of select="$width"/>
-              </xsl:otherwise>
-            </xsl:choose>
-            <xsl:text>in</xsl:text>
-          </xsl:attribute>
-          <draw:image xlink:href="{translate(@href, '\', '/')}">
-          </draw:image>
+      <xsl:when test="not(contains(@href,'://')) and ($height gt 0) and ($width gt 0)">
+        <draw:frame draw:style-name="fr{generate-id(.)}" text:anchor-type="{if (@placement = 'break') then 'paragraph' else 'as-char'}">
+          <xsl:attribute name="svg:height" select="concat($height, 'in')"/>
+          <xsl:attribute name="svg:width" select="concat(min(($width, 6)), 'in')"/>
+          <draw:image xlink:href="Pictures/{@href}" xsl:use-attribute-sets="image"/>
         </draw:frame>
       </xsl:when>
       <xsl:otherwise>
-        <text:a xlink:href="{translate(@href, '\', '/')}" xlink:type="simple">
+        <text:a xlink:href="{@href}" xlink:type="simple">
           <xsl:call-template name="gen-img-txt"/>
         </text:a>
       </xsl:otherwise>
     </xsl:choose>
   </xsl:template>
-  
-  <xsl:template name="draw_image_odt">
-    <xsl:param name="height"/>
-    <xsl:param name="width"/>
-    <xsl:param name="imgsrc"/>
-    <xsl:param name="alttext"/>
-    <xsl:choose>
-      <xsl:when test="not(contains($imgsrc,'://')) and ($height &gt; 0) and ($width &gt; 0)">
-        <draw:frame text:anchor-type="as-char" svg:y="-0.1in" svg:height="{$height}in">  
-          <xsl:attribute name="svg:width">
-            <xsl:choose>
-              <xsl:when test="$width &gt; 6">6</xsl:when>
-              <xsl:otherwise>
-                <xsl:value-of select="$width"/>
-              </xsl:otherwise>
-            </xsl:choose>
-            <xsl:text>in</xsl:text>
-          </xsl:attribute>
-          <draw:image xlink:href="{translate($imgsrc, '\', '/')}">
-          </draw:image>
-        </draw:frame>
-      </xsl:when>
-      <xsl:otherwise>
-        <text:span>
-          <xsl:call-template name="gen-img-txt">
-            <xsl:with-param name="alttext" select="$alttext"/>
-          </xsl:call-template>
-        </text:span>
-      </xsl:otherwise>
-    </xsl:choose>
-  </xsl:template>
-
+ 
   <xsl:template name="gen-img-txt">
     <xsl:param name="alttext"/>
     <xsl:choose>
@@ -303,5 +170,19 @@
      <xsl:otherwise/>
     </xsl:choose>
   </xsl:template>
+
+  <xsl:template name="create_graphic_styles">
+    <xsl:for-each select="//*[contains(@class, ' topic/image ')]">
+      <style:style style:name="fr{generate-id(.)}" style:family="graphic" style:parent-style-name="Graphics">
+        <style:graphic-properties style:vertical-pos="top" style:vertical-rel="baseline"
+          style:horizontal-pos="from-left" style:horizontal-rel="paragraph"
+          style:shadow="none" draw:shadow-opacity="100%"
+          style:mirror="none" fo:clip="rect(0mm, 0mm, 0mm, 0mm)"
+          draw:luminance="0%" draw:contrast="0%" draw:red="0%" draw:green="0%" draw:blue="0%" draw:gamma="100%"
+          draw:color-inversion="false" draw:image-opacity="100%" draw:color-mode="standard"/>
+      </style:style>  
+    </xsl:for-each>
+  </xsl:template>
+    
 
 </xsl:stylesheet>

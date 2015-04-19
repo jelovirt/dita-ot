@@ -175,6 +175,7 @@
           <xsl:call-template name="create_table_cell_styles"/>
         </xsl:if>
         <xsl:apply-templates select="//text() | //*[contains(@class, ' topic/state ')]" mode="create_hi_style"/>
+        <xsl:call-template name="create_graphic_styles"/>
         <xsl:call-template name="create_flagging_styles"/>
       </office:automatic-styles>
       <office:body>

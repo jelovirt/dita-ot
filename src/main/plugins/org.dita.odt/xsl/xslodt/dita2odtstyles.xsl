@@ -156,6 +156,11 @@
           style:font-name-complex="Tahoma" style:font-size-complex="14pt"/>
       </style:style>
       
+      <style:style style:name="Graphics" style:family="graphic">
+        <style:graphic-properties text:anchor-type="paragraph" svg:x="0mm" svg:y="0mm" style:wrap="dynamic" style:number-wrapped-paragraphs="no-limit" style:wrap-contour="false" style:vertical-pos="top"
+          style:vertical-rel="paragraph" style:horizontal-pos="center" style:horizontal-rel="paragraph"/>
+      </style:style>
+      
       <!-- Table Style -->
       <!-- 
       <style:style style:name="table_style" style:family="table">

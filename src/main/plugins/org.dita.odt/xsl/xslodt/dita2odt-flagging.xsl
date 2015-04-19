@@ -8,7 +8,10 @@
   xmlns:style="urn:oasis:names:tc:opendocument:xmlns:style:1.0"
   xmlns:fo="urn:oasis:names:tc:opendocument:xmlns:xsl-fo-compatible:1.0"
   xmlns:text="urn:oasis:names:tc:opendocument:xmlns:text:1.0"
+  xmlns:draw="urn:oasis:names:tc:opendocument:xmlns:drawing:1.0"
   xmlns:table="urn:oasis:names:tc:opendocument:xmlns:table:1.0" 
+  xmlns:svg="urn:oasis:names:tc:opendocument:xmlns:svg-compatible:1.0"
+  xmlns:xlink="http://www.w3.org/1999/xlink"
   xmlns:ditamsg="http://dita-ot.sourceforge.net/ns/200704/ditamsg"
   xmlns:dita-ot="http://dita-ot.sourceforge.net/ns/201007/dita-ot"
   xmlns:styleUtils="org.dita.dost.util.StyleUtils" 
@@ -600,8 +603,35 @@
     </xsl:choose>
   </xsl:template>
   
-  
-  
+  <xsl:template name="draw_image_odt">
+    <xsl:param name="height"/>
+    <xsl:param name="width"/>
+    <xsl:param name="imgsrc"/>
+    <xsl:param name="alttext"/>
+    <xsl:choose>
+      <xsl:when test="not(contains($imgsrc,'://')) and ($height &gt; 0) and ($width &gt; 0)">
+        <draw:frame text:anchor-type="as-char" svg:height="{$height}in">
+          <xsl:attribute name="svg:width">
+            <xsl:choose>
+              <xsl:when test="$width &gt; 6">6</xsl:when>
+              <xsl:otherwise>
+                <xsl:value-of select="$width"/>
+              </xsl:otherwise>
+            </xsl:choose>
+            <xsl:text>in</xsl:text>
+          </xsl:attribute>
+          <draw:image xlink:href="Pictures/{$imgsrc}" xsl:use-attribute-sets="image"/>
+        </draw:frame>
+      </xsl:when>
+      <xsl:otherwise>
+        <text:span>
+          <xsl:call-template name="gen-img-txt">
+            <xsl:with-param name="alttext" select="$alttext"/>
+          </xsl:call-template>
+        </text:span>
+      </xsl:otherwise>
+    </xsl:choose>
+  </xsl:template>
   
   <xsl:template match="prop" mode="start-flagit">  
     <xsl:choose> <!-- Ensure there's an image to get, otherwise don't insert anything -->

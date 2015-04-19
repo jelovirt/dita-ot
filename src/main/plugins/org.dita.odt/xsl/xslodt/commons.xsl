@@ -112,6 +112,7 @@
   
   <!-- Flatten -->
   
+  <!-- Check whether element is a container block -->
   <xsl:function name="dita-ot:is-container-block" as="xs:boolean">
     <xsl:param name="element" as="node()"/>
     <xsl:variable name="class" select="$element/@class" as="xs:string?"/>
@@ -147,6 +148,7 @@
     </xsl:choose>
   </xsl:function>
   
+  <!-- Check whether element is a container or leaf block -->
   <xsl:function name="dita-ot:is-block" as="xs:boolean">
     <xsl:param name="element" as="node()"/>
     <xsl:variable name="class" select="$element/@class" as="xs:string?"/>
