@@ -1026,7 +1026,7 @@
   </xsl:template>
   
   <xsl:template name="create_note_content">
-    <xsl:variable name="prefix" as="node()">
+    <xsl:variable name="prefix" as="node()*">
       <xsl:apply-templates select="." mode="note-label"/>
     </xsl:variable>
     <xsl:apply-templates select="." mode="start-add-odt-revflags"/>
