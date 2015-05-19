@@ -23,12 +23,19 @@
   </target>
 
   <target name="clean_output_tempdir" unless="$flag">
-    <delete failonerror="yes" includeemptydirs="true" dir="${odt.output.tempdir}" />
+    <!--delete failonerror="yes" includeemptydirs="true" dir="${odt.output.tempdir}" /-->
   </target>
 
   <target name="dita2odt"
-    depends="dita2odt.init, build-init, preprocess, odt.image-metadata, set_odt_output_tempdir, dita.odt.package.topic, dita.odt.package.map, move-output-file, clean_output_tempdir">
-  </target>
+          depends="dita2odt.init,
+                   build-init,
+                   preprocess,
+                   odt.image-metadata,
+                   set_odt_output_tempdir,
+                   dita.odt.package.topic,
+                   dita.odt.package.map,
+                   move-output-file,
+                   clean_output_tempdir"/>
 
   <target name="dita2odt.init">
     <property name="odt.suffix" value=".odt" />
@@ -48,18 +55,18 @@
   <target name="map2odt" unless="noMap">
     <antcall target="dita.map.odt">
       <param name="input"
-        value="${dita.temp.dir}${file.separator}${user.input.file}" />
+        value="${dita.temp.dir}/${user.input.file}" />
       <param name="output"
-        value="${odt.output.tempdir}${file.separator}content.xml" />
+        value="${odt.output.tempdir}/content.xml" />
     </antcall>
   </target>
   	
   <target name="topic2odt" if="noMap">
     <antcall target="dita.topic.odt">
       <param name="input"
-        value="${dita.temp.dir}${file.separator}${user.input.file}" />
+        value="${dita.temp.dir}/${user.input.file}" />
       <param name="output"
-        value="${odt.output.tempdir}${file.separator}content.xml" />
+        value="${odt.output.tempdir}/content.xml" />
     </antcall>
   </target>
 
@@ -73,12 +80,12 @@
     </condition>
     <dirname file="${output}" property="dita.odt.outputdir" />
   	<!--create topic merge file -->  	
-  	<dirname property="dita.temp.dir.fullpath" file="${dita.temp.dir}${file.separator}dummy.file"/>
+  	<dirname property="dita.temp.dir.fullpath" file="${dita.temp.dir}/dummy.file"/>
   	<pipeline message="topicmerge"
-              inputmap="${dita.temp.dir.fullpath}${file.separator}${user.input.file}"
+              inputmap="${dita.temp.dir.fullpath}/${user.input.file}"
               tempdir="${dita.temp.dir.fullpath}">
   	  <module class="org.dita.dost.module.TopicMergeModule">
-        <param name="output" location="${dita.temp.dir.fullpath}${file.separator}${dita.map.filename.root}_MERGED.xml"/>
+        <param name="output" location="${dita.temp.dir.fullpath}/${dita.map.filename.root}_MERGED.xml"/>
   	    <param name="style" location="${dita.plugin.org.dita.odt.dir}/xsl/xslodt/common/topicmerge.xsl"/>
   	  </module>
   	</pipeline>
@@ -86,7 +93,7 @@
   	<!--Change path of ${dita.input.valfile} into url-->
   	<makeurl file="${dita.input.valfile}" property="dita.input.valfile.url" validate="no"/>
     <xslt basedir="${dita.temp.dir}"
-          in="${dita.temp.dir}${file.separator}${dita.map.filename.root}_MERGED.xml"
+          in="${dita.temp.dir}/${dita.map.filename.root}_MERGED.xml"
           classpathref="dost.class.path"
           out="${output}" style="${args.xsl}"
           filenameparameter="FILENAME"
@@ -130,8 +137,8 @@
   </target>
       	
   <target name="dita.topic.odt.stylesfile" description="Build odt styles.xml file" if="noMap">
-    <xslt in="${dita.temp.dir}${file.separator}${user.input.file}"
-          out="${odt.output.tempdir}${file.separator}styles.xml"
+    <xslt in="${dita.temp.dir}/${user.input.file}"
+          out="${odt.output.tempdir}/styles.xml"
           classpathref="dost.class.path"
           style="${dita.plugin.org.dita.odt.dir}/xsl/xslodt/dita2odtstyles.xsl">
       <xmlcatalog refid="dita.catalog"/>
@@ -139,8 +146,8 @@
   </target>
 	
   <target name="dita.map.odt.stylesfile" description="Build odt styles.xml file" unless="noMap">
-    <xslt in="${dita.temp.dir}${file.separator}${dita.map.filename.root}_MERGED.xml"
-          out="${odt.output.tempdir}${file.separator}styles.xml"
+    <xslt in="${dita.temp.dir}/${dita.map.filename.root}_MERGED.xml"
+          out="${odt.output.tempdir}/styles.xml"
           classpathref="dost.class.path"
           style="${dita.plugin.org.dita.odt.dir}/xsl/xslodt/dita2odtstyles.xsl">
       <xmlcatalog refid="dita.catalog"/>
@@ -148,12 +155,21 @@
   </target>
 	
   <target name="dita.out.odt.manifest.file" description="Build odt manifest.xml file">
-    <xslt in="${dita.temp.dir}${file.separator}${user.input.file}"
-          out="${odt.output.tempdir}${file.separator}META-INF${file.separator}manifest.xml"
+    <makeurl property="job.uri" file="${dita.temp.dir}/.job.xml"/>
+    <xslt in="${dita.temp.dir}/${user.input.file}"
+          out="${odt.output.tempdir}/META-INF/manifest.xml"
           classpathref="dost.class.path"
           style="${dita.plugin.org.dita.odt.dir}/xsl/xslodt/dita2odtmanifest.xsl">
+      <param name="job-url" expression="${job.uri}"/>
       <xmlcatalog refid="dita.catalog"/>
     </xslt>
+    <xslt in="${dita.temp.dir}/${user.input.file}"
+          out="${odt.output.tempdir}/manifest.rdf"
+          classpathref="dost.class.path"
+          style="${dita.plugin.org.dita.odt.dir}/xsl/xslodt/dita2odtmanifest-rdf.xsl">
+      <xmlcatalog refid="dita.catalog"/>
+    </xslt>
+    <echo file="${odt.output.tempdir}/mimetype">application/vnd.oasis.opendocument.text</echo>
    </target>
 
    <target name="dita.odt.package.topic" if="noMap" depends="topic2odt, dita.topic.odt.stylesfile, dita.out.odt.manifest.file"
