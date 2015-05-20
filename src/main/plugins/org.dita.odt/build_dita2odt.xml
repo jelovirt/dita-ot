@@ -33,7 +33,6 @@
                    odt.image-metadata,
                    set_odt_output_tempdir,
                    dita.odt.package.topic,
-                   dita.odt.package.map,
                    move-output-file,
                    clean_output_tempdir"/>
 
@@ -81,7 +80,7 @@
     <dirname file="${output}" property="dita.odt.outputdir" />
   	<!--create topic merge file -->  	
   	<dirname property="dita.temp.dir.fullpath" file="${dita.temp.dir}/dummy.file"/>
-  	<pipeline message="topicmerge"
+    <pipeline message="topicmerge" taskname="topic-merge"
               inputmap="${dita.temp.dir.fullpath}/${user.input.file}"
               tempdir="${dita.temp.dir.fullpath}">
   	  <module class="org.dita.dost.module.TopicMergeModule">
@@ -136,8 +135,14 @@
     </xslt>
   </target>
       	
-  <target name="dita.topic.odt.stylesfile" description="Build odt styles.xml file" if="noMap">
-    <xslt in="${dita.temp.dir}/${user.input.file}"
+  <target name="dita.topic.odt.stylesfile" description="Build odt styles.xml file">
+    <local name="input.file"/>
+    <condition property="input.file"
+               value="${dita.temp.dir}/${user.input.file}"
+               else="${dita.temp.dir}/${dita.map.filename.root}_MERGED.xml">
+      <isset property="noMap"/>
+    </condition>
+    <xslt in="${input.file}"
           out="${odt.output.tempdir}/styles.xml"
           classpathref="dost.class.path"
           style="${dita.plugin.org.dita.odt.dir}/xsl/xslodt/dita2odtstyles.xsl">
@@ -145,6 +150,7 @@
     </xslt>
   </target>
 	
+	<!-- Deprecated since 2.1 -->
   <target name="dita.map.odt.stylesfile" description="Build odt styles.xml file" unless="noMap">
     <xslt in="${dita.temp.dir}/${dita.map.filename.root}_MERGED.xml"
           out="${odt.output.tempdir}/styles.xml"
@@ -163,6 +169,9 @@
       <param name="job-url" expression="${job.uri}"/>
       <xmlcatalog refid="dita.catalog"/>
     </xslt>
+  </target>  
+    
+  <target name="dita.out.odt.manifest-rdf.file" description="Build odt manifest.rdf file">
     <xslt in="${dita.temp.dir}/${user.input.file}"
           out="${odt.output.tempdir}/manifest.rdf"
           classpathref="dost.class.path"
@@ -172,14 +181,20 @@
     <echo file="${odt.output.tempdir}/mimetype">application/vnd.oasis.opendocument.text</echo>
    </target>
 
-   <target name="dita.odt.package.topic" if="noMap" depends="topic2odt, dita.topic.odt.stylesfile, dita.out.odt.manifest.file"
+   <target name="dita.odt.package.topic" depends="topic2odt, map2odt, dita.topic.odt.stylesfile, dita.out.odt.manifest.file, dita.out.odt.manifest-rdf.file"
            description="Package into odt file">
-     <zip destfile="${odt.output.tempdir}/${dita.topic.filename.root}${odt.suffix}"
+     <condition property="outputFile"
+                value="${odt.output.tempdir}/${dita.topic.filename.root}${odt.suffix}"
+                else="${odt.output.tempdir}/${dita.map.filename.root}${odt.suffix}">
+       <isset property="noMap"/>
+     </condition>
+     <zip destfile="${outputFile}"
           basedir="${odt.output.tempdir}"
 	   		  excludes="**/*.list, **/*.log, **/*.temp, **/*.properties, **/*.odt">
 	   	</zip>
    </target>
-   <target name="dita.odt.package.map" unless="noMap" depends="map2odt, dita.map.odt.stylesfile, dita.out.odt.manifest.file"
+   <!-- Deprecated since 2.1 -->
+   <target name="dita.odt.package.map" unless="noMap" depends="map2odt, dita.map.odt.stylesfile, dita.out.odt.manifest.file, dita.out.odt.manifest-rdf.file"
           description="Package into odt file">
      <zip destfile="${odt.output.tempdir}/${dita.map.filename.root}${odt.suffix}"
           basedir="${odt.output.tempdir}"
