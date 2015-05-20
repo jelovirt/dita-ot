@@ -119,7 +119,7 @@
     <xsl:choose>
     <xsl:when test="exists($class)">
       <xsl:sequence select="contains($class, ' topic/body ') or
-                            contains($class, ' topic/pre ') or
+                            (:contains($class, ' topic/pre ') or:)
                             contains($class, ' topic/note ') or
                             contains($class, ' topic/fig ') or
                             contains($class, ' topic/li ') or

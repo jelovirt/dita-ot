@@ -60,8 +60,11 @@
   <xsl:template name="create_toc">
     <text:table-of-content text:style-name="Sect1" text:protected="true" text:name="Table of Contents1">
       <text:table-of-content-source text:outline-level="10" text:use-index-marks="false" text:use-index-source-styles="true">
-        <text:index-title-template text:style-name="Contents_20_Heading_TOC">Table of
-          Contents</text:index-title-template>
+        <text:index-title-template text:style-name="Contents_20_Heading_TOC">
+          <xsl:call-template name="getVariable">
+            <xsl:with-param name="id">Table of Contents</xsl:with-param>
+          </xsl:call-template>
+        </text:index-title-template>
         <text:table-of-content-entry-template text:outline-level="1" text:style-name="Contents_20_1_a">
           <text:index-entry-link-start/>
           <text:index-entry-chapter/>
@@ -155,7 +158,11 @@
       </text:table-of-content-source>
       <text:index-body>
         <text:index-title text:style-name="Sect1" text:name="Table of Contents1_Head">
-          <text:p text:style-name="Contents_20_Heading">Table of Contents</text:p>
+          <text:p text:style-name="Contents_20_Heading">
+            <xsl:call-template name="getVariable">
+              <xsl:with-param name="id">Table of Contents</xsl:with-param>
+            </xsl:call-template>
+          </text:p>
         </text:index-title>
         <xsl:choose>
           <xsl:when test="$map and not($map = '')">
@@ -203,14 +210,12 @@
         <text:a xlink:type="simple" text:style-name="underline_none" xlink:href="{concat($href, '')}">
           <xsl:value-of select="$navtitle"/>
           <text:tab/>
-          <text:bookmark-ref text:reference-format="page" text:ref-name="{substring-after($href, '#')}">
-          </text:bookmark-ref>
+          <text:bookmark-ref text:reference-format="page" text:ref-name="{substring-after($href, '#')}"/>
         </text:a>
       </text:p>
     </xsl:if>
     <xsl:apply-templates select="*[contains(@class, ' map/topicref ')]" mode="toc"/>
   </xsl:template>
-  
   
   <xsl:template match="*[contains(@class, ' topic/topic ')]" mode="toc">
     <xsl:if test="*[contains(@class, ' topic/title ')]">
@@ -239,8 +244,7 @@
         <text:a xlink:type="simple" text:style-name="underline_none" xlink:href="{concat($href, '')}">
           <xsl:value-of select="$title"/>
           <text:tab/>
-          <text:bookmark-ref text:reference-format="page" text:ref-name="{substring-after($href, '#')}">
-          </text:bookmark-ref>
+          <text:bookmark-ref text:reference-format="page" text:ref-name="{substring-after($href, '#')}"/>
         </text:a>
       </text:p>
     </xsl:if>

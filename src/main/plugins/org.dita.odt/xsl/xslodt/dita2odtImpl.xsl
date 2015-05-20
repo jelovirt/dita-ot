@@ -1254,22 +1254,28 @@
 
 <xsl:template name="gen-txt">
   <xsl:param name="txt"/>
-  <!-- avoid duplication. -->
-  <xsl:param name="isFirst" select="true()"/>
-  <xsl:variable name="newline" select="'&#xA;'"/>
-  <xsl:choose>
-    <xsl:when test="contains($txt,$newline)">
-      <xsl:value-of select="substring-before($txt,$newline)"/>
+  <xsl:analyze-string select="." regex="\n">
+    <xsl:matching-substring>
       <text:line-break/>
-      <xsl:call-template name="gen-txt">
-        <xsl:with-param name="txt" select="substring-after($txt,$newline)"/>
-        <xsl:with-param name="isFirst" select="false()"/>
-      </xsl:call-template>
-    </xsl:when>
-    <xsl:otherwise>
-        <xsl:value-of select="$txt"/>
-    </xsl:otherwise>
-  </xsl:choose>
+    </xsl:matching-substring>
+    <xsl:non-matching-substring>
+      <xsl:analyze-string select="." regex="\s+">
+        <xsl:matching-substring>
+          <xsl:choose>
+            <xsl:when test="string-length(.) eq 1">
+              <xsl:text> </xsl:text>    
+            </xsl:when>
+            <xsl:otherwise>
+              <text:s text:c="{string-length(.)}"/>
+            </xsl:otherwise>
+          </xsl:choose>
+        </xsl:matching-substring>
+        <xsl:non-matching-substring>
+          <xsl:value-of select="."/>
+        </xsl:non-matching-substring>
+      </xsl:analyze-string>
+    </xsl:non-matching-substring>
+  </xsl:analyze-string>
 </xsl:template>
 
 <xsl:template match="text()">
