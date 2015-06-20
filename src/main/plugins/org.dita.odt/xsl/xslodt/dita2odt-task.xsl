@@ -108,9 +108,7 @@
     </xsl:apply-templates>
     <xsl:apply-templates select="*[contains(@class,' task/stepsection ')]"/>
     <text:list text:style-name="{$list-type}">
-      <xsl:apply-templates select="*[contains(@class,' task/step ')]">
-        <xsl:with-param name="start-value" select="position()" as="xs:integer"/>
-      </xsl:apply-templates>
+      <xsl:apply-templates select="*[contains(@class,' task/step ')]"/>
     </text:list>
   </xsl:template>
 
@@ -146,7 +144,7 @@
   </xsl:template>
 
   <xsl:template match="*[contains(@class, ' task/step ')]">
-    <xsl:param name="start-value" as="xs:integer">0</xsl:param>  
+    <xsl:param name="start-value" as="xs:integer" select="position()"/>  
     <text:list-item text:start-value="{$start-value}">
       <xsl:apply-templates/>
     </text:list-item>
@@ -235,19 +233,6 @@
       <xsl:apply-templates mode="emit-cell-style"/>
     </table:table-row>
   </xsl:template>
-
-  <!-- for choption in choice table. -->
-  <!--xsl:template match="*[contains(@class, ' task/choption ')]" mode="emit-cell-style">
-    <table:table-cell office:value-type="string">
-      <xsl:call-template name="create_style_stable"/>
-      <text:p>
-        <text:span text:style-name="bold">
-          <xsl:call-template name="gen_txt_content"/>
-        </text:span>
-      </text:p>
-      <xsl:apply-templates select="*[@class]"/>
-    </table:table-cell>
-  </xsl:template-->
     
   <xsl:template match="*[contains(@class, ' task/cmd ')]">
     <text:p xsl:use-attribute-sets="p">
