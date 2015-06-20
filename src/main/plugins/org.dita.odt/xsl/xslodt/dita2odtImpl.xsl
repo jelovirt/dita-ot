@@ -201,7 +201,7 @@
   <!-- =========== block things ============ -->
 
   <xsl:attribute-set name="p">
-    <xsl:attribute name="text:style-name">indent_paragraph_style</xsl:attribute>
+    <xsl:attribute name="text:style-name">Standard</xsl:attribute>
   </xsl:attribute-set>
 
   <xsl:template match="*[contains(@class,' topic/p ')]" name="topic.p">
