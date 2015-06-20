@@ -260,13 +260,13 @@
                            (string-length($ancestorlang) = 2 and contains($ancestorlang,'hu')) )">
             <xsl:value-of select="$fig-count-actual"/>
             <xsl:text>. </xsl:text>
-            <xsl:call-template name="getString">
-              <xsl:with-param name="stringName" select="'Figure'"/>
+            <xsl:call-template name="getVariable">
+              <xsl:with-param name="id" select="'Figure'"/>
             </xsl:call-template><xsl:text> </xsl:text>
           </xsl:when>
           <xsl:otherwise>
-            <xsl:call-template name="getString">
-              <xsl:with-param name="stringName" select="'Figure'"/>
+            <xsl:call-template name="getVariable">
+              <xsl:with-param name="id" select="'Figure'"/>
             </xsl:call-template>
             <xsl:text> </xsl:text>
             <xsl:value-of select="$fig-count-actual"/>
@@ -533,12 +533,12 @@
           <xsl:value-of select="$trueStyleName"/>
         </xsl:attribute>
       </xsl:if>
-      <xsl:call-template name="getString">
-        <xsl:with-param name="stringName" select="'OpenQuote'"/>
+      <xsl:call-template name="getVariable">
+        <xsl:with-param name="id" select="'OpenQuote'"/>
       </xsl:call-template>
       <xsl:apply-templates/>
-      <xsl:call-template name="getString">
-        <xsl:with-param name="stringName" select="'CloseQuote'"/>
+      <xsl:call-template name="getVariable">
+        <xsl:with-param name="id" select="'CloseQuote'"/>
       </xsl:call-template>
     </text:span>
   </xsl:template>
@@ -1052,11 +1052,11 @@
   
   <xsl:template match="*[@type = 'note' or empty(@type)]" mode="note-label">
     <text:span text:style-name="bold">
-      <xsl:call-template name="getString">
-        <xsl:with-param name="stringName" select="'Note'"/>
+      <xsl:call-template name="getVariable">
+        <xsl:with-param name="id" select="'Note'"/>
       </xsl:call-template>
-      <xsl:call-template name="getString">
-        <xsl:with-param name="stringName" select="'ColonSymbol'"/>
+      <xsl:call-template name="getVariable">
+        <xsl:with-param name="id" select="'ColonSymbol'"/>
       </xsl:call-template>
       <xsl:text> </xsl:text>
     </text:span>
@@ -1067,11 +1067,11 @@
 
   <xsl:template match="*[@type = 'tip']" mode="note-label">
     <text:span text:style-name="bold">
-      <xsl:call-template name="getString">
-        <xsl:with-param name="stringName" select="'Tip'"/>
+      <xsl:call-template name="getVariable">
+        <xsl:with-param name="id" select="'Tip'"/>
       </xsl:call-template>
-      <xsl:call-template name="getString">
-        <xsl:with-param name="stringName" select="'ColonSymbol'"/>
+      <xsl:call-template name="getVariable">
+        <xsl:with-param name="id" select="'ColonSymbol'"/>
       </xsl:call-template>
       <xsl:text> </xsl:text>
     </text:span>
@@ -1079,11 +1079,11 @@
   
   <xsl:template match="*[@type = 'fastpath']" mode="note-label">
     <text:span text:style-name="bold">
-      <xsl:call-template name="getString">
-        <xsl:with-param name="stringName" select="'Fastpath'"/>
+      <xsl:call-template name="getVariable">
+        <xsl:with-param name="id" select="'Fastpath'"/>
       </xsl:call-template>
-      <xsl:call-template name="getString">
-        <xsl:with-param name="stringName" select="'ColonSymbol'"/>
+      <xsl:call-template name="getVariable">
+        <xsl:with-param name="id" select="'ColonSymbol'"/>
       </xsl:call-template>
       <xsl:text> </xsl:text>
     </text:span>
@@ -1091,11 +1091,11 @@
 
   <xsl:template match="*[@type = 'important']" mode="note-label">
     <text:span text:style-name="bold">
-      <xsl:call-template name="getString">
-        <xsl:with-param name="stringName" select="'Important'"/>
+      <xsl:call-template name="getVariable">
+        <xsl:with-param name="id" select="'Important'"/>
       </xsl:call-template>
-      <xsl:call-template name="getString">
-        <xsl:with-param name="stringName" select="'ColonSymbol'"/>
+      <xsl:call-template name="getVariable">
+        <xsl:with-param name="id" select="'ColonSymbol'"/>
       </xsl:call-template>
       <xsl:text> </xsl:text>
     </text:span>
@@ -1103,11 +1103,11 @@
   
   <xsl:template match="*[@type = 'remember']" mode="note-label">
     <text:span text:style-name="bold">
-      <xsl:call-template name="getString">
-        <xsl:with-param name="stringName" select="'Remember'"/>
+      <xsl:call-template name="getVariable">
+        <xsl:with-param name="id" select="'Remember'"/>
       </xsl:call-template>
-      <xsl:call-template name="getString">
-        <xsl:with-param name="stringName" select="'ColonSymbol'"/>
+      <xsl:call-template name="getVariable">
+        <xsl:with-param name="id" select="'ColonSymbol'"/>
       </xsl:call-template>
       <xsl:text> </xsl:text>
     </text:span>
@@ -1115,11 +1115,11 @@
   
   <xsl:template match="*[@type = 'restriction']" mode="note-label">
     <text:span text:style-name="bold">
-      <xsl:call-template name="getString">
-        <xsl:with-param name="stringName" select="'Restriction'"/>
+      <xsl:call-template name="getVariable">
+        <xsl:with-param name="id" select="'Restriction'"/>
       </xsl:call-template>
-      <xsl:call-template name="getString">
-        <xsl:with-param name="stringName" select="'ColonSymbol'"/>
+      <xsl:call-template name="getVariable">
+        <xsl:with-param name="id" select="'ColonSymbol'"/>
       </xsl:call-template>
       <xsl:text> </xsl:text>
     </text:span>
@@ -1127,11 +1127,11 @@
   
   <xsl:template match="*[@type = 'attention']" mode="note-label">
     <text:span text:style-name="bold">
-      <xsl:call-template name="getString">
-        <xsl:with-param name="stringName" select="'Attention'"/>
+      <xsl:call-template name="getVariable">
+        <xsl:with-param name="id" select="'Attention'"/>
       </xsl:call-template>
-      <xsl:call-template name="getString">
-        <xsl:with-param name="stringName" select="'ColonSymbol'"/>
+      <xsl:call-template name="getVariable">
+        <xsl:with-param name="id" select="'ColonSymbol'"/>
       </xsl:call-template>
       <xsl:text> </xsl:text>
     </text:span>
@@ -1139,11 +1139,11 @@
 
   <xsl:template match="*[@type = 'caution']" mode="note-label">
     <text:span text:style-name="bold">
-      <xsl:call-template name="getString">
-        <xsl:with-param name="stringName" select="'Caution'"/>
+      <xsl:call-template name="getVariable">
+        <xsl:with-param name="id" select="'Caution'"/>
       </xsl:call-template>
-      <xsl:call-template name="getString">
-        <xsl:with-param name="stringName" select="'ColonSymbol'"/>
+      <xsl:call-template name="getVariable">
+        <xsl:with-param name="id" select="'ColonSymbol'"/>
       </xsl:call-template>
       <xsl:text> </xsl:text>
     </text:span>
@@ -1151,11 +1151,11 @@
 
   <xsl:template match="*[@type = 'danger']" mode="note-label">
     <text:span text:style-name="bold">
-      <xsl:call-template name="getString">
-        <xsl:with-param name="stringName" select="'Danger'"/>
+      <xsl:call-template name="getVariable">
+        <xsl:with-param name="id" select="'Danger'"/>
       </xsl:call-template>
-      <xsl:call-template name="getString">
-        <xsl:with-param name="stringName" select="'ColonSymbol'"/>
+      <xsl:call-template name="getVariable">
+        <xsl:with-param name="id" select="'ColonSymbol'"/>
       </xsl:call-template>
       <xsl:text> </xsl:text>
     </text:span>
@@ -1163,11 +1163,11 @@
   
   <xsl:template match="*[@type = 'trouble']" mode="note-label">
     <text:span text:style-name="bold">
-      <xsl:call-template name="getString">
-        <xsl:with-param name="stringName" select="'Trouble'"/>
+      <xsl:call-template name="getVariable">
+        <xsl:with-param name="id" select="'Trouble'"/>
       </xsl:call-template>
-      <xsl:call-template name="getString">
-        <xsl:with-param name="stringName" select="'ColonSymbol'"/>
+      <xsl:call-template name="getVariable">
+        <xsl:with-param name="id" select="'ColonSymbol'"/>
       </xsl:call-template>
       <xsl:text> </xsl:text>
     </text:span>
@@ -1183,8 +1183,8 @@
           <xsl:text>[other]</xsl:text>
         </xsl:otherwise>
       </xsl:choose>
-      <xsl:call-template name="getString">
-        <xsl:with-param name="stringName" select="'ColonSymbol'"/>
+      <xsl:call-template name="getVariable">
+        <xsl:with-param name="id" select="'ColonSymbol'"/>
       </xsl:call-template>
       <xsl:text> </xsl:text>
     </text:span>
@@ -1588,11 +1588,11 @@
           <text:span>
             <xsl:apply-templates select="." mode="start-add-odt-flags"/>
             <text:span text:style-name="bold">
-              <xsl:call-template name="getString">
-                <xsl:with-param name="stringName" select="'Draft comment'"/>
+              <xsl:call-template name="getVariable">
+                <xsl:with-param name="id" select="'Draft comment'"/>
               </xsl:call-template>
-              <xsl:call-template name="getString">
-                <xsl:with-param name="stringName" select="'ColonSymbol'"/>
+              <xsl:call-template name="getVariable">
+                <xsl:with-param name="id" select="'ColonSymbol'"/>
               </xsl:call-template>
               <xsl:if test="@author">
                 <xsl:value-of select="@author"/><xsl:text> </xsl:text>
@@ -1625,11 +1625,11 @@
                 <text:span>
                         <xsl:apply-templates select="." mode="start-add-odt-flags"/>
                   <text:span text:style-name="bold">
-                    <xsl:call-template name="getString">
-                      <xsl:with-param name="stringName" select="'Draft comment'"/>
+                    <xsl:call-template name="getVariable">
+                      <xsl:with-param name="id" select="'Draft comment'"/>
                     </xsl:call-template>
-                    <xsl:call-template name="getString">
-                      <xsl:with-param name="stringName" select="'ColonSymbol'"/>
+                    <xsl:call-template name="getVariable">
+                      <xsl:with-param name="id" select="'ColonSymbol'"/>
                     </xsl:call-template>
                     <xsl:if test="@author">
                       <xsl:value-of select="@author"/><xsl:text> </xsl:text>
@@ -1651,11 +1651,11 @@
               <text:span>
                     <xsl:apply-templates select="." mode="start-add-odt-flags"/>
                 <text:span text:style-name="bold">
-                  <xsl:call-template name="getString">
-                    <xsl:with-param name="stringName" select="'Draft comment'"/>
+                  <xsl:call-template name="getVariable">
+                    <xsl:with-param name="id" select="'Draft comment'"/>
                   </xsl:call-template>
-                  <xsl:call-template name="getString">
-                    <xsl:with-param name="stringName" select="'ColonSymbol'"/>
+                  <xsl:call-template name="getVariable">
+                    <xsl:with-param name="id" select="'ColonSymbol'"/>
                   </xsl:call-template>
                   <xsl:if test="@author">
                     <xsl:value-of select="@author"/><xsl:text> </xsl:text>
@@ -1685,11 +1685,11 @@
                 <text:span>
                         <xsl:apply-templates select="." mode="start-add-odt-flags"/>
                   <text:span text:style-name="bold">
-                    <xsl:call-template name="getString">
-                      <xsl:with-param name="stringName" select="'Draft comment'"/>
+                    <xsl:call-template name="getVariable">
+                      <xsl:with-param name="id" select="'Draft comment'"/>
                     </xsl:call-template>
-                    <xsl:call-template name="getString">
-                      <xsl:with-param name="stringName" select="'ColonSymbol'"/>
+                    <xsl:call-template name="getVariable">
+                      <xsl:with-param name="id" select="'ColonSymbol'"/>
                     </xsl:call-template>
                     <xsl:if test="@author">
                       <xsl:value-of select="@author"/><xsl:text> </xsl:text>
@@ -1711,11 +1711,11 @@
               <text:span>
                     <xsl:apply-templates select="." mode="start-add-odt-flags"/>
                 <text:span text:style-name="bold">
-                  <xsl:call-template name="getString">
-                    <xsl:with-param name="stringName" select="'Draft comment'"/>
+                  <xsl:call-template name="getVariable">
+                    <xsl:with-param name="id" select="'Draft comment'"/>
                   </xsl:call-template>
-                  <xsl:call-template name="getString">
-                    <xsl:with-param name="stringName" select="'ColonSymbol'"/>
+                  <xsl:call-template name="getVariable">
+                    <xsl:with-param name="id" select="'ColonSymbol'"/>
                   </xsl:call-template>
                   <xsl:if test="@author">
                     <xsl:value-of select="@author"/><xsl:text> </xsl:text>
@@ -1741,11 +1741,11 @@
           <text:span>
             <xsl:apply-templates select="." mode="start-add-odt-flags"/>
             <text:span text:style-name="bold">
-              <xsl:call-template name="getString">
-                <xsl:with-param name="stringName" select="'Draft comment'"/>
+              <xsl:call-template name="getVariable">
+                <xsl:with-param name="id" select="'Draft comment'"/>
               </xsl:call-template>
-              <xsl:call-template name="getString">
-                <xsl:with-param name="stringName" select="'ColonSymbol'"/>
+              <xsl:call-template name="getVariable">
+                <xsl:with-param name="id" select="'ColonSymbol'"/>
               </xsl:call-template>
               <xsl:if test="@author">
                 <xsl:value-of select="@author"/><xsl:text> </xsl:text>
@@ -1781,8 +1781,8 @@
                 <xsl:apply-templates select="." mode="start-add-odt-flags"/>
                 <text:span text:style-name="bold">
                   <xsl:text>[</xsl:text>
-                  <xsl:call-template name="getString">
-                    <xsl:with-param name="stringName" select="'Required cleanup'"/>
+                  <xsl:call-template name="getVariable">
+                    <xsl:with-param name="id" select="'Required cleanup'"/>
                   </xsl:call-template>
                   <xsl:text>]</xsl:text>
                   <xsl:if test="string(@remap)">
@@ -1790,8 +1790,8 @@
                     <xsl:value-of select="@remap"/>
                     <xsl:text>)</xsl:text>
                   </xsl:if>
-                  <xsl:call-template name="getString">
-                    <xsl:with-param name="stringName" select="'ColonSymbol'"/>
+                  <xsl:call-template name="getVariable">
+                    <xsl:with-param name="id" select="'ColonSymbol'"/>
                   </xsl:call-template>
                   <xsl:text> </xsl:text>
                 </text:span>
@@ -1816,8 +1816,8 @@
                         <xsl:apply-templates select="." mode="start-add-odt-flags"/>
                     <text:span text:style-name="bold">
                       <xsl:text>[</xsl:text>
-                      <xsl:call-template name="getString">
-                        <xsl:with-param name="stringName" select="'Required cleanup'"/>
+                      <xsl:call-template name="getVariable">
+                        <xsl:with-param name="id" select="'Required cleanup'"/>
                       </xsl:call-template>
                       <xsl:text>]</xsl:text>
                       <xsl:if test="string(@remap)">
@@ -1825,8 +1825,8 @@
                         <xsl:value-of select="@remap"/>
                         <xsl:text>)</xsl:text>
                       </xsl:if>
-                      <xsl:call-template name="getString">
-                        <xsl:with-param name="stringName" select="'ColonSymbol'"/>
+                      <xsl:call-template name="getVariable">
+                        <xsl:with-param name="id" select="'ColonSymbol'"/>
                       </xsl:call-template>
                       <xsl:text> </xsl:text>
                     </text:span>
@@ -1840,8 +1840,8 @@
                     <xsl:apply-templates select="." mode="start-add-odt-flags"/>
                   <text:span text:style-name="bold">
                     <xsl:text>[</xsl:text>
-                    <xsl:call-template name="getString">
-                      <xsl:with-param name="stringName" select="'Required cleanup'"/>
+                    <xsl:call-template name="getVariable">
+                      <xsl:with-param name="id" select="'Required cleanup'"/>
                     </xsl:call-template>
                     <xsl:text>]</xsl:text>
                     <xsl:if test="string(@remap)">
@@ -1849,8 +1849,8 @@
                       <xsl:value-of select="@remap"/>
                       <xsl:text>)</xsl:text>
                     </xsl:if>
-                    <xsl:call-template name="getString">
-                      <xsl:with-param name="stringName" select="'ColonSymbol'"/>
+                    <xsl:call-template name="getVariable">
+                      <xsl:with-param name="id" select="'ColonSymbol'"/>
                     </xsl:call-template>
                     <xsl:text> </xsl:text>
                   </text:span>
@@ -1872,8 +1872,8 @@
                         <xsl:apply-templates select="." mode="start-add-odt-flags"/>
                     <text:span text:style-name="bold">
                       <xsl:text>[</xsl:text>
-                      <xsl:call-template name="getString">
-                        <xsl:with-param name="stringName" select="'Required cleanup'"/>
+                      <xsl:call-template name="getVariable">
+                        <xsl:with-param name="id" select="'Required cleanup'"/>
                       </xsl:call-template>
                       <xsl:text>]</xsl:text>
                       <xsl:if test="string(@remap)">
@@ -1881,8 +1881,8 @@
                         <xsl:value-of select="@remap"/>
                         <xsl:text>)</xsl:text>
                       </xsl:if>
-                      <xsl:call-template name="getString">
-                        <xsl:with-param name="stringName" select="'ColonSymbol'"/>
+                      <xsl:call-template name="getVariable">
+                        <xsl:with-param name="id" select="'ColonSymbol'"/>
                       </xsl:call-template>
                       <xsl:text> </xsl:text>
                     </text:span>
@@ -1896,8 +1896,8 @@
                     <xsl:apply-templates select="." mode="start-add-odt-flags"/>
                   <text:span text:style-name="bold">
                     <xsl:text>[</xsl:text>
-                    <xsl:call-template name="getString">
-                      <xsl:with-param name="stringName" select="'Required cleanup'"/>
+                    <xsl:call-template name="getVariable">
+                      <xsl:with-param name="id" select="'Required cleanup'"/>
                     </xsl:call-template>
                     <xsl:text>]</xsl:text>
                     <xsl:if test="string(@remap)">
@@ -1905,8 +1905,8 @@
                       <xsl:value-of select="@remap"/>
                       <xsl:text>)</xsl:text>
                     </xsl:if>
-                    <xsl:call-template name="getString">
-                      <xsl:with-param name="stringName" select="'ColonSymbol'"/>
+                    <xsl:call-template name="getVariable">
+                      <xsl:with-param name="id" select="'ColonSymbol'"/>
                     </xsl:call-template>
                     <xsl:text> </xsl:text>
                   </text:span>
@@ -1928,8 +1928,8 @@
             -->
               <text:span text:style-name="bold">
                 <xsl:text>[</xsl:text>
-                <xsl:call-template name="getString">
-                  <xsl:with-param name="stringName" select="'Required cleanup'"/>
+                <xsl:call-template name="getVariable">
+                  <xsl:with-param name="id" select="'Required cleanup'"/>
                 </xsl:call-template>
                 <xsl:text>]</xsl:text>
                 <xsl:if test="string(@remap)">
@@ -1937,8 +1937,8 @@
                   <xsl:value-of select="@remap"/>
                   <xsl:text>)</xsl:text>
                 </xsl:if>
-                <xsl:call-template name="getString">
-                  <xsl:with-param name="stringName" select="'ColonSymbol'"/>
+                <xsl:call-template name="getVariable">
+                  <xsl:with-param name="id" select="'ColonSymbol'"/>
                 </xsl:call-template>
                 <xsl:text> </xsl:text>
               </text:span>

@@ -776,8 +776,8 @@
         </xsl:call-template>
       </xsl:when>
       <xsl:otherwise>
-        <xsl:call-template name="getString">
-          <xsl:with-param name="stringName" select="'Start of change'"/>
+        <xsl:call-template name="getVariable">
+          <xsl:with-param name="id" select="'Start of change'"/>
         </xsl:call-template>
       </xsl:otherwise>
     </xsl:choose>
@@ -848,8 +848,8 @@
         </xsl:call-template>
       </xsl:when>
       <xsl:otherwise>
-        <xsl:call-template name="getString">
-          <xsl:with-param name="stringName" select="'End of change'"/>
+        <xsl:call-template name="getVariable">
+          <xsl:with-param name="id" select="'End of change'"/>
         </xsl:call-template>
       </xsl:otherwise>
     </xsl:choose>

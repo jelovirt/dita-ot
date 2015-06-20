@@ -48,9 +48,7 @@ import org.dita.dost.log.MessageUtils;
 import org.dita.dost.pipeline.AbstractPipelineInput;
 import org.dita.dost.pipeline.AbstractPipelineOutput;
 import org.dita.dost.reader.*;
-import org.dita.dost.reader.GenListModuleReader.Reference;
 import org.dita.dost.util.*;
-import org.dita.dost.util.Job.FileInfo;
 import org.dita.dost.writer.ExportAnchorsFilter;
 import org.dita.dost.writer.ExportAnchorsFilter.ExportAnchor;
 import org.dita.dost.writer.ProfilingFilter;
@@ -97,7 +95,7 @@ public final class GenMapAndTopicListModule extends AbstractPipelineModuleImpl {
     /** Set of all images used for flagging */
     private final Set<URI> flagImageSet;
 
-    /** Set of all html files */
+    /** Set of all HTML and other non-DITA or non-image files */
     private final Set<URI> htmlSet;
 
     /** Set of all the href targets */
@@ -116,7 +114,7 @@ public final class GenMapAndTopicListModule extends AbstractPipelineModuleImpl {
     private final Set<URI> ignoredCopytoSourceSet;
 
     /** Set of subsidiary files */
-    private final Set<URI> subsidiarySet;
+    private final Set<URI> coderefTargetSet;
 
     /** Set of absolute flag image files */
     private final Set<URI> relFlagImagesSet;
@@ -203,7 +201,7 @@ public final class GenMapAndTopicListModule extends AbstractPipelineModuleImpl {
         flagImageSet = new LinkedHashSet<URI>(128);
         htmlSet = new HashSet<URI>(128);
         hrefTargetSet = new HashSet<URI>(128);
-        subsidiarySet = new HashSet<URI>(16);
+        coderefTargetSet = new HashSet<URI>(16);
         waitList = new LinkedList<Reference>();
         doneList = new LinkedList<URI>();
         failureList = new LinkedList<URI>();
@@ -576,7 +574,7 @@ public final class GenMapAndTopicListModule extends AbstractPipelineModuleImpl {
         conrefTargetSet.addAll(listFilter.getConrefTargets());
         nonConrefCopytoTargetSet.addAll(listFilter.getNonConrefCopytoTargets());
         ignoredCopytoSourceSet.addAll(listFilter.getIgnoredCopytoSourceSet());
-        subsidiarySet.addAll(listFilter.getSubsidiaryTargets());
+        coderefTargetSet.addAll(listFilter.getCoderefTargets());
         outDitaFilesSet.addAll(listFilter.getOutFilesSet());
 
         // Generate topic-scheme dictionary
@@ -653,7 +651,7 @@ public final class GenMapAndTopicListModule extends AbstractPipelineModuleImpl {
      */
     private void categorizeReferenceFile(final Reference file) {
         // avoid files referred by coderef being added into wait list
-        if (subsidiarySet.contains(file.filename)) {
+        if (coderefTargetSet.contains(file.filename)) {
             return;
         }
         if (isFormatDita(file.format) || ATTR_FORMAT_VALUE_DITAMAP.equals(file.format)) {
@@ -967,7 +965,7 @@ public final class GenMapAndTopicListModule extends AbstractPipelineModuleImpl {
         for (final URI file: copytoSourceSet) {
             getOrCreateFileInfo(fileinfos, file).isCopyToSource = true;
         }
-        for (final URI file: subsidiarySet) {
+        for (final URI file: coderefTargetSet) {
             final FileInfo f = getOrCreateFileInfo(fileinfos, file);
             f.isSubtarget = true;
             if (f.format == null) {
@@ -1269,14 +1267,14 @@ public final class GenMapAndTopicListModule extends AbstractPipelineModuleImpl {
     /**
      * Temporary file name generator.
      */
-    public static interface TempFileNameScheme {
+    public interface TempFileNameScheme {
         /**
          * Generate temporary file name.
          *
          * @param src absolute source file URI
          * @return relative temporary file URI
          */
-        public URI generateTempFileName(final URI src);
+        URI generateTempFileName(final URI src);
     }
 
     public static class DefaultTempFileScheme implements TempFileNameScheme {

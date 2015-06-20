@@ -119,8 +119,8 @@
               <!-- propertype is always 1nd column in the 1st row -->
               <text:p>
                 <text:span text:style-name="bold">
-                  <xsl:call-template name="getString">
-                    <xsl:with-param name="stringName" select="'Type'"/>
+                  <xsl:call-template name="getVariable">
+                    <xsl:with-param name="id" select="'Type'"/>
                   </xsl:call-template>
                 </text:span>
               </text:p>
@@ -148,8 +148,8 @@
               <text:p>
                 <!-- cell belongs to sthead -->
                 <text:span text:style-name="bold">
-                  <xsl:call-template name="getString">
-                    <xsl:with-param name="stringName" select="'Value'"/>
+                  <xsl:call-template name="getVariable">
+                    <xsl:with-param name="id" select="'Value'"/>
                   </xsl:call-template>
                 </text:span>
               </text:p>
@@ -177,8 +177,8 @@
               <text:p>
                 <!-- cell belongs to sthead -->
                 <text:span text:style-name="bold">
-                  <xsl:call-template name="getString">
-                    <xsl:with-param name="stringName" select="'Description'"/>
+                  <xsl:call-template name="getVariable">
+                    <xsl:with-param name="id" select="'Description'"/>
                   </xsl:call-template>
                 </text:span>
               </text:p>
@@ -202,8 +202,8 @@
             <!-- propertype is always 1nd column in the 1st row -->
             <text:p>
               <text:span text:style-name="bold">
-                <xsl:call-template name="getString">
-                  <xsl:with-param name="stringName" select="'Type'"/>
+                <xsl:call-template name="getVariable">
+                  <xsl:with-param name="id" select="'Type'"/>
                 </xsl:call-template>
               </text:span>
             </text:p>
@@ -225,8 +225,8 @@
             <text:p>
               <!-- cell belongs to sthead -->
               <text:span text:style-name="bold">
-                <xsl:call-template name="getString">
-                  <xsl:with-param name="stringName" select="'Value'"/>
+                <xsl:call-template name="getVariable">
+                  <xsl:with-param name="id" select="'Value'"/>
                 </xsl:call-template>
               </text:span>
             </text:p>
@@ -248,8 +248,8 @@
             <text:p>
               <!-- cell belongs to sthead -->
               <text:span text:style-name="bold">
-                <xsl:call-template name="getString">
-                  <xsl:with-param name="stringName" select="'Description'"/>
+                <xsl:call-template name="getVariable">
+                  <xsl:with-param name="id" select="'Description'"/>
                 </xsl:call-template>
               </text:span>
             </text:p>
@@ -551,8 +551,8 @@
     </xsl:variable>
     <text:p>
       <text:span text:style-name="bold">
-        <xsl:call-template name="getString">
-          <xsl:with-param name="stringName" select="'Related references'"/>
+        <xsl:call-template name="getVariable">
+          <xsl:with-param name="id" select="'Related references'"/>
         </xsl:call-template>
       </text:span>
     </text:p>
@@ -575,7 +575,7 @@
     </xsl:variable>
     <xsl:element name="text:span">
       <xsl:attribute name="text:style-name">bold</xsl:attribute>
-      <xsl:call-template name="getString">
+      <xsl:call-template name="getVariable">
         <xsl:with-param name="stringName" select="'Related references'"/>
       </xsl:call-template>
     </xsl:element>
