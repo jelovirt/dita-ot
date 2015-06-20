@@ -223,28 +223,6 @@
   <!-- for dl tag -->
   <xsl:template name="block-lq">
     <xsl:choose>
-      <!-- nested by p -->
-      <xsl:when test="parent::*[contains(@class, ' topic/p ')]">
-        <!-- break p tag -->
-        <xsl:text disable-output-escaping="yes">&lt;/text:p&gt;</xsl:text>
-        <!-- start render dl -->
-        <text:p>
-          <xsl:apply-templates/>
-        </text:p>
-        <!-- start p tag again -->
-        <xsl:text disable-output-escaping="yes">&lt;text:p&gt;</xsl:text>
-      </xsl:when>
-      <!-- nested by note -->
-      <xsl:when test="parent::*[contains(@class, ' topic/note ')]">
-        <!-- break p tag -->
-        <xsl:text disable-output-escaping="yes">&lt;/text:p&gt;</xsl:text>
-        <!-- start render dl -->
-        <text:p>
-          <xsl:apply-templates/>
-        </text:p>
-        <!-- start p tag again -->
-        <xsl:text disable-output-escaping="yes">&lt;text:p&gt;</xsl:text>
-      </xsl:when>
       <!-- nested by lq -->
       <xsl:when test="parent::*[contains(@class, ' topic/lq ')]">
         <xsl:apply-templates/>

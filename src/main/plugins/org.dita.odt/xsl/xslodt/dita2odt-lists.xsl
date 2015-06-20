@@ -119,25 +119,16 @@
    
    <!-- for dt tag -->
    <xsl:template match="*[contains(@class, ' topic/dt ')]">
-     <text:p text:style-name="bold_paragraph">
-       <text:span>
-         <xsl:apply-templates select="." mode="start-add-odt-flags"/>
-         <xsl:apply-templates/>
-         <xsl:apply-templates select="." mode="end-add-odt-flags"/>	
-       </text:span>
-     </text:p>
+     <xsl:apply-templates select="." mode="start-add-odt-flags"/>
+     <xsl:apply-templates/>
+     <xsl:apply-templates select="." mode="end-add-odt-flags"/>	
    </xsl:template>
    
    <!-- for dd tag -->
    <xsl:template match="*[contains(@class, ' topic/dd ')]">
-     <text:p>
-       <text:span>
-         <xsl:apply-templates select="." mode="start-add-odt-flags"/>
-         <text:tab/>
-           <xsl:apply-templates/>
-         <xsl:apply-templates select="." mode="end-add-odt-flags"/>
-       </text:span>
-     </text:p>
+     <xsl:apply-templates select="." mode="start-add-odt-flags"/>
+     <xsl:apply-templates/>
+     <xsl:apply-templates select="." mode="end-add-odt-flags"/>
    </xsl:template>
   
   <!-- FIXME: Replace with something that doens't use DOE -->

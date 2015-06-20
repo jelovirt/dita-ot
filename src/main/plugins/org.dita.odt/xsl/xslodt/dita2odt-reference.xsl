@@ -35,62 +35,21 @@
    
   <!-- Simple Table -->
   <xsl:template match="*[contains(@class,' reference/properties ')]">
-  
   	<xsl:variable name="tablenameId" select="generate-id(.)"/>
     <!-- start flagging --> 
   	<xsl:apply-templates select="." mode="start-add-odt-flags">
       <xsl:with-param name="family" select="'_table'"/>
     </xsl:apply-templates>  
-  	
-  	<xsl:choose>
-      <xsl:when test="parent::*[contains(@class, ' reference/refbody ')]">
-        <table:table table:name="{concat('Table', $tablenameId)}" table:style-name="table_style">
-          <xsl:variable name="colnumNum">
-            <xsl:call-template name="count_columns_for_properties"/>
-          </xsl:variable>
-          <xsl:call-template name="create_columns_for_simpletable">
-            <xsl:with-param name="column" select="$colnumNum"/>
-          </xsl:call-template>
-          <xsl:apply-templates/>
-        </table:table>
-      </xsl:when>
-    	  <xsl:otherwise>
-        <xsl:variable name="span_depth" as="xs:integer">
-          <xsl:call-template name="calculate_span_depth"/>
-        </xsl:variable>
-        <!-- break span tags -->
-        <xsl:call-template name="break_span_tags">
-          <xsl:with-param name="depth" select="$span_depth"/>
-          <xsl:with-param name="order" select="0"/>
-        </xsl:call-template>
-        <!-- break first p tag if there are span tags -->
-        <xsl:if test="$span_depth &gt;= 0">
-          <xsl:text disable-output-escaping="yes">&lt;/text:p&gt;</xsl:text>
-        </xsl:if>
-        <xsl:text disable-output-escaping="yes">&lt;/text:p&gt;</xsl:text>
-        <!-- start render table -->
-        <table:table table:name="{concat('Table', $tablenameId)}" table:style-name="table_style">
-          <xsl:variable name="colnumNum">
-            <xsl:call-template name="count_columns_for_properties"/>
-          </xsl:variable>
-          <xsl:call-template name="create_columns_for_simpletable">
-            <xsl:with-param name="column" select="$colnumNum"/>
-          </xsl:call-template>
-          <xsl:apply-templates/>
-        </table:table>
-        <!-- start p tag again if there are span tags-->
-        <xsl:if test="$span_depth &gt;= 0">
-          <xsl:text disable-output-escaping="yes">&lt;text:p&gt;</xsl:text>
-        </xsl:if>
-        <!--  span tags span tags again-->
-        <xsl:call-template name="break_span_tags">
-          <xsl:with-param name="depth" select="$span_depth"/>
-          <xsl:with-param name="order" select="1"/>
-        </xsl:call-template>
-      </xsl:otherwise>
-    	</xsl:choose>
+    <table:table table:name="{concat('Table', $tablenameId)}" table:style-name="table_style">
+      <xsl:variable name="colnumNum">
+        <xsl:call-template name="count_columns_for_properties"/>
+      </xsl:variable>
+      <xsl:call-template name="create_columns_for_simpletable">
+        <xsl:with-param name="column" select="$colnumNum"/>
+      </xsl:call-template>
+      <xsl:apply-templates/>
+    </table:table>
     <text:p/>
-    
     <!-- end flagging -->
     <xsl:apply-templates select="." mode="end-add-odt-flags">
         <xsl:with-param name="family" select="'_table'"/>
@@ -273,16 +232,6 @@
            <table:table-cell office:value-type="string" table:style-name="cell_style_3">
              <!-- this cell is in the first column. -->
                <text:p>
-                 <!-- Create an empty cell. Add accessiblity attribute. -->
-                 <!-- 
-                 <xsl:call-template name="addPropertiesHeadersAttribute">
-                   <xsl:with-param name="classVal"> reference/proptypehd </xsl:with-param>
-                   <xsl:with-param name="elementType">type</xsl:with-param>
-                 </xsl:call-template>
-                 -->
-                 <!-- 
-                 <xsl:text disable-output-escaping="yes">&amp;nbsp;</xsl:text>
-                 -->
                  <xsl:text> </xsl:text>
                </text:p>
              </table:table-cell>
@@ -443,7 +392,7 @@
      <xsl:value-of select="@specentry"/>
     </xsl:when>
     <xsl:otherwise>
-      <xsl:text disable-output-escaping="yes">&amp;nbsp;</xsl:text>  <!-- nbsp -->
+      <xsl:text>&#xA0;</xsl:text>  <!-- nbsp -->
     </xsl:otherwise>
    </xsl:choose>
   </xsl:template>

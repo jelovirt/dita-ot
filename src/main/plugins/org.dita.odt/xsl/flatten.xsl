@@ -48,7 +48,8 @@
     ' topic/entry ',
     ' topic/simpletable ',
     ' topic/stentry ',
-    ' topic/example ')"/>
+    ' topic/example ',
+    ' task/cmd ')"/>
   
   <!-- Test is element is block -->
   <xsl:function name="x:is-block" as="xs:boolean">

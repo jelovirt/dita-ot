@@ -80,18 +80,11 @@
   </xsl:template>
 
   <xsl:template match="*[contains(@class,' task/steps ')]" name="topic.task.steps">
-    <!-- If there's one of these elements somewhere in a step, expand the whole step list -->
-    <xsl:variable name="step_expand" as="xs:boolean">
-      <!-- set & save step_expand=yes/no for expanding/compacting list items -->
-      <xsl:apply-templates select="." mode="make-steps-compact"/>
-    </xsl:variable>
     <!-- start flagging -->
     <xsl:apply-templates select="." mode="start-add-odt-flags">
       <xsl:with-param name="family" select="'_list'"/>
-    </xsl:apply-templates>
-    <xsl:apply-templates select="." mode="steps-fmt">
-      <xsl:with-param name="step_expand" select="$step_expand"/>
-    </xsl:apply-templates>
+    </xsl:apply-templates>    
+    <xsl:apply-templates select="." mode="steps-fmt"/>
     <!-- end flagging -->
     <xsl:apply-templates select="." mode="end-add-odt-flags">
       <xsl:with-param name="family" select="'_list'"/>
@@ -100,12 +93,9 @@
 
   <xsl:template match="*[contains(@class,' task/steps ') or contains(@class,' task/steps-unordered ')]"
                 mode="common-processing-within-steps">
-    <xsl:param name="step_expand" as="xs:boolean"/>
     <xsl:param name="list-type">
       <xsl:choose>
-        <!-- ordered list -->
         <xsl:when test="contains(@class,' task/steps ')">ordered_list_style</xsl:when>
-        <!-- unordered list -->
         <xsl:otherwise>list_style</xsl:otherwise>
       </xsl:choose>
     </xsl:param>
@@ -116,134 +106,27 @@
         </xsl:call-template>
       </xsl:with-param>
     </xsl:apply-templates>
-    <xsl:choose>
-      <xsl:when
-        test="*[contains(@class,' task/step ')] and not(*[contains(@class,' task/step ')][2])">
-        <!-- Single step. Process any stepsection before the step (cannot appear after). -->
-        <xsl:apply-templates select="*[contains(@class,' task/stepsection ')]"/>
-        <xsl:apply-templates select="*[contains(@class,' task/step ')]" mode="onestep">
-          <xsl:with-param name="step_expand" select="$step_expand"/>
-        </xsl:apply-templates>
-      </xsl:when>
-      <xsl:when test="not(*[contains(@class,' task/stepsection ')])">
-        <xsl:apply-templates select="." mode="step-elements-with-no-stepsection">
-          <xsl:with-param name="step_expand" select="$step_expand"/>
-          <xsl:with-param name="list-type" select="$list-type"/>
-        </xsl:apply-templates>
-      </xsl:when>
-      <xsl:when
-        test="*[1][contains(@class,' task/stepsection ')] and not(*[contains(@class,' task/stepsection ')][2])">
-        <!-- Stepsection is first, no other appearances -->
-        <xsl:apply-templates select="*[contains(@class,' task/stepsection ')]"/>
-        <xsl:apply-templates select="." mode="step-elements-with-no-stepsection">
-          <xsl:with-param name="step_expand" select="$step_expand"/>
-          <xsl:with-param name="list-type" select="$list-type"/>
-        </xsl:apply-templates>
-      </xsl:when>
-      <xsl:otherwise>
-        <!-- Stepsection elements mixed in with steps -->
-        <xsl:apply-templates select="." mode="step-elements-with-stepsection">
-          <xsl:with-param name="step_expand" select="$step_expand"/>
-          <xsl:with-param name="list-type" select="$list-type"/>
-        </xsl:apply-templates>
-      </xsl:otherwise>
-    </xsl:choose>
-  </xsl:template>
-  
-  <!-- step-elements-with-no-stepsection -->
-  <xsl:template match="*" mode="step-elements-with-no-stepsection">
-    <xsl:param name="step_expand" as="xs:boolean"/>
-    <xsl:param name="list-type"/>
-    <!-- 
-    <xsl:call-template name="setaname"/>
-    -->
+    <xsl:apply-templates select="*[contains(@class,' task/stepsection ')]"/>
     <text:list text:style-name="{$list-type}">
-      <!-- 
-      <xsl:call-template name="commonattributes"/>
-      <xsl:call-template name="gen-style"/>
-      <xsl:call-template name="setid"/>
-      -->
-      <xsl:apply-templates select="*[contains(@class,' task/step ')]" mode="steps">
-        <xsl:with-param name="step_expand" select="$step_expand"/>
+      <xsl:apply-templates select="*[contains(@class,' task/step ')]">
+        <xsl:with-param name="start-value" select="position()" as="xs:integer"/>
       </xsl:apply-templates>
     </text:list>
   </xsl:template>
-  
-  <!-- step-elements-with-stepsection -->
-  <xsl:template match="*" mode="step-elements-with-stepsection">
-    <xsl:param name="step_expand" as="xs:boolean"/>
-    <xsl:param name="list-type"/>
-    <xsl:for-each select="*">
-      <xsl:choose>
-        <xsl:when test="contains(@class,' task/stepsection ')">
-          <xsl:apply-templates select="."/>
-        </xsl:when>
-        <xsl:when test="contains(@class,' task/step ') and preceding-sibling::*[1][contains(@class,' task/step ')]">
-          <!-- Do nothing, was pulled in through recursion -->
-        </xsl:when>
-        <xsl:otherwise>
-          <!-- First step in a series of steps -->
-          <text:list text:style-name="{$list-type}">
-            <xsl:variable name="start-value">
-            <xsl:if test="$list-type='ordered_list_style' and preceding-sibling::*[contains(@class,' task/step ')]">
-              <!-- Restart numbering for ordered steps that were interrupted by stepsection.
-                 The start attribute is valid in XHTML 1.0 Transitional, but not for XHTML 1.0 Strict.
-                 It is possible (preferable) to keep stepsection within an <li> and use CSS to
-                 fix numbering, but with testing in March of 2009, this does not work in IE. 
-                 It is possible in Firefox 3. -->
-                <xsl:value-of select="count(preceding-sibling::*[contains(@class,' task/step ')])+1"/>
-            </xsl:if>
-            </xsl:variable>
-            <xsl:apply-templates select="." mode="steps">
-              <xsl:with-param name="step_expand" select="$step_expand"/>
-              <xsl:with-param name="start-value" select="$start-value"/>
-            </xsl:apply-templates>
-            <xsl:apply-templates select="following-sibling::*[1][contains(@class,' task/step ')]"
-                                 mode="sequence-of-steps">
-              <xsl:with-param name="step_expand" select="$step_expand"/>
-            </xsl:apply-templates>
-          </text:list>
-        </xsl:otherwise>
-      </xsl:choose>
-    </xsl:for-each>
-  </xsl:template>
-  
-  <xsl:template match="*" mode="sequence-of-steps">
-    <xsl:param name="step_expand" as="xs:boolean"/>
-    <xsl:apply-templates select="." mode="steps">
-      <xsl:with-param name="step_expand" select="$step_expand"/>
-    </xsl:apply-templates>
-    <xsl:apply-templates select="following-sibling::*[1][contains(@class,' task/step ')]"
-                         mode="sequence-of-steps">
-      <xsl:with-param name="step_expand" select="$step_expand"/>
-    </xsl:apply-templates>
-  </xsl:template>
 
   <xsl:template match="*[contains(@class,' task/stepsection ')]">
-    
-    <text:span>
-      <xsl:apply-templates select="." mode="start-add-odt-flags"/>
-      <xsl:apply-templates/>
-      <xsl:apply-templates select="." mode="end-add-odt-flags"/>
-    </text:span>
-      
+    <xsl:apply-templates select="." mode="start-add-odt-flags"/>
+    <xsl:apply-templates/>
+    <xsl:apply-templates select="." mode="end-add-odt-flags"/>
   </xsl:template>
 
-  <xsl:template match="*[contains(@class,' task/steps-unordered ')]"
-    name="topic.task.steps-unordered">
-    <!-- If there's a block element somewhere in the step list, expand the whole list -->
-    <xsl:variable name="step_expand" as="xs:boolean">
-      <!-- set & save step_expand=yes/no for expanding/compacting list items -->
-      <xsl:apply-templates select="." mode="make-steps-compact"/>
-    </xsl:variable>
+  <xsl:template match="*[contains(@class,' task/steps-unordered ')]" name="topic.task.steps-unordered">
     <!-- start flagging -->
     <xsl:apply-templates select="." mode="start-add-odt-flags">
       <xsl:with-param name="family" select="'_list'"/>
     </xsl:apply-templates>
     <!-- render list -->
-    <xsl:apply-templates select="." mode="stepsunord-fmt">
-      <xsl:with-param name="step_expand" select="$step_expand"/>
-    </xsl:apply-templates>
+    <xsl:apply-templates select="." mode="stepsunord-fmt"/>
     <!-- end flagging -->
     <xsl:apply-templates select="." mode="end-add-odt-flags">
       <xsl:with-param name="family" select="'_list'"/>
@@ -251,219 +134,44 @@
   </xsl:template>
 
   <xsl:template match="*[contains(@class,' task/steps ')]" mode="steps-fmt">
-    <xsl:param name="step_expand" as="xs:boolean"/>
     <xsl:apply-templates select="." mode="common-processing-within-steps">
-      <xsl:with-param name="step_expand" select="$step_expand"/>
       <xsl:with-param name="list-type" select="'ordered_list_style'"/>
     </xsl:apply-templates>
   </xsl:template>
 
   <xsl:template match="*[contains(@class,' task/steps-unordered ')]" mode="stepsunord-fmt">
-    <xsl:param name="step_expand" as="xs:boolean"/>
     <xsl:apply-templates select="." mode="common-processing-within-steps">
-      <xsl:with-param name="step_expand" select="$step_expand"/>
       <xsl:with-param name="list-type" select="'list_style'"/>
     </xsl:apply-templates>
   </xsl:template>
 
-  <!-- only 1 step - output as a para -->
-  <xsl:template match="*[contains(@class,' task/step ')]" mode="onestep">
-    <xsl:param name="step_expand" as="xs:boolean"/>
-      <xsl:apply-templates select="." mode="onestep-fmt">
-        <xsl:with-param name="step_expand" select="$step_expand"/>
-      </xsl:apply-templates>
-  </xsl:template>
-  
-  <xsl:template match="*[contains(@class,' task/step ')]" mode="onestep-fmt">
-    <xsl:param name="step_expand" as="xs:boolean"/>
-    <xsl:variable name="flagrules">
-      <xsl:call-template name="getrules"/>
-    </xsl:variable>
-    <text:list text:style-name="list_style">
-      <text:list-item>
-        <xsl:apply-templates mode="create_list_item"/>
-      </text:list-item>
-    </text:list>
+  <xsl:template match="*[contains(@class, ' task/step ')]">
+    <xsl:param name="start-value" as="xs:integer">0</xsl:param>  
+    <text:list-item text:start-value="{$start-value}">
+      <xsl:apply-templates/>
+    </text:list-item>
   </xsl:template>
 
-  <!-- multiple steps - output as list items -->
-  <xsl:template match="*[contains(@class,' task/step ')]" mode="steps">
-    <xsl:param name="step_expand" as="xs:boolean"/>
-    <xsl:param name="start-value">0</xsl:param>
-    <xsl:variable name="revtest" as="xs:integer?">
-      <xsl:if test="@rev and not($FILTERFILE='') and ($DRAFT='yes')">
-        <xsl:call-template name="find-active-rev-flag">
-          <xsl:with-param name="allrevs" select="@rev"/>
-        </xsl:call-template>
-      </xsl:if>
-    </xsl:variable>   
-    <xsl:choose>
-      <xsl:when test="$revtest=1">
-        <!-- Rev is active - add the DIV -->
-          <xsl:apply-templates select="." mode="steps-fmt">
-            <xsl:with-param name="step_expand" select="$step_expand"/>
-          </xsl:apply-templates>
-      </xsl:when>
-      <xsl:otherwise>
-        <!-- Rev wasn't active - process normally -->
-        <xsl:apply-templates select="." mode="steps-fmt">
-          <xsl:with-param name="step_expand" select="$step_expand"/>
-          <xsl:with-param name="start-value" select="$start-value"/>
-        </xsl:apply-templates>
-      </xsl:otherwise>
-    </xsl:choose>
-  </xsl:template>
-  
-  <xsl:template match="*[contains(@class,' task/step ')]" mode="steps-fmt">
-    <xsl:param name="step_expand" as="xs:boolean"/>
-    <xsl:param name="start-value">0</xsl:param>
-    
-    <text:list-item>
-      <xsl:if test="$start-value &gt; 0">
-        <xsl:attribute name="text:start-value">
-          <xsl:value-of select="$start-value"/>
-        </xsl:attribute>
-      </xsl:if>
-        <xsl:apply-templates mode="create_list_item"/>
-      </text:list-item>
-  </xsl:template>
-
-  <!-- nested steps - 1 level of nesting only -->
   <xsl:template match="*[contains(@class,' task/substeps ')]" name="topic.task.substeps">
-    <!-- If there's a block element somewhere in the step list, expand the whole list -->
-    <xsl:variable name="sub_step_expand" as="xs:boolean">
-      <!-- set & save sub_step_expand=yes/no for expanding/compacting list items -->
-      <xsl:apply-templates select="." mode="make-steps-compact"/>
-    </xsl:variable>
-    
-    <xsl:apply-templates select="." mode="substeps-fmt">
-      <xsl:with-param name="sub_step_expand" select="$sub_step_expand"/>
-    </xsl:apply-templates>
-    
-  </xsl:template>
-
-  <xsl:template match="*[contains(@class,' task/substeps ')]" mode="substeps-fmt">
-    <xsl:param name="sub_step_expand"/>
-    <xsl:variable name="flagrules">
-      <xsl:call-template name="getrules"/>
-    </xsl:variable>
-    <!-- 
-    <xsl:call-template name="setaname"/>
-    -->
-    <text:list text:style-name="ordered_list_style">
-      
-      <xsl:if test="parent::*/parent::*[contains(@class,' task/steps ')]">
-        <!-- Is the grandparent an ordered step? -->
-        <!-- 
-        <xsl:attribute name="type">a</xsl:attribute>
-        -->
-        <!-- yup, letter these steps -->
-      </xsl:if>
-      <!-- otherwise, default to numbered -->
-      <xsl:apply-templates>
-        <xsl:with-param name="sub_step_expand" select="$sub_step_expand"/>
-      </xsl:apply-templates>
+    <text:list text:style-name="ordered_list_style">      
+      <xsl:apply-templates/>
     </text:list>
   </xsl:template>
 
   <!-- nested step -->
   <xsl:template match="*[contains(@class,' task/substep ')]" name="topic.task.substep">
-    <xsl:param name="sub_step_expand"/>
-    <xsl:variable name="revtest" as="xs:integer?">
-      <xsl:if test="@rev and not($FILTERFILE='') and ($DRAFT='yes')">
-        <!-- revision? -->
-        <xsl:call-template name="find-active-rev-flag">
-          <!-- active? (revtest will be 1 when active)-->
-          <xsl:with-param name="allrevs" select="@rev"/>
-        </xsl:call-template>
-      </xsl:if>
-    </xsl:variable>
-    <xsl:choose>
-      <xsl:when test="$revtest=1">
-        <!-- Rev is active - add the DIV -->
-        <!-- 
-        <span class="{@rev}">
-        -->
-          <xsl:apply-templates select="." mode="substep-fmt">
-            <xsl:with-param name="sub_step_expand" select="$sub_step_expand"/>
-          </xsl:apply-templates>
-        <!-- 
-        </span>
-        -->
-      </xsl:when>
-      <xsl:otherwise>
-        <!-- Rev wasn't active - process normally -->
-        <xsl:apply-templates select="." mode="substep-fmt">
-          <xsl:with-param name="sub_step_expand" select="$sub_step_expand"/>
-        </xsl:apply-templates>
-      </xsl:otherwise>
-    </xsl:choose>
-  </xsl:template>
-  
-  <xsl:template match="*[contains(@class,' task/substep ')]" mode="substep-fmt">
-    <xsl:param name="sub_step_expand"/>
-    <xsl:variable name="flagrules">
-      <xsl:call-template name="getrules"/>
-    </xsl:variable>
     <text:list-item>
-      <xsl:if test="$sub_step_expand='yes'">
-        <!-- 
-        <xsl:attribute name="class">substepexpand</xsl:attribute>
-        -->
-      </xsl:if>
-      <!-- 
-      <xsl:call-template name="commonattributes"/>
-      <xsl:call-template name="gen-style">
-        <xsl:with-param name="flagrules" select="$flagrules"/>
-      </xsl:call-template>
-      <xsl:call-template name="setidaname"/>
-      <xsl:call-template name="start-flagit">
-        <xsl:with-param name="flagrules" select="$flagrules"/>
-      </xsl:call-template>
-      <xsl:call-template name="start-revflag">
-        <xsl:with-param name="flagrules" select="$flagrules"/>
-      </xsl:call-template>
-      -->
-        <xsl:apply-templates mode="create_list_item"/>
-      </text:list-item>
-      <!-- 
-      <xsl:call-template name="end-revflag">
-        <xsl:with-param name="flagrules" select="$flagrules"/>
-      </xsl:call-template>
-      <xsl:call-template name="end-flagit">
-        <xsl:with-param name="flagrules" select="$flagrules"/>
-      </xsl:call-template>
-      -->
+      <xsl:apply-templates/>
+    </text:list-item>
   </xsl:template>
   
   <!-- choices contain choice items -->
   <xsl:template match="*[contains(@class,' task/choices ')]" name="topic.task.choices">
-    <xsl:variable name="revtest" as="xs:integer?">
-      <xsl:if test="@rev and not($FILTERFILE='') and ($DRAFT='yes')"> 
-        <xsl:call-template name="find-active-rev-flag">               
-          <xsl:with-param name="allrevs" select="@rev"/>
-        </xsl:call-template>
-      </xsl:if>
-    </xsl:variable>
-    <xsl:choose>
-      <xsl:when test="$revtest=1">   <!-- Rev is active - add the DIV -->
-        <xsl:apply-templates select="." mode="choices-fmt"/>
-      </xsl:when>
-      <xsl:otherwise>  <!-- Rev wasn't active - process normally -->
-        <xsl:apply-templates select="." mode="choices-fmt"/>
-      </xsl:otherwise>
-    </xsl:choose>
-  </xsl:template>
-  
-  <xsl:template match="*[contains(@class,' task/choices ')]" mode="choices-fmt">
-    <xsl:variable name="flagrules">
-      <xsl:call-template name="getrules"/>
-    </xsl:variable>
     <text:list text:style-name="list_style">
       <xsl:apply-templates/>
     </text:list>
   </xsl:template>
-
+  
   <!-- task choice table -->
   <xsl:template match="*[contains(@class, ' task/choicetable ')]">
     <xsl:variable name="tablenameId" select="generate-id(.)"/>
@@ -574,44 +282,28 @@
   </xsl:template>
 
   <xsl:template match="*[contains(@class, ' task/stepresult ')]">
-    <text:p text:style-name="indent_paragraph_style">      
-      <text:span>
-        <xsl:apply-templates select="." mode="start-add-odt-revflags"/>
-        <xsl:apply-templates/>
-        <xsl:apply-templates select="." mode="end-add-odt-revflags"/>
-      </text:span>
-    </text:p>
+    <xsl:apply-templates select="." mode="start-add-odt-revflags"/>
+    <xsl:apply-templates/>
+    <xsl:apply-templates select="." mode="end-add-odt-revflags"/>
   </xsl:template>
   
   <xsl:template match="*[contains(@class,' task/info ')]" name="topic.task.info">
-    <text:p text:style-name="indent_paragraph_style">
-      <text:span>
-        <xsl:apply-templates select="." mode="start-add-odt-revflags"/>
-        <xsl:apply-templates/>
-        <xsl:apply-templates select="." mode="end-add-odt-revflags"/>
-      </text:span>
-    </text:p>
+    <xsl:apply-templates select="." mode="start-add-odt-revflags"/>
+    <xsl:apply-templates/>
+    <xsl:apply-templates select="." mode="end-add-odt-revflags"/>
   </xsl:template>
   
   <xsl:template match="*[contains(@class,' task/tutorialinfo ')]" name="topic.task.tutorialinfo">
-    <text:p text:style-name="indent_paragraph_style">
-       <text:span>
-         <xsl:apply-templates select="." mode="start-add-odt-revflags"/>
-          <xsl:apply-templates/>
-         <xsl:apply-templates select="." mode="end-add-odt-revflags"/>
-       </text:span>
-    </text:p>
+    <xsl:apply-templates select="." mode="start-add-odt-revflags"/>
+    <xsl:apply-templates/>
+    <xsl:apply-templates select="." mode="end-add-odt-revflags"/>
   </xsl:template>
   
   <!-- these para-like items need a leading space -->
   <xsl:template match="*[contains(@class,' task/stepxmp ')]" name="topic.task.stepxmp">
-    <text:p text:style-name="indent_paragraph_style">
-      <text:span>
-        <xsl:apply-templates select="." mode="start-add-odt-revflags"/>
-        <xsl:apply-templates/>
-        <xsl:apply-templates select="." mode="end-add-odt-revflags"/>
-      </text:span>
-    </text:p>
+    <xsl:apply-templates select="." mode="start-add-odt-revflags"/>
+    <xsl:apply-templates/>
+    <xsl:apply-templates select="." mode="end-add-odt-revflags"/>
   </xsl:template>
   
   <xsl:template match="*[contains(@class,' task/context ')]">

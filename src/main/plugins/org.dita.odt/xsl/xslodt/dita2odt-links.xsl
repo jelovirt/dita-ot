@@ -253,10 +253,6 @@
 			</xsl:call-template>
 		</xsl:variable>
     	
-    	<xsl:if test="parent::*[contains(@class,' topic/li ')]">
-    		<xsl:text disable-output-escaping="yes">&lt;text:p&gt;</xsl:text>
-    	</xsl:if>
-
     <text:a xlink:type="simple">
 			<xsl:call-template name="buildBasicLinkDestination">
 				<xsl:with-param name="scope" select="@scope"/>
@@ -304,10 +300,6 @@
             </xsl:if>
 		</xsl:if>
     	
-    	<xsl:if test="parent::*[contains(@class,' topic/li ')]">
-    		<xsl:text disable-output-escaping="yes">&lt;/text:p&gt;</xsl:text>
-    	</xsl:if>
-
     </xsl:template>
 
     <!-- xref to footnote makes a callout. -->
@@ -349,26 +341,11 @@
 
             <xsl:if test="normalize-space($linkTextContent)!=''">
             	<text:p text:style-name="Default_20_Text">
-                	<!-- 
-					<xsl:call-template name="insertVariable">
-		    				<xsl:with-param name="theVariableID" select="'Related Links'"/>
-			    	</xsl:call-template>
-                	-->
-                	<text:span text:style-name="bold">
-                		<xsl:call-template name="getVariable">
-                			<xsl:with-param name="id" select="'Related Links'"/>
-                		</xsl:call-template>
-                	</text:span>
-            		<!-- 
-                	<text:line-break/>
-                	<text:tab/>
-            		-->
-            		<!-- 
-					<xsl:copy-of select="$collectedLinks"/>
-            		-->
-            		<!-- 
-            		<xsl:value-of select="$collectedLinks" disable-output-escaping="yes"/>
-            		-->
+                <text:span text:style-name="bold">
+                	<xsl:call-template name="getVariable">
+                		<xsl:with-param name="id" select="'Related Links'"/>
+                	</xsl:call-template>
+                </text:span>
             		<xsl:apply-templates mode="processLink">
             			<xsl:with-param name="topicType" select="$topicType"/>
             		</xsl:apply-templates>
