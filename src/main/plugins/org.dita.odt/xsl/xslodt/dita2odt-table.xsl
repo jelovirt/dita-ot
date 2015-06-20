@@ -238,7 +238,7 @@
       </xsl:if>
       <xsl:call-template name="create_style_table"/>
       
-      <!--text:p text:style-name="indent_paragraph_style"-->
+      <!--text:p xsl:use-attribute-sets="p"-->
       	<xsl:apply-templates/>
       <!--/text:p-->
       
@@ -642,7 +642,7 @@
    -->
   <table:table-cell office:value-type="string">
     <xsl:call-template name="create_style_stable"/>
-    <!--text:p text:style-name="indent_paragraph_style"-->
+    <!--text:p xsl:use-attribute-sets="p"-->
       <xsl:apply-templates/>
     <!--/text:p-->
   </table:table-cell>

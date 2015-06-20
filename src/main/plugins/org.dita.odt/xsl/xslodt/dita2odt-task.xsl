@@ -250,7 +250,7 @@
   </xsl:template-->
     
   <xsl:template match="*[contains(@class, ' task/cmd ')]">
-    <text:p text:style-name="indent_paragraph_style">
+    <text:p xsl:use-attribute-sets="p">
       <xsl:if test="../@importance = 'optional'">
         <text:span text:style-name="bold">
           <xsl:call-template name="getVariable">

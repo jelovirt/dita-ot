@@ -200,24 +200,18 @@
 
   <!-- =========== block things ============ -->
 
+  <xsl:attribute-set name="p">
+    <xsl:attribute name="text:style-name">indent_paragraph_style</xsl:attribute>
+  </xsl:attribute-set>
+
   <xsl:template match="*[contains(@class,' topic/p ')]" name="topic.p">
     <xsl:param name="prefix" as="node()*"/>
     <xsl:param name="contents" as="node()*">
       <xsl:apply-templates/>
     </xsl:param>
-    <text:p text:style-name="indent_paragraph_style">
-      <xsl:if test="not(ancestor::*[contains(@class, ' topic/table ') or
-                                    contains(@class, ' topic/simpletable ') or
-                                    contains(@class, ' topic/ul ') or
-                                    contains(@class, ' topic/ol ') or
-                                    contains(@class, ' topic/dl ') or
-                                    contains(@class, ' topic/sl ')])">
-        <xsl:attribute name="text:style-name">indent_paragraph_style</xsl:attribute>
-      </xsl:if>
-      <!--xsl:apply-templates select="." mode="start-add-odt-flags"/-->
+    <text:p xsl:use-attribute-sets="p">
       <xsl:copy-of select="$prefix"/>
       <xsl:copy-of select="$contents"/>
-      <!--xsl:apply-templates select="." mode="end-add-odt-flags"/-->	
     </text:p>
   </xsl:template>
   
@@ -1307,7 +1301,7 @@
 
   <!-- FIXME: prolog, why output? -->
   <xsl:template match="*[contains(@class, ' topic/keywords ')]">
-    <text:p text:style-name="indent_paragraph_style">
+    <text:p xsl:use-attribute-sets="p">
       <xsl:apply-templates/>
     </text:p>
   </xsl:template>
