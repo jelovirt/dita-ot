@@ -7,7 +7,6 @@
   
   <xsl:variable name="x:block-content-classes" as="xs:string*" select="(
     ' topic/body ',
-    ' topic/pre ',
     ' topic/note ',
     ' topic/fig ',
     ' topic/li ',
