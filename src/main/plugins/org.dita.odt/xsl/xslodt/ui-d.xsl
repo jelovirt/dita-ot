@@ -30,124 +30,28 @@
 
   <!-- Screen -->
   <xsl:template match="*[contains(@class,' ui-d/screen ')]">
-    <xsl:choose>
-      <!-- nested by body, li -->
-      <xsl:when test="parent::*[contains(@class, ' topic/li ')] or parent::*[contains(@class, ' topic/sli ')] or                    parent::*[contains(@class, ' topic/body ')]">
-        <!-- start add flagging images -->
-        <xsl:apply-templates select="." mode="start-add-odt-imgrevflags"/>
-        <text:p text:style-name="Code_Style_Paragraph">
-
-          <text:span>
-            <!-- add flagging styles -->
-            <xsl:apply-templates select="." mode="add-odt-flagging"/>
-            <xsl:apply-templates/>
-          </text:span>
-        </text:p>
-        <!-- end add flagging images -->
-        <xsl:apply-templates select="." mode="end-add-odt-imgrevflags"/>
-      </xsl:when>
-      <!-- nested by entry -->
-      <xsl:when test="parent::*[contains(@class, ' topic/entry ')]">
-        <!-- start add flagging images -->
-        <xsl:apply-templates select="." mode="start-add-odt-imgrevflags"/>
-        <!-- create p tag -->
-        <text:p>
-          <!-- alignment styles -->
-          <xsl:if test="parent::*[contains(@class, ' topic/entry ')]/@align">
-            <xsl:call-template name="set_align_value"/>
-          </xsl:if>
-          <!-- cell belongs to thead -->
-          <xsl:choose>
-            <xsl:when test="parent::*[contains(@class, ' topic/entry ')]       /parent::*[contains(@class, ' topic/row ')]/parent::*[contains(@class, ' topic/thead ')]">
-              <text:span text:style-name="bold">
-
-                <text:span text:style-name="Code_Text">
-
-                  <text:span>
-                    <!-- add flagging styles -->
-                    <xsl:apply-templates select="." mode="add-odt-flagging"/>
-                    <xsl:apply-templates/>
-                  </text:span>
-                </text:span>
-              </text:span>
-            </xsl:when>
-            <xsl:otherwise>
-              <text:span>
-                <!-- add flagging styles -->
-                <xsl:apply-templates select="." mode="add-odt-flagging"/>
-                <xsl:apply-templates/>
-              </text:span>
-            </xsl:otherwise>
-          </xsl:choose>
-        </text:p>
-        <!-- end add flagging images -->
-        <xsl:apply-templates select="." mode="end-add-odt-imgrevflags"/>
-      </xsl:when>
-      <!-- nested by stentry -->
-      <xsl:when test="parent::*[contains(@class, ' topic/stentry ')]">
-        <!-- start add flagging images -->
-        <xsl:apply-templates select="." mode="start-add-odt-imgrevflags"/>
-        <text:p>
-          <!-- cell belongs to sthead -->
-          <xsl:choose>
-            <xsl:when test="parent::*[contains(@class, ' topic/stentry ')]/       parent::*[contains(@class, ' topic/sthead ')]">
-              <text:span text:style-name="Code_Text">
-                <text:span>
-                  <!-- add flagging styles -->
-                  <xsl:apply-templates select="." mode="add-odt-flagging"/>
-                  <xsl:apply-templates/>
-                </text:span>
-              </text:span>
-            </xsl:when>
-            <xsl:otherwise>
-              <text:span>
-                <!-- add flagging styles -->
-                <xsl:apply-templates select="." mode="add-odt-flagging"/>
-                <xsl:apply-templates/>
-              </text:span>
-            </xsl:otherwise>
-          </xsl:choose>
-        </text:p>
-        <!-- end add flagging images -->
-        <xsl:apply-templates select="." mode="end-add-odt-imgrevflags"/>
-      </xsl:when>
-      <xsl:when test="parent::*[contains(@class, ' topic/linkinfo ')]">
-        <text:span>
-          <text:span>
-            <xsl:apply-templates select="." mode="start-add-odt-flags"/>
-            <xsl:apply-templates/>
-            <xsl:apply-templates select="." mode="end-add-odt-flags"/>
-          </text:span>
-        </text:span>
-        <text:line-break/>
-      </xsl:when>
-      <!-- other tags -->
-      <xsl:otherwise>
-        <text:span text:style-name="Code_Text">
-          <text:span>
-            <xsl:apply-templates select="." mode="start-add-odt-flags"/>
-            <xsl:apply-templates/>
-            <xsl:apply-templates select="." mode="end-add-odt-flags"/>
-          </text:span>
-        </text:span>
-        <text:line-break/>
-      </xsl:otherwise>
-    </xsl:choose>
+    <text:span text:style-name="Code_Text">
+      <xsl:apply-templates select="." mode="start-add-odt-flags"/>
+      <xsl:apply-templates/>
+      <xsl:apply-templates select="." mode="end-add-odt-flags"/>
+    </text:span>
+    <text:line-break/>
   </xsl:template>
 
-  <xsl:template match="*[contains(@class,' ui-d/menucascade ')]">
+  <xsl:template match="*[contains(@class, ' ui-d/menucascade ')]">
     <text:span>
       <xsl:apply-templates select="." mode="start-add-odt-revflags"/>
-      <xsl:apply-templates/>
+      <xsl:for-each select="*[contains(@class, ' ui-d/uicontrol ')]">
+        <xsl:if test="position() ne 1">
+          <xsl:text> &gt; </xsl:text>
+        </xsl:if>
+        <xsl:apply-templates select="."/>
+      </xsl:for-each>
       <xsl:apply-templates select="." mode="end-add-odt-revflags"/>
     </text:span>
   </xsl:template>
 
-  <xsl:template match="*[contains(@class,' ui-d/uicontrol ')]" priority="2">
-    <!-- insert an arrow with leading/trailing spaces before all but the first uicontrol in a menucascade -->
-    <xsl:if test="parent::*[contains(@class,' ui-d/menucascade ')] and following-sibling::*[contains(@class,' ui-d/uicontrol ')]">
-      <xsl:text> &gt; </xsl:text>
-    </xsl:if>
+  <xsl:template match="*[contains(@class, ' ui-d/uicontrol ')]" priority="2">
     <text:span text:style-name="bold">
       <xsl:apply-templates select="." mode="start-add-odt-revflags"/>
       <xsl:apply-templates/>

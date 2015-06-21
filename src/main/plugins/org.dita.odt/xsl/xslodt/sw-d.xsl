@@ -28,14 +28,6 @@
      xmlns:prodtools="http://www.ibm.com/xmlns/prodtools"
   version="2.0">
 
-  <!-- 
-<xsl:template match="*[contains(@class,' sw-d/systemoutput ')]">
-     <xsl:element name="text:span">
-          <xsl:attribute name="text:style-name">Courier_New</xsl:attribute>
-          <xsl:apply-templates/>
-     </xsl:element>
-</xsl:template>
--->
   <xsl:template match="*[contains(@class,' sw-d/msgph ')] |
                        *[contains(@class,' sw-d/systemoutput ')]">
     <text:span text:style-name="Courier_New">
@@ -55,115 +47,13 @@
   </xsl:template>
 
   <xsl:template match="*[contains(@class,' sw-d/msgblock ')]" name="create_msgblock">
-    <xsl:choose>
-      <xsl:when test="parent::*[contains(@class, ' topic/body ')]">
-        <text:p>
-          <text:span>
-            <xsl:apply-templates select="." mode="start-add-odt-flags"/>
-
-            <xsl:call-template name="create_msgblock_content"/>
-            <xsl:apply-templates/>
-            <xsl:apply-templates select="." mode="end-add-odt-flags"/>
-          </text:span>
-        </text:p>
-      </xsl:when>
-      <xsl:when test="parent::*[contains(@class, ' topic/li ')] or parent::*[contains(@class, ' topic/sli ')]">
-        <text:p>
-          <text:span>
-            <xsl:apply-templates select="." mode="start-add-odt-flags"/>
-
-            <xsl:call-template name="create_msgblock_content"/>
-            <xsl:apply-templates/>
-            <xsl:apply-templates select="." mode="end-add-odt-flags"/>
-          </text:span>
-        </text:p>
-      </xsl:when>
-      <xsl:when test="parent::*[contains(@class, ' topic/linkinfo ')]">
-        <text:span>
-          <xsl:apply-templates select="." mode="start-add-odt-flags"/>
-
-          <xsl:call-template name="create_msgblock_content"/>
-          <xsl:apply-templates/>
-          <xsl:apply-templates select="." mode="end-add-odt-flags"/>
-        </text:span>
-        <text:line-break/>
-      </xsl:when>
-      <!-- nested by entry -->
-      <xsl:when test="parent::*[contains(@class, ' topic/entry ')]">
-        <!-- create p tag -->
-        <text:p>
-          <!-- alignment styles -->
-          <xsl:if test="parent::*[contains(@class, ' topic/entry ')]/@align">
-            <xsl:call-template name="set_align_value"/>
-          </xsl:if>
-
-          <!-- cell belongs to thead -->
-          <xsl:choose>
-            <xsl:when test="parent::*[contains(@class, ' topic/entry ')]                               /parent::*[contains(@class, ' topic/row ')]/parent::*[contains(@class, ' topic/thead ')]">
-              <text:span text:style-name="bold">
-
-                <text:span>
-                  <xsl:apply-templates select="." mode="start-add-odt-flags"/>
-
-                  <xsl:call-template name="create_msgblock_content"/>
-                  <xsl:apply-templates/>
-                  <xsl:apply-templates select="." mode="end-add-odt-flags"/>
-                </text:span>
-              </text:span>
-            </xsl:when>
-            <xsl:otherwise>
-              <text:span>
-                <xsl:apply-templates select="." mode="start-add-odt-flags"/>
-
-                <xsl:call-template name="create_msgblock_content"/>
-                <xsl:apply-templates/>
-                <xsl:apply-templates select="." mode="end-add-odt-flags"/>
-              </text:span>
-            </xsl:otherwise>
-          </xsl:choose>
-        </text:p>
-      </xsl:when>
-      <!-- nested by stentry -->
-      <xsl:when test="parent::*[contains(@class, ' topic/stentry ')]">
-        <text:p>
-          <!-- cell belongs to sthead -->
-          <xsl:choose>
-            <xsl:when test="parent::*[contains(@class, ' topic/stentry ')]/                               parent::*[contains(@class, ' topic/sthead ')]">
-              <text:span text:style-name="bold">
-
-                <text:span>
-                  <xsl:apply-templates select="." mode="start-add-odt-flags"/>
-
-                  <xsl:call-template name="create_msgblock_content"/>
-                  <xsl:apply-templates/>
-                  <xsl:apply-templates select="." mode="end-add-odt-flags"/>
-                </text:span>
-              </text:span>
-            </xsl:when>
-            <xsl:otherwise>
-              <text:span>
-                <xsl:apply-templates select="." mode="start-add-odt-flags"/>
-
-                <xsl:call-template name="create_msgblock_content"/>
-                <xsl:apply-templates/>
-                <xsl:apply-templates select="." mode="end-add-odt-flags"/>
-              </text:span>
-            </xsl:otherwise>
-          </xsl:choose>
-        </text:p>
-      </xsl:when>
-      <!-- other tags -->
-      <xsl:otherwise>
-        <text:span>
-          <xsl:apply-templates select="." mode="start-add-odt-flags"/>
-
-          <xsl:call-template name="create_msgblock_content"/>
-          <xsl:apply-templates/>
-          <xsl:apply-templates select="." mode="end-add-odt-flags"/>
-        </text:span>
-        <text:line-break/>
-      </xsl:otherwise>
-    </xsl:choose>
+    <text:span>
+      <xsl:apply-templates select="." mode="start-add-odt-flags"/>
+      <xsl:call-template name="create_msgblock_content"/>
+      <xsl:apply-templates/>
+      <xsl:apply-templates select="." mode="end-add-odt-flags"/>
+    </text:span>
+    <text:line-break/>
   </xsl:template>
 
   <xsl:template name="create_msgblock_content">
