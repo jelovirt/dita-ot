@@ -430,14 +430,8 @@
 
 <xsl:template match="*[contains(@class,' topic/desc ')]" priority="0">
   <text:span>
-    <!-- 
-    <xsl:apply-templates select="text()"/>
-    -->
     <xsl:apply-templates/>
   </text:span>
-  <!-- 
-  <xsl:apply-templates select="*[@class]"/>
-  -->
 </xsl:template>
 
 <xsl:template match="*[contains(@class,' topic/prolog ')]"/>
@@ -737,11 +731,11 @@
       <xsl:otherwise>
         <xsl:variable name="t" select="normalize-space(.)"/>
         <xsl:if test="not($t = '')">
-          <xsl:if test="starts-with(.,' ')">
+          <xsl:if test="not(normalize-space(substring(., 1, 1)))">
             <xsl:text> </xsl:text>
           </xsl:if>
           <xsl:value-of select="$t"/>
-          <xsl:if test="substring(., string-length(.)) = ' '">
+          <xsl:if test="not(normalize-space(substring(., string-length(.))))">
             <xsl:text> </xsl:text>
           </xsl:if>
         </xsl:if>
