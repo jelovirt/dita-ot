@@ -547,6 +547,15 @@
         </style:paragraph-properties>
       </style:style>
       
+      <style:style style:name="Table_20_Contents" style:display-name="Table Contents"
+                   style:family="paragraph" style:parent-style-name="Standard" style:class="extra">
+        <style:paragraph-properties text:number-lines="false" text:line-number="0"/>
+      </style:style>
+      <style:style style:name="Table_20_Heading" style:display-name="Table Heading" 
+                   style:family="paragraph" style:parent-style-name="Table_20_Contents" style:class="extra">
+        <style:paragraph-properties fo:text-align="center" style:justify-single-word="false" text:number-lines="false" text:line-number="0"/>
+        <style:text-properties fo:font-weight="bold" style:font-weight-asian="bold" style:font-weight-complex="bold"/>
+      </style:style>
     </office:styles>
     
     <office:automatic-styles>

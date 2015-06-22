@@ -201,7 +201,15 @@
   <!-- =========== block things ============ -->
 
   <xsl:attribute-set name="p">
-    <xsl:attribute name="text:style-name">Standard</xsl:attribute>
+    <xsl:attribute name="text:style-name">
+      <xsl:choose>
+        <xsl:when test="ancestor::*[contains(@class,' topic/thead ')] |
+                        ancestor::*[contains(@class,' topic/sthead ')]">Table_20_Contents</xsl:when>
+        <xsl:when test="ancestor::*[contains(@class,' topic/table ')] |
+                        ancestor::*[contains(@class,' topic/simpletable ')]">Table_20_Contents</xsl:when>
+        <xsl:otherwise>Standard</xsl:otherwise>
+      </xsl:choose>
+    </xsl:attribute>
   </xsl:attribute-set>
 
   <xsl:template match="*[contains(@class,' topic/p ')]" name="topic.p">
