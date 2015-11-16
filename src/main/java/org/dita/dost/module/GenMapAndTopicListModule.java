@@ -441,14 +441,16 @@ public final class GenMapAndTopicListModule extends AbstractPipelineModuleImpl {
         
         try {
             XMLReader xmlSource = getXmlReader(ref.format);
+            final EntityResolverFilter entityResolver = getEntityResolver();
             for (final XMLFilter f: getProcessingPipe(currentFile)) {
                 f.setParent(xmlSource);
-                f.setEntityResolver(CatalogUtils.getCatalogResolver());
+                f.setEntityResolver(entityResolver);
                 xmlSource = f;
             }
-            xmlSource.setContentHandler(nullHandler);            
-            
-            xmlSource.parse(currentFile.toString());
+            xmlSource.setContentHandler(nullHandler);
+
+            final InputSource input = getInputSource(entityResolver);
+            xmlSource.parse(input);
 
             if (listFilter.isValidInput()) {
                 processParseResult(currentFile);
@@ -506,6 +508,20 @@ public final class GenMapAndTopicListModule extends AbstractPipelineModuleImpl {
         listFilter.reset();
         keydefFilter.reset();
 
+    }
+
+    private InputSource getInputSource(final EntityResolverFilter entityResolver) throws SAXException, IOException {
+        final InputSource inputSource = entityResolver.resolveEntity(null, currentFile.toString());
+        if (inputSource != null) {
+            return inputSource;
+        }
+        return new InputSource(currentFile.toString());
+    }
+
+    private EntityResolverFilter getEntityResolver() {
+        final EntityResolverFilter entityResolver = new LoggingEntityResolver();
+        entityResolver.setEntityResolver(CatalogUtils.getCatalogResolver());
+        return entityResolver;
     }
 
     private XMLReader getXmlReader(final String format) throws SAXException {

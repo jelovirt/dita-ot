@@ -40,9 +40,7 @@ import org.dita.dost.exception.DITAOTXMLErrorHandler;
 import org.dita.dost.log.MessageUtils;
 import org.dita.dost.pipeline.AbstractPipelineInput;
 import org.dita.dost.pipeline.AbstractPipelineOutput;
-import org.dita.dost.reader.DitaValReader;
-import org.dita.dost.reader.GrammarPoolManager;
-import org.dita.dost.reader.SubjectSchemeReader;
+import org.dita.dost.reader.*;
 import org.dita.dost.util.*;
 import org.dita.dost.writer.*;
 import org.w3c.dom.Document;
@@ -87,6 +85,7 @@ public final class DebugAndFilterModule extends AbstractPipelineModuleImpl {
     private Map<String, Map<String, String>> defaultValueMap;
     /** XMLReader instance for parsing dita file */
     private XMLReader reader;
+    private EntityResolverFilter entityResolver;
     /** Absolute path to current source file. */
     private URI currentFile;
     private Map<URI, Set<URI>> dic;
@@ -182,13 +181,13 @@ public final class DebugAndFilterModule extends AbstractPipelineModuleImpl {
                 parser.setFeature("http://xml.org/sax/features/lexical-handler", true);
             } catch (final SAXNotRecognizedException e) {}
 
-            in = new InputSource(f.src.toString());
+            in = getInputSource(f)
 //            final Source source = new SAXSource(xmlSource, in);
             final Result result = new StreamResult(out);
 //            serializer.transform(source, result);
             serializer.setResult(result);
             xmlSource.setContentHandler(serializer);
-            xmlSource.parse(new InputSource(f.src.toString()));
+            xmlSource.parse(in);
         } catch (final RuntimeException e) {
             throw e;
         } catch (final Exception e) {
@@ -211,6 +210,20 @@ public final class DebugAndFilterModule extends AbstractPipelineModuleImpl {
         if (isFormatDita(f.format)) {
             f.format = ATTR_FORMAT_VALUE_DITA;
         }
+    }
+
+    private InputSource getInputSource(final FileInfo f) throws SAXException, IOException {
+        final InputSource inputSource = entityResolver.resolveEntity(null, currentFile.toString());
+        if (inputSource != null) {
+            return inputSource;
+        }
+        return new InputSource(f.src.toString());
+    }
+
+    private EntityResolverFilter getEntityResolver() {
+        final EntityResolverFilter entityResolver = new LoggingEntityResolver();
+        entityResolver.setEntityResolver(CatalogUtils.getCatalogResolver());
+        return entityResolver;
     }
 
     private XMLReader getXmlReader(final String format) throws SAXException {
@@ -268,8 +281,8 @@ public final class DebugAndFilterModule extends AbstractPipelineModuleImpl {
             }
         }
         reader.setFeature(FEATURE_NAMESPACE, true);
-        final CatalogResolver resolver = CatalogUtils.getCatalogResolver();
-        reader.setEntityResolver(resolver);
+        entityResolver = getEntityResolver();
+        reader.setEntityResolver(entityResolver);
         if (gramcache) {
             final XMLGrammarPool grammarPool = GrammarPoolManager.getGrammarPool();
             try {

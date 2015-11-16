@@ -792,7 +792,11 @@ public final class GenListModuleReader extends AbstractXMLFilter {
      * @return {@code true} if path walks up, otherwise {@code false}
      */
     private boolean isOutFile(final URI toCheckPath) {
-        return !toCheckPath.getPath().startsWith(rootDir.getPath());
+        if (toCheckPath.getPath() == null) {
+            return true;
+        } else {
+            return !toCheckPath.getPath().startsWith(rootDir.getPath());
+        }
     }
 
     /**
