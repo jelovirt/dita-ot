@@ -8,30 +8,26 @@
  */
 package org.dita.dost.module;
 
-import static org.dita.dost.util.Constants.*;
-import static org.dita.dost.writer.ImageMetadataFilter.*;
-import static javax.xml.XMLConstants.*;
-
-import java.io.BufferedOutputStream;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
-
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.stream.StreamResult;
-import javax.xml.transform.stream.StreamSource;
-
 import org.dita.dost.exception.DITAOTException;
 import org.dita.dost.log.MessageUtils;
 import org.dita.dost.pipeline.AbstractPipelineInput;
 import org.dita.dost.pipeline.AbstractPipelineOutput;
 import org.dita.dost.reader.MergeMapParser;
 import org.dita.dost.util.CatalogUtils;
+import org.xml.sax.SAXException;
+
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.sax.SAXTransformerFactory;
+import javax.xml.transform.sax.TransformerHandler;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
+import java.io.*;
+
+import static javax.xml.XMLConstants.NULL_NS_URI;
+import static org.dita.dost.util.Constants.*;
+import static org.dita.dost.util.EmptyAttributes.EMPTY_ATTRIBUTES;
 
 /**
  * The module handles topic merge in issues as PDF.
@@ -40,7 +36,6 @@ final class TopicMergeModule extends AbstractPipelineModuleImpl {
 
     /**
      * Default Constructor.
-     *
      */
     public TopicMergeModule() {
         super();
@@ -48,7 +43,7 @@ final class TopicMergeModule extends AbstractPipelineModuleImpl {
 
     /**
      * Entry point of TopicMergeModule.
-     * 
+     *
      * @param input Input parameters and resources.
      * @return null
      * @throws DITAOTException exception
@@ -67,7 +62,7 @@ final class TopicMergeModule extends AbstractPipelineModuleImpl {
         mapParser.setJob(job);
         mapParser.setOutput(out.getAbsoluteFile());
 
-        if (!ditaInput.exists()){
+        if (!ditaInput.exists()) {
             logger.error(MessageUtils.getInstance().getMessage("DOTJ025E").toString());
             return null;
         }
@@ -75,15 +70,27 @@ final class TopicMergeModule extends AbstractPipelineModuleImpl {
         ByteArrayOutputStream midBuffer = null;
         try {
             midBuffer = new ByteArrayOutputStream();
-            midBuffer.write(XML_HEAD.getBytes(UTF8));
-            midBuffer.write(("<dita-merge " + ATTRIBUTE_NAMESPACE_PREFIX_DITAARCHVERSION + "='" + DITA_NAMESPACE + "' "
-                    + XMLNS_ATTRIBUTE + ":" + DITA_OT_PREFIX + "='" + DITA_OT_NS + "'>").getBytes(UTF8));
-            mapParser.setOutputStream(midBuffer);
+            final TransformerFactory tf = TransformerFactory.newInstance();
+            if (!tf.getFeature(SAXTransformerFactory.FEATURE)) {
+                throw new RuntimeException("SAX transformation factory not supported");
+            }
+            final SAXTransformerFactory stf = (SAXTransformerFactory) tf;
+            final TransformerHandler s = stf.newTransformerHandler();
+            s.setResult(new StreamResult(midBuffer));
+
+            s.startDocument();
+            s.startPrefixMapping(ATTRIBUTE_PREFIX_DITAARCHVERSION, "http://dita.oasis-open.org/architecture/2005/");
+            s.startElement(NULL_NS_URI, "dita-merge", "dita-merge", EMPTY_ATTRIBUTES);
+
+            mapParser.setContentHandler(s);
             mapParser.read(ditaInput, job.tempDir);
-            midBuffer.write("</dita-merge>".getBytes(UTF8));
-        } catch (final UnsupportedEncodingException e) {
+
+            s.endElement(NULL_NS_URI, "dita-merge", "dita-merge");
+            s.endPrefixMapping(ATTRIBUTE_PREFIX_DITAARCHVERSION);
+            s.endDocument();
+        } catch (final TransformerConfigurationException e) {
             throw new RuntimeException(e);
-        } catch (final IOException e) {
+        } catch (final SAXException e) {
             throw new DITAOTException("Failed to merge topics: " + e.getMessage(), e);
         } finally {
             if (midBuffer != null) {
@@ -95,6 +102,7 @@ final class TopicMergeModule extends AbstractPipelineModuleImpl {
             }
         }
 
+        logger.info("Writing " + out.toURI().toString());
         OutputStream output = null;
         try {
             final File outputDir = out.getParentFile();
