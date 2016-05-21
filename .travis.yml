@@ -28,3 +28,13 @@ deploy:
     on:
       repo: dita-ot/dita-ot
       branch: develop
+  - provider: releases
+    api_key:
+      secure: KVJbtRElMYxVZgBZeZ81Q/naQabw8fBXdaG91E1QUIbI+75AF6AloKkmi+GeNv2azPsfIeEC3SsyFEjZEZSwMaHKDhqcPgmITZ64URXYxiZgwQyHVT1hdiqwbjGdk99lEf1eTtTb6ONmkGTIHSirkEA0je01F1TS378VedzdbXY=
+    skip_cleanup: true
+    file_glob: true
+    file: "build/distributions/dita-ot-*.zip"
+    on:
+      tags: true
+      repo: jelovirt/dita-ot
+      branch: develop
