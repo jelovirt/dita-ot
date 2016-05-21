@@ -37,4 +37,3 @@ deploy:
     on:
       tags: true
       repo: jelovirt/dita-ot
-      branch: develop
