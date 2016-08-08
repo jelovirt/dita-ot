@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.*;
+import java.util.stream.IntStream;
 
 import static javafx.collections.FXCollections.observableList;
 
@@ -65,6 +66,8 @@ public class Controller implements Initializable {
             output.pseudoClassStateChanged(errorClass, v);
             validate();
         });
+
+        validate();
     }
 
     private List<String> getTranstypes() {
@@ -104,7 +107,24 @@ public class Controller implements Initializable {
     @FXML
     protected void run(ActionEvent event) {
         System.err.println("run " + transtype.getValue() + " for " + input.getText());
-        progressBar.setProgress(progressBar.getProgress() + 0.1d);
+        final Runnable job = new Runnable() {
+            @Override
+            public void run() {
+                run.setDisable(true);
+                IntStream.range(0, 10).forEach(i -> {
+                    System.out.println("Process " + i);
+                    progressBar.setProgress(progressBar.getProgress() + 0.1d);
+                    try {
+                        Thread.sleep(100);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                });
+                run.setDisable(false);
+            }
+        };
+
+        new Thread(job).start();
     }
 
     @FXML
