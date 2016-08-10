@@ -10,7 +10,10 @@ public class Main extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        final Parent root = FXMLLoader.load(getClass().getResource("/sample.fxml"));
+        final FXMLLoader loader = new FXMLLoader(getClass().getResource("/sample.fxml"));
+        final Parent root = loader.load();
+        final Controller c = loader.getController();
+
         primaryStage.setTitle("DITA-OT");
         final Scene scene = new Scene(root, 300, 275);
         scene.getStylesheets().add(getClass().getResource("/main.css").toExternalForm());

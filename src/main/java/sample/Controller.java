@@ -45,8 +45,12 @@ public class Controller implements Initializable {
     @FXML
     private TextField output;
 
+    private File ditaDir;
+
     @Override
     public void initialize(final URL url, final ResourceBundle rb) {
+        ditaDir = new File(System.getProperty("dita.dir")).getAbsoluteFile();
+
         final List<String> list = getTranstypes();
         final ObservableList obList = observableList(list);
         transtype.getItems().clear();
@@ -110,16 +114,12 @@ public class Controller implements Initializable {
         final Runnable job = new Runnable() {
             @Override
             public void run() {
+                final Processor p = new Processor(ditaDir, transtype.getValue().toString(), Collections.emptyMap());
+                p.setInput(new File(input.getText()));
+                p.setOutput(new File(output.getText()));
+
                 run.setDisable(true);
-                IntStream.range(0, 10).forEach(i -> {
-                    System.out.println("Process " + i);
-                    progressBar.setProgress(progressBar.getProgress() + 0.1d);
-                    try {
-                        Thread.sleep(100);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                });
+                p.run();
                 run.setDisable(false);
             }
         };
