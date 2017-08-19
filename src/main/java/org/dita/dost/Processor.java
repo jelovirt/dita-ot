@@ -22,6 +22,21 @@ import java.util.Map;
 public interface Processor {
 
     /**
+     * Get transtype for this processor.
+     *
+     * @return implemented transtype
+     */
+    String getTranstype();
+
+    /**
+     * Set DITA-OT installation base directory
+     *
+     * @param ditaDir DITA-OT installation directory.
+     * @return this Process object
+     */
+    Processor setDitaDir(final File ditaDir);
+
+    /**
      * Set input document.
      *
      * @param input input document file

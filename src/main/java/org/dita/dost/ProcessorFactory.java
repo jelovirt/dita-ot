@@ -14,6 +14,7 @@ import java.io.File;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.ServiceLoader;
 
 /**
  * DITA-OT processer factory. Not thread-safe, but can be reused.
@@ -22,9 +23,16 @@ public final class ProcessorFactory {
 
     private final File ditaDir;
     private final Map<String, String> args = new HashMap<>();
+    private final Map<String, Class<Processor>> processors;
 
     private ProcessorFactory(final File ditaDir) {
         this.ditaDir = ditaDir;
+
+        final ServiceLoader<Processor> serviceLoader = ServiceLoader.load(Processor.class);
+        processors = new HashMap<>();
+        for (Processor processor : (Iterable<Processor>)() -> serviceLoader.iterator()) {
+            processors.put(processor.getTranstype(), (Class<Processor>) processor.getClass());
+        }
     }
 
     /**
@@ -62,10 +70,25 @@ public final class ProcessorFactory {
         if (ditaDir == null) {
             throw new IllegalStateException();
         }
-        if (!Configuration.transtypes.contains(transtype)) {
-            throw new IllegalArgumentException("Transtype " + transtype + " not supported");
+
+        final Processor processor;
+        if (processors.containsKey(transtype)) {
+            final Class<Processor> cls = processors.get(transtype);
+            try {
+                processor = cls.newInstance();
+            } catch (InstantiationException | IllegalAccessException e) {
+                throw new RuntimeException(e);
+            }
+        } else {
+            if (!Configuration.transtypes.contains(transtype)) {
+                throw new IllegalArgumentException("Transtype " + transtype + " not supported");
+            }
+            processor = new ProcessorImpl(transtype);
         }
-        return new ProcessorImpl(ditaDir, transtype, Collections.unmodifiableMap(args));
+
+        return processor
+                .setDitaDir(ditaDir)
+                .setProperties(Collections.unmodifiableMap(args));
     }
 
 }

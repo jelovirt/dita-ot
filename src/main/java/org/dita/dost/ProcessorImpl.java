@@ -33,17 +33,31 @@ import java.util.Vector;
  */
 public final class ProcessorImpl implements Processor {
 
-    private final File ditaDir;
-    private final Map<String, String> args;
+    private final String transtype;
+
+    private File ditaDir;
+    private Map<String, String> args = new HashMap<>();
     private Logger logger;
     private boolean cleanOnFailure = true;
     private boolean createDebugLog = true;
 
-    ProcessorImpl(final File ditaDir, final String transtype, final Map<String, String> args) {
+    public ProcessorImpl() {
+        this.transtype = null;
+    }
+
+    public ProcessorImpl(String transtype) {
+        this.transtype = transtype;
+    }
+
+    @Override
+    public String getTranstype() {
+        return transtype;
+    }
+
+    @Override
+    public Processor setDitaDir(final File ditaDir) {
         this.ditaDir = ditaDir;
-        this.args = new HashMap<>(args);
-        this.args.put("dita.dir", ditaDir.getAbsolutePath());
-        this.args.put("transtype", transtype);
+        return this;
     }
 
     @Override
@@ -137,6 +151,9 @@ public final class ProcessorImpl implements Processor {
         }
         final File tempDir = getTempDir();
         args.put("dita.temp.dir", tempDir.getAbsolutePath());
+        this.args.put("dita.dir", ditaDir.getAbsolutePath());
+        this.args.put("transtype", transtype);
+
         boolean cleanTemp = true;
 
         final ch.qos.logback.classic.Logger debugLogger = createDebugLog ? openDebugLogger(tempDir) : null;
