@@ -1,3 +1,11 @@
+/*
+ * This file is part of the DITA Open Toolkit project.
+ *
+ * Copyright 2017 Jarno Elovirta
+ *
+ * See the accompanying LICENSE file for applicable license.
+ */
+
 package org.dita.dost;
 
 import org.dita.dost.util.Configuration;
@@ -57,7 +65,7 @@ public final class ProcessorFactory {
         if (!Configuration.transtypes.contains(transtype)) {
             throw new IllegalArgumentException("Transtype " + transtype + " not supported");
         }
-        return new Processor(ditaDir, transtype, Collections.unmodifiableMap(args));
+        return new ProcessorImpl(ditaDir, transtype, Collections.unmodifiableMap(args));
     }
 
 }
