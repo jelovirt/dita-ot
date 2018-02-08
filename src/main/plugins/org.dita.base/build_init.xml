@@ -16,7 +16,7 @@ See the accompanying LICENSE file for applicable license.
   <property file="${dita.dir}/lib/configuration.properties"/>
   
   <xmlcatalog id="dita.catalog">
-    <catalogpath path="${dita.plugin.org.dita.base.dir}/catalog-dita.xml"/>
+    <catalogpath path="${dita.plugin.org.dita.base.dir}/config/catalog-dita.xml"/>
   </xmlcatalog>
 
   <!-- Deprecated -->

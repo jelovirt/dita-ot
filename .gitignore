@@ -9,7 +9,7 @@ src/main/lib/*.jar
 
 # Generated resources
 src/main/build.xml
-src/main/catalog-dita.xml
+src/main/config/catalog-dita.xml
 src/main/config/env.bat
 src/main/config/env.sh
 src/main/config/messages.xml

@@ -53,7 +53,9 @@ public final class CatalogUtils {
             manager.setIgnoreMissingProperties(true);
             manager.setUseStaticCatalog(false); // We'll use a private catalog.
             manager.setPreferPublic(true);
-            final File catalogFilePath = new File(ditaDir, Configuration.pluginResourceDirs.get("org.dita.base") + File.separator + FILE_NAME_CATALOG);
+            final File catalogFilePath = new File(ditaDir, Configuration.pluginResourceDirs.get("org.dita.base")
+                    + File.separator + "config"
+                    + File.separator + FILE_NAME_CATALOG);
             manager.setCatalogFiles(catalogFilePath.toURI().toASCIIString());
             //manager.setVerbosity(10);
             catalogResolver = new CatalogResolver(manager);
