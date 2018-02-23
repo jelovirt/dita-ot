@@ -947,6 +947,16 @@ public final class Job {
     }
 
     /**
+     * Get input file.
+     * @return optional input file
+     */
+    public Optional<FileInfo> getInputFileInfo() {
+        return files.values().stream()
+                .filter(fi -> fi.isInput)
+                .findAny();
+    }
+
+    /**
      * Set input map path.
      * @param inputFile absolute input map path
      */
