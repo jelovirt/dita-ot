@@ -308,12 +308,13 @@ public final class DebugAndFilterModule extends SourceReaderModule {
         final String mode = input.getAttribute(ANT_INVOKER_EXT_PARAM_PROCESSING_MODE);
         processingMode = mode != null ? Mode.valueOf(mode.toUpperCase()) : Mode.LAX;
 
-        // Absolute input directory path
-        URI inputDir = job.getInputDir();
-        if (!inputDir.isAbsolute()) {
-            inputDir = baseDir.toURI().resolve(inputDir);
-        }
-        inputMap = inputDir.resolve(job.getInputMap());
+//        // Absolute input directory path
+//        URI inputDir = job.getInputDir();
+//        if (!inputDir.isAbsolute()) {
+//            inputDir = baseDir.toURI().resolve(inputDir);
+//        }
+//        inputMap = inputDir.resolve(job.getInputMap());
+        inputMap = job.getInputFileInfo().get().src;
     }
 
 

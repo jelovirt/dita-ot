@@ -15,11 +15,12 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 import org.dita.dost.TestUtils;
@@ -28,11 +29,11 @@ public final class JobTest {
 
     private static final File resourceDir = TestUtils.getResourceDir(JobTest.class);
     private static final File srcDir = new File(resourceDir, "src");
-    private static File tempDir;
-    private static Job job;
+    private File tempDir;
+    private Job job;
     
-    @BeforeClass
-    public static void setUp() throws IOException {
+    @Before
+    public void setUp() throws IOException {
         tempDir = TestUtils.createTempDir(JobTest.class);
         TestUtils.copy(srcDir, tempDir);
         job = new Job(tempDir);
@@ -71,8 +72,8 @@ public final class JobTest {
         assertEquals(new URI("file:/foo/bar"), job.getInputDir());
     }
 
-    @AfterClass
-    public static void tearDown() throws IOException {
+    @After
+    public void tearDown() throws IOException {
         TestUtils.forceDelete(tempDir);
     }
     

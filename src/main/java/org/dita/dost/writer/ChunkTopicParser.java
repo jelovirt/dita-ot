@@ -307,7 +307,7 @@ public final class ChunkTopicParser extends AbstractChunkTopicParser {
                 }
                 writeProcessingInstruction(ditaFileOutput, PI_WORKDIR_TARGET_URI, workDir.toString());
 
-                final File path2rootmap = toFile(getRelativePath(outputFileName, job.getInputMap())).getParentFile();
+                final File path2rootmap = toFile(getRelativePath(outputFileName, job.getInputFileInfo().get().uri)).getParentFile();
                 writeProcessingInstruction(ditaFileOutput, PI_PATH2ROOTMAP_TARGET_URI, path2rootmap == null ? "./" : toURI(path2rootmap).toString());
 
                 if (conflictTable.get(outputFileName) != null) {

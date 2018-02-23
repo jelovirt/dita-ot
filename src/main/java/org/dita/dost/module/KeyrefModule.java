@@ -263,7 +263,7 @@ final class KeyrefModule extends AbstractPipelineModuleImpl {
         final boolean isResourceOnly = isResourceOnly(elem);
         for (final KeyScope s: ss) {
             if (hrefNode != null) {
-                final URI href = stripFragment(job.getInputMap().resolve(hrefNode.getValue()));
+                final URI href = stripFragment(job.getInputFileInfo().get().uri.resolve(hrefNode.getValue()));
                 final FileInfo fi = job.getFileInfo(href);
                 if (fi != null && fi.hasKeyref) {
                     final int count = usage.getOrDefault(fi.uri, 0);
