@@ -154,7 +154,9 @@ See the accompanying LICENSE file for applicable license.
     <dirname property="mapref.workdir" file="${dita.temp.dir}/${user.input.file}" />
     <pipeline message="Resolve mapref in ditamap" taskname="mapref">
       <module class="org.dita.dost.module.MaprefModule">
-        <param name="style" location="${dita.plugin.org.dita.base.dir}/xsl/preprocess/mapref.xsl"/>
+        <param name="style">
+          <fileset dir="${dita.plugin.org.dita.base.dir}" includes="xsl/preprocess/mapref.xsl"/>
+        </param>
         <ditafileset format="ditamap" input="true"/>
         <ditafileset format="ditamap" inputResource="true"/>
         <dita:extension id="dita.preprocess.mapref.param" behavior="org.dita.dost.platform.InsertAction"/>
@@ -182,7 +184,9 @@ See the accompanying LICENSE file for applicable license.
     </pipeline>
     <pipeline message="Resolve mapref in ditamap" taskname="mapref">
       <module class="org.dita.dost.module.MaprefModule">
-        <param name="style" location="${dita.plugin.org.dita.base.dir}/xsl/preprocess/mapref.xsl"/>
+        <param name="style">
+          <fileset dir="${dita.plugin.org.dita.base.dir}" includes="xsl/preprocess/mapref.xsl"/>
+        </param>
         <ditafileset format="ditamap" input="true"/>
         <ditafileset format="ditamap" inputResource="true"/>
         <dita:extension id="dita.preprocess.mapref.param" behavior="org.dita.dost.platform.InsertAction"/>
@@ -371,7 +375,9 @@ See the accompanying LICENSE file for applicable license.
     description="Move metadata entries">
     <pipeline message="Move metadata entries." taskname="move-meta">
       <module class="org.dita.dost.module.MoveMetaModule">
-        <param name="style" location="${dita.plugin.org.dita.base.dir}/xsl/preprocess/mappull.xsl"/>
+        <param name="style">
+          <fileset dir="${dita.plugin.org.dita.base.dir}" includes="xsl/preprocess/mappull.xsl"/>
+        </param>
         <param name="conserve-memory" expression="${conserve-memory}" if:set="conserve-memory"/>
         <dita:extension id="dita.preprocess.mappull.param" behavior="org.dita.dost.platform.InsertAction"/>
       </module>
@@ -384,7 +390,9 @@ See the accompanying LICENSE file for applicable license.
     <property name="dita.preprocess.reloadstylesheet.maplink" value="${dita.preprocess.reloadstylesheet}"/>
     <pipeline message="Move related links" taskname="maplink">
       <module class="org.dita.dost.module.MoveLinksModule">
-        <param name="style" location="${dita.plugin.org.dita.base.dir}/xsl/preprocess/maplink.xsl"/>
+        <param name="style">
+          <fileset dir="${dita.plugin.org.dita.base.dir}" includes="xsl/preprocess/maplink.xsl"/>
+        </param>
         <param name="include.rellinks" expression="${include.rellinks}" if:set="include.rellinks"/>
       </module>
     </pipeline>

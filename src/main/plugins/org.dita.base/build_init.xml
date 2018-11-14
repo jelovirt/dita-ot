@@ -16,7 +16,9 @@ See the accompanying LICENSE file for applicable license.
   <property file="${dita.dir}/config/configuration.properties"/>
   
   <xmlcatalog id="dita.catalog">
-    <catalogpath path="${dita.plugin.org.dita.base.dir}/catalog-dita.xml"/>
+    <catalogpath>
+      <fileset dir="${dita.plugin.org.dita.base.dir}" includes="catalog-dita.xml"/>
+    </catalogpath>
   </xmlcatalog>
 
   <taskdef name="init-project" classname="org.dita.dost.ant.InitializeProjectTask"/>
@@ -36,8 +38,10 @@ See the accompanying LICENSE file for applicable license.
     <attribute name="property"/>
     <sequential>
       <xslt in="${dita.temp.dir}/.job.xml" out="${dita.temp.dir}/@{file}"
-            style="${dita.plugin.org.dita.base.dir}/xsl/job-helper.xsl"
             force="true" taskname="job-helper">
+        <style>
+          <fileset dir="${dita.plugin.org.dita.base.dir}" includes="xsl/job-helper.xsl"/>
+        </style>
         <param name="property" expression="@{property}"/>
         <outputproperty name="encoding" value="${file.encoding}"/> 
       </xslt>
