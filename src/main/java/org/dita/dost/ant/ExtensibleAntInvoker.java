@@ -8,10 +8,8 @@
 package org.dita.dost.ant;
 
 import com.google.common.collect.ImmutableSet;
-import org.apache.tools.ant.BuildException;
-import org.apache.tools.ant.Location;
-import org.apache.tools.ant.Project;
-import org.apache.tools.ant.Task;
+import org.apache.tools.ant.*;
+import org.apache.tools.ant.types.FileSet;
 import org.apache.tools.ant.types.Mapper;
 import org.apache.tools.ant.types.XMLCatalog;
 import org.dita.dost.exception.DITAOTException;
@@ -155,7 +153,7 @@ public final class ExtensibleAntInvoker extends Task {
                 throw new BuildException("Incomplete parameter");
             }
             if (isValid(getProject(), getLocation(), p.getIf(), p.getUnless())) {
-                attrs.put(p.getName(), p.getValue());
+                attrs.put(p.getName(), p.getValue(getProject()));
             }
         }
         logger = new DITAOTAntLogger(getProject());
@@ -229,7 +227,7 @@ public final class ExtensibleAntInvoker extends Task {
                     throw new BuildException("Incomplete parameter");
                 }
                 if (isValid(getProject(), getLocation(), p.getIf(), p.getUnless())) {
-                    module.setParam(p.getName(), p.getValue());
+                    module.setParam(p.getName(), p.getValue(getProject()));
                 }
             }
             for (final OutputPropertyElem o : ((XsltElem) m).outputProperties) {
@@ -257,7 +255,7 @@ public final class ExtensibleAntInvoker extends Task {
                     throw new BuildException("Incomplete parameter");
                 }
                 if (isValid(getProject(), getLocation(), p.getIf(), p.getUnless())) {
-                    pipelineInput.setAttribute(p.getName(), p.getValue());
+                    pipelineInput.setAttribute(p.getName(), p.getValue(getProject()));
                 }
             }
             final AbstractPipelineModule module = factory.createModule(m.getImplementation());
@@ -656,7 +654,7 @@ public final class ExtensibleAntInvoker extends Task {
                             throw new BuildException("Incomplete parameter");
                         }
                         if (isValid(getProject(), getLocation(), p.getIf(), p.getUnless())) {
-                            fc.setParam(p.getName(), p.getValue());
+                            fc.setParam(p.getName(), p.getValue(getProject()));
                         }
                     }
                     final List<FileInfoFilterElem> predicates = new ArrayList<>(f.fileInfoFilters);
@@ -718,6 +716,8 @@ public final class ExtensibleAntInvoker extends Task {
 
         private String name;
         private String value;
+        // XXX This should be List<ResourceCollection>
+        private List<FileSet> filesets = new ArrayList<>();;
 
         /**
          * Get parameter name.
@@ -734,7 +734,7 @@ public final class ExtensibleAntInvoker extends Task {
          * @return isValid {@code true} is valid object, otherwise {@code false}
          */
         public boolean isValid() {
-            return (name != null && value != null);
+            return (name != null && (value != null || !filesets.isEmpty()));
         }
 
         /**
@@ -748,7 +748,27 @@ public final class ExtensibleAntInvoker extends Task {
 
         /**
          * Get parameter value.
-         *
+         * @param project current Ant project
+         * @return parameter value, {@code null} if not set
+         */
+        public String getValue(final Project project) {
+            if (filesets.isEmpty()) {
+                return value;
+            } else {
+                final List<String> files = new ArrayList<>();
+                for (final FileSet fs: filesets) {
+                    final DirectoryScanner ds = fs.getDirectoryScanner(project);
+                    ds.setBasedir(fs.getDir());
+                    for (final String f: ds.getIncludedFiles()) {
+                        files.add(new File(ds.getBasedir(), f).getAbsolutePath());
+                    }
+                }
+                return files.stream().collect(Collectors.joining(File.pathSeparator));
+            }
+        }
+
+        /**
+         * Get parameter value.
          * @return parameter value, {@code null} if not set
          */
         public String getValue() {
@@ -782,6 +802,13 @@ public final class ExtensibleAntInvoker extends Task {
             value = v.getPath();
         }
 
+        /**
+         * Add resource collection as value.
+         * @param fileset resource collection
+         */
+        public void addFileset(final FileSet fileset) {
+            filesets.add(fileset);
+        }
     }
 
     /**
