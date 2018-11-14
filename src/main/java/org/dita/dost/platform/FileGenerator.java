@@ -9,7 +9,9 @@
 package org.dita.dost.platform;
 
 import net.sf.saxon.trans.UncheckedXPathException;
+import com.google.common.io.Files;
 import org.dita.dost.log.DITAOTLogger;
+import org.dita.dost.util.Configuration;
 import org.dita.dost.util.XMLUtils.AttributesBuilder;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
@@ -75,9 +77,13 @@ final class FileGenerator extends XMLFilterImpl {
 
     /**
      * Generator the output file.
-     * @param fileName filename
+     * @param ditaDir base director
+     * @param template template relative path
      */
-    public void generate(final File fileName) {
+    public void generate(final File ditaDir, final String template) {
+        final File fileName = new File(ditaDir, template);
+        logger.debug("Process template " + fileName.getPath());
+
         final File outputFile = removeTemplatePrefix(fileName);
         templateFile = fileName;
 
@@ -102,6 +108,18 @@ final class FileGenerator extends XMLFilterImpl {
             logger.error("Failed to transform " + fileName + ": " + e.getMessageAndLocation(), e);
         } catch (final Exception e) {
             logger.error("Failed to transform " + fileName + ": " + e.getMessage(), e);
+        }
+
+        if (Configuration.workspace != null) {
+            final File workdirFile = removeTemplatePrefix(new File(Configuration.workspace, template));
+            try {
+                if (!workdirFile.getParentFile().exists()) {
+                    Files.createParentDirs(workdirFile);
+                }
+                Files.copy(outputFile, workdirFile);
+            } catch (final IOException e) {
+                logger.error("Failed to generate " + workdirFile + ": " + e.getMessage(), e);
+            }
         }
     }
 

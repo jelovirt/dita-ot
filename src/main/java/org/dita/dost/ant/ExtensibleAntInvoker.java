@@ -23,6 +23,7 @@ import org.dita.dost.module.XsltModule;
 import org.dita.dost.pipeline.PipelineHashIO;
 import org.dita.dost.store.Store;
 import org.dita.dost.store.StreamStore;
+import org.dita.dost.util.Configuration;
 import org.dita.dost.util.Constants;
 import org.dita.dost.util.Job;
 import org.dita.dost.util.Job.FileInfo;
@@ -34,11 +35,13 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static java.util.Arrays.asList;
+import static org.dita.dost.util.Configuration.pluginResourceDirs;
 import static org.dita.dost.util.Constants.*;
 import static org.dita.dost.util.FileUtils.supportedImageExtensions;
 import static org.dita.dost.util.URLUtils.toFile;
@@ -68,6 +71,9 @@ public final class ExtensibleAntInvoker extends Task {
      * Temporary directory.
      */
     private File tempDir;
+    /** Plugin directories. */
+    private Collection<File> pluginDirs;
+    private File workspace;
 
     /**
      * Constructor.
@@ -138,6 +144,16 @@ public final class ExtensibleAntInvoker extends Task {
     }
 
     private void initialize() throws BuildException {
+        workspace = Optional.ofNullable(Configuration.workspace).orElse(getProject().getBaseDir());
+        pluginDirs = pluginResourceDirs.values().stream()
+                .map(dir -> {
+                    try {
+                        return new File(getProject().getBaseDir(), dir.getPath()).getCanonicalFile();
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                })
+                .collect(Collectors.toList());
         if (tempDir == null) {
             tempDir = new File(this.getProject().getProperty(ANT_TEMP_DIR));
             if (!tempDir.isAbsolute()) {
@@ -198,7 +214,7 @@ public final class ExtensibleAntInvoker extends Task {
         if (m instanceof XsltElem) {
             final XsltElem xm = (XsltElem) m;
             final XsltModule module = new XsltModule();
-            module.setStyle(xm.style);
+            module.setStyle(resolveFile(xm.style));
             if (xm.in != null) {
                 module.setSource(xm.in);
                 module.setResult(xm.out);
@@ -269,6 +285,20 @@ public final class ExtensibleAntInvoker extends Task {
             }
             return module;
         }
+    }
+
+    private File resolveFile(final File style) {
+        final String stylePath = style.getAbsolutePath();
+        for (final File dir : pluginDirs) {
+            if (stylePath.startsWith(dir.getAbsolutePath())) {
+                final String file = dir.toPath().relativize(style.toPath()).toString();
+                final File workspaceFile = new File(workspace, file);
+                if (workspaceFile.exists()) {
+                    return workspaceFile;
+                }
+            }
+        }
+        return style;
     }
 
     private static Predicate<FileInfo> combine(final Collection<FileInfoFilterElem> filters) {

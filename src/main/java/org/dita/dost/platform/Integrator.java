@@ -262,7 +262,7 @@ public final class Integrator {
             final File templateFile = new File(ditaDir, template.getKey());
             logger.debug("Process template " + templateFile.getPath());
 //            fileGen.setPluginId(template.getValue().id);
-            fileGen.generate(templateFile);
+            fileGen.generate(ditaDir, template.getKey());
         }
 
         // generate configuration properties
