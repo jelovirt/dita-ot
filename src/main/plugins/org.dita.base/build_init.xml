@@ -32,6 +32,7 @@ See the accompanying LICENSE file for applicable license.
   <typedef name="dita-fileset" classname="org.dita.dost.ant.types.JobSourceSet"/>
   <typedef name="ditafileset" classname="org.dita.dost.ant.types.JobSourceSet"/>
   <typedef name="jobmapper" classname="org.dita.dost.ant.types.JobMapper"/>
+  <typedef name="pluginfileset" classname="org.dita.dost.ant.types.PluginSourceSet"/>
 
   <macrodef name="job-helper" >
     <attribute name="file"/>
