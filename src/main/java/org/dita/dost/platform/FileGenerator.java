@@ -53,6 +53,7 @@ final class FileGenerator extends XMLFilterImpl {
     private final Map<String, Features> pluginTable;
     /** Template file. */
     private File templateFile;
+    private File workspace;
 
     /**
      * Default Constructor.
@@ -75,16 +76,29 @@ final class FileGenerator extends XMLFilterImpl {
         this.logger = logger;
     }
 
+    public void setWorkspace(final File workspace) {
+        this.workspace = workspace;
+    }
+
     /**
      * Generator the output file.
      * @param ditaDir base director
      * @param template template relative path
      */
-    public void generate(final File ditaDir, final String template) {
+    public void generate(final File ditaDir, final String template) throws IOException {
         final File fileName = new File(ditaDir, template);
-        logger.debug("Process template " + fileName.getPath());
+        final File outputFile = removeTemplatePrefix(new File(workspace, template));
+        logger.debug("Process template " + fileName.getPath() + " to " + outputFile);
 
-        final File outputFile = removeTemplatePrefix(fileName);
+        if (!outputFile.getParentFile().exists()) {
+            try {
+                Files.createParentDirs(outputFile);
+            } catch (IOException e) {
+                throw new IOException("Failed to create workspace directory " + outputFile + ": "
+                        + outputFile.getAbsolutePath(), e);
+
+            }
+        }
         templateFile = fileName;
 
         try (final InputStream in = new BufferedInputStream(new FileInputStream(fileName));
@@ -107,19 +121,7 @@ final class FileGenerator extends XMLFilterImpl {
         } catch (final TransformerException e) {
             logger.error("Failed to transform " + fileName + ": " + e.getMessageAndLocation(), e);
         } catch (final Exception e) {
-            logger.error("Failed to transform " + fileName + ": " + e.getMessage(), e);
-        }
-
-        if (Configuration.workspace != null) {
-            final File workdirFile = removeTemplatePrefix(new File(Configuration.workspace, template));
-            try {
-                if (!workdirFile.getParentFile().exists()) {
-                    Files.createParentDirs(workdirFile);
-                }
-                Files.copy(outputFile, workdirFile);
-            } catch (final IOException e) {
-                logger.error("Failed to generate " + workdirFile + ": " + e.getMessage(), e);
-            }
+            throw new IOException("Failed to transform " + fileName + ": " + e.getMessage(), e);
         }
     }
 

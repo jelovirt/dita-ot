@@ -131,13 +131,22 @@ public final class Configuration {
 
     public static final File workspace;
     static {
-        final String os = System.getProperty("os.name");
-        if (os.equals("Mac OS X")) {
-            workspace = Optional.ofNullable(System.getenv("HOME"))
-                    .map(dir -> Paths.get(dir, "Library", "Application Support", "DITA-OT").toFile())
-                    .orElse(null);
+        final String value = configuration.get("workspace");
+        if (value != null) {
+            if (value.equals(".")) {
+                workspace = null;
+            } else {
+                workspace = new File(value);
+            }
         } else {
-            workspace = null;
+            final String os = System.getProperty("os.name");
+            if (os.equals("Mac OS X")) {
+                workspace = Optional.ofNullable(System.getenv("HOME"))
+                        .map(dir -> Paths.get(dir, "Library", "Application Support", "DITA-OT").toFile())
+                        .orElse(null);
+            } else {
+                workspace = null;
+            }
         }
     }
 
