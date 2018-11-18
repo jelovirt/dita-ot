@@ -144,7 +144,7 @@ public final class ExtensibleAntInvoker extends Task {
     }
 
     private void initialize() throws BuildException {
-        workspace = Optional.ofNullable(Configuration.workspace).orElse(getProject().getBaseDir());
+        workspace = Configuration.workspace.orElse(getProject().getBaseDir());
         pluginDirs = pluginResourceDirs.values().stream()
                 .map(dir -> {
                     try {
@@ -747,7 +747,7 @@ public final class ExtensibleAntInvoker extends Task {
         private String name;
         private String value;
         // XXX This should be List<ResourceCollection>
-        private List<FileSet> filesets = new ArrayList<>();;
+        private List<FileSet> filesets = new ArrayList<>();
 
         /**
          * Get parameter name.

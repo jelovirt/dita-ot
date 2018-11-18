@@ -118,7 +118,7 @@ public final class Integrator {
      */
     public Integrator(final File ditaDir) {
         this.ditaDir = ditaDir;
-        workspace = Configuration.workspace != null ? Configuration.workspace : ditaDir;
+        workspace = Configuration.workspace.orElse(ditaDir);
         pluginTable = new HashMap<>(16);
         templateSet = new HashMap<>(16);
         descSet = new HashSet<>(16);

@@ -129,23 +129,27 @@ public final class Configuration {
     private Configuration() {
     }
 
-    public static final File workspace;
+    public static final Optional<File> workspace;
     static {
         final String value = configuration.get("workspace");
         if (value != null) {
             if (value.equals(".")) {
-                workspace = null;
+                workspace = Optional.empty();
             } else {
-                workspace = new File(value);
+                workspace = Optional.of(new File(value));
             }
         } else {
-            final String os = System.getProperty("os.name");
-            if (os.equals("Mac OS X")) {
+            final String os = System.getProperty("os.name").toLowerCase();
+            if (os.contains("mac")) {
                 workspace = Optional.ofNullable(System.getenv("HOME"))
-                        .map(dir -> Paths.get(dir, "Library", "Application Support", "DITA-OT").toFile())
-                        .orElse(null);
+                        .map(dir -> Paths.get(dir, "Library", "Application Support", "DITA-OT").toFile());
+            } else if (os.contains("nix") || os.contains("nux")) {
+                workspace = Optional.of(new File("/var/lib/DITA-OT"));
+            } else if (os.contains("win")) {
+                workspace = Optional.ofNullable(System.getenv("LOCALAPPDATA"))
+                        .map(dir -> Paths.get(dir, "DITA-OT").toFile());
             } else {
-                workspace = null;
+                workspace = Optional.empty();
             }
         }
     }
