@@ -11,7 +11,10 @@ import com.google.common.collect.ImmutableSet;
 import org.apache.tools.ant.*;
 import org.apache.tools.ant.types.FileSet;
 import org.apache.tools.ant.types.Mapper;
+import org.apache.tools.ant.types.Resource;
 import org.apache.tools.ant.types.XMLCatalog;
+import org.apache.tools.ant.types.resources.FileResource;
+import org.apache.tools.ant.types.resources.Resources;
 import org.dita.dost.exception.DITAOTException;
 import org.dita.dost.log.DITAOTAntLogger;
 import org.dita.dost.log.MessageUtils;
@@ -36,6 +39,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -214,7 +218,7 @@ public final class ExtensibleAntInvoker extends Task {
         if (m instanceof XsltElem) {
             final XsltElem xm = (XsltElem) m;
             final XsltModule module = new XsltModule();
-            module.setStyle(resolveFile(xm.style));
+            module.setStyle(resolveFile(xm.xslResource));
             if (xm.in != null) {
                 module.setSource(xm.in);
                 module.setResult(xm.out);
@@ -299,6 +303,25 @@ public final class ExtensibleAntInvoker extends Task {
             }
         }
         return style;
+    }
+
+    private File resolveFile(final Resource style) {
+        if (style instanceof FileResource) {
+            return resolveFile(((FileResource) style).getFile());
+        }
+        // FIXME
+        final String stylePath = style.getName();
+        final Path styleP = Paths.get(style.getName());
+        for (final File dir : pluginDirs) {
+            if (stylePath.startsWith(dir.getAbsolutePath())) {
+                final String file = dir.toPath().relativize(styleP).toString();
+                final File workspaceFile = new File(workspace, file);
+                if (workspaceFile.exists()) {
+                    return workspaceFile;
+                }
+            }
+        }
+        return styleP.toFile();
     }
 
     private static Predicate<FileInfo> combine(final Collection<FileInfoFilterElem> filters) {
@@ -495,7 +518,6 @@ public final class ExtensibleAntInvoker extends Task {
      */
     public static class XsltElem extends ModuleElem {
 
-        private File style;
         private File baseDir;
         private File destDir;
         private File in;
@@ -509,11 +531,15 @@ public final class ExtensibleAntInvoker extends Task {
         private String filedirparameter;
         private XMLCatalog xmlcatalog;
         private boolean reloadstylesheet;
+        private Resource xslResource;
 
         // Ant setters
 
         public void setStyle(final File style) {
-            this.style = style;
+            final FileResource fr = new FileResource();
+            fr.setProject(getProject());
+            fr.setFile(style);
+            this.xslResource = fr;
         }
 
         public void setBasedir(final File baseDir) {
@@ -567,6 +593,14 @@ public final class ExtensibleAntInvoker extends Task {
             this.filedirparameter = filedirparameter;
         }
 
+        public void addConfiguredStyle(final Resources rc) {
+            if (rc.size() != 1) {
+                throw new BuildException("The style element must be specified with exactly one nested resource.");
+            } else {
+                this.xslResource = rc.iterator().next();
+            }
+        }
+
         public void addConfiguredXmlcatalog(final XMLCatalog xmlcatalog) {
             this.xmlcatalog = xmlcatalog;
         }
@@ -589,6 +623,15 @@ public final class ExtensibleAntInvoker extends Task {
 
         public void addOutputProperty(final OutputPropertyElem outputProperty) {
             outputProperties.add(outputProperty);
+        }
+    }
+
+    public static class StyleElem extends ConfElem {
+        // XXX This should be List<ResourceCollection>
+        private List<FileSet> filesets = new ArrayList<>();
+
+        public void addFileset(final FileSet fileset) {
+            filesets.add(fileset);
         }
     }
 
