@@ -19,6 +19,9 @@ public class ImmutableNode implements Node {
     }
 
     public static Node wrap(Node src) {
+        if (src == null) {
+            return null;
+        }
         switch (src.getNodeType()) {
             case Node.ELEMENT_NODE: return new ImmutableElement((Element) src);
             case Node.ATTRIBUTE_NODE: return new ImmutableAttr((Attr) src);
