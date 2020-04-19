@@ -48,12 +48,12 @@ public class StreamStore implements Store {
     }
 
     @Override
-    public Document getDocument(final URI path) throws IOException {
-        return new ImmutableDocument(getMutableDocument(path));
+    public Document getImmutableDocument(final URI path) throws IOException {
+        return new ImmutableDocument(getDocument(path));
     }
 
     @Override
-    public Document getMutableDocument(final URI path) throws IOException {
+    public Document getDocument(final URI path) throws IOException {
         try {
             return XMLUtils.getDocumentBuilder().parse(path.toString());
         } catch (final IOException | SAXException e) {

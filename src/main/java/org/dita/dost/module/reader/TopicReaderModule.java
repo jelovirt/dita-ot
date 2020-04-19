@@ -30,7 +30,6 @@ import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.transform.Source;
-import javax.xml.transform.stream.StreamSource;
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
@@ -152,7 +151,7 @@ public final class TopicReaderModule extends AbstractReaderModule {
         final URI currentFile = job.tempDirURI.resolve(fi.uri);
         try {
             logger.debug("Reading " + currentFile);
-            return job.getStore().getMutableDocument(currentFile);
+            return job.getStore().getDocument(currentFile);
         } catch (final IOException e) {
             throw new SAXException("Failed to parse " + currentFile, e);
         }

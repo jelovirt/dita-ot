@@ -429,7 +429,7 @@ final class KeyrefModule extends AbstractPipelineModuleImpl {
     private Document readMap(final FileInfo input) throws DITAOTException {
         try {
             final URI in = job.tempDirURI.resolve(input.uri);
-            return job.getStore().getMutableDocument(in);
+            return job.getStore().getDocument(in);
         } catch (final Exception e) {
             throw new DITAOTException("Failed to parse map: " + e.getMessage(), e);
         }

@@ -36,7 +36,7 @@ public abstract class AbstractDomFilter implements AbstractReader {
         logger.info("Processing " + filename.toURI());
         Document doc;
         try {
-            doc = job.getStore().getMutableDocument(filename.toURI());
+            doc = job.getStore().getDocument(filename.toURI());
         } catch (final RuntimeException e) {
             throw e;
         } catch (final Exception e) {

@@ -121,7 +121,7 @@ final public class ChunkModule extends AbstractPipelineModuleImpl {
     private boolean isEclipseMap(final URI mapFile) throws DITAOTException {
         Document doc;
         try {
-            doc = job.getStore().getDocument(mapFile);
+            doc = job.getStore().getImmutableDocument(mapFile);
         } catch (final IOException e) {
             throw new DITAOTException("Failed to parse input map: " + e.getMessage(), e);
         }
