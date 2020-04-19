@@ -8,7 +8,10 @@
 
 package org.dita.dost.util.dom;
 
-import org.w3c.dom.*;
+import org.w3c.dom.Attr;
+import org.w3c.dom.DOMException;
+import org.w3c.dom.Element;
+import org.w3c.dom.TypeInfo;
 
 public class ImmutableAttr extends ImmutableNode implements Attr {
 
