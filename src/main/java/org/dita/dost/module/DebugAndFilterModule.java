@@ -341,9 +341,9 @@ public final class DebugAndFilterModule extends SourceReaderModule {
                 final Document parentRoot;
                 if (!tmprel.exists()) {
                     final URI src = job.getFileInfo(parent).src;
-                    parentRoot = job.getStore().getDocument(src);
+                    parentRoot = job.getStore().getMutableDocument(src);
                 } else {
-                    parentRoot = job.getStore().getDocument(tmprel.toURI());
+                    parentRoot = job.getStore().getMutableDocument(tmprel.toURI());
                 }
                 if (children != null) {
                     for (final URI childpath: children) {

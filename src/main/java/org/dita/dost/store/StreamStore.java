@@ -19,6 +19,7 @@ import net.sf.saxon.s9api.XdmNode;
 import net.sf.saxon.serialize.SerializationProperties;
 import org.dita.dost.exception.DITAOTException;
 import org.dita.dost.util.XMLUtils;
+import org.dita.dost.util.dom.ImmutableDocument;
 import org.w3c.dom.Document;
 import org.xml.sax.*;
 
@@ -48,6 +49,11 @@ public class StreamStore implements Store {
 
     @Override
     public Document getDocument(final URI path) throws IOException {
+        return new ImmutableDocument(getMutableDocument(path));
+    }
+
+    @Override
+    public Document getMutableDocument(final URI path) throws IOException {
         try {
             return XMLUtils.getDocumentBuilder().parse(path.toString());
         } catch (final IOException | SAXException e) {

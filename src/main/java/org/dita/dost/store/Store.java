@@ -69,6 +69,8 @@ public interface Store {
      */
     Document getDocument(URI path) throws IOException;
 
+    Document getMutableDocument(URI path) throws IOException;
+
     /**
      * Write DOM document to file.
      *

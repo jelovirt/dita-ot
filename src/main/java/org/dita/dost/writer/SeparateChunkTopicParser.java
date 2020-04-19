@@ -240,7 +240,7 @@ public final class SeparateChunkTopicParser extends AbstractChunkTopicParser {
      */
     private Element getTopicDoc(final URI absolutePathToFile) {
         try {
-            final Document doc = job.getStore().getDocument(absolutePathToFile);
+            final Document doc = job.getStore().getMutableDocument(absolutePathToFile);
             return doc.getDocumentElement();
         } catch (final IOException e) {
             logger.error("Failed to parse " + absolutePathToFile + ": " + e.getMessage(), e);
