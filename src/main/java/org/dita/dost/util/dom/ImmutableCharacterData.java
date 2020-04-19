@@ -14,9 +14,9 @@ import org.w3c.dom.Text;
 
 public class ImmutableCharacterData extends ImmutableNode implements CharacterData {
 
-    final Text text;
+    final CharacterData text;
 
-    public ImmutableCharacterData(Text text) {
+    public ImmutableCharacterData(CharacterData text) {
         super(text);
         this.text = text;
     }

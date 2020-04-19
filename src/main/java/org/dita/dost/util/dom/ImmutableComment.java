@@ -9,12 +9,9 @@
 package org.dita.dost.util.dom;
 
 import org.w3c.dom.Comment;
-import org.w3c.dom.Text;
 
 public class ImmutableComment extends ImmutableCharacterData implements Comment {
-
-    public ImmutableComment(Text text) {
-        super(text);
+    public ImmutableComment(Comment comment) {
+        super(comment);
     }
-
 }
