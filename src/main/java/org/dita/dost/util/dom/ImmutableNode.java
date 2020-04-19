@@ -45,7 +45,7 @@ public class ImmutableNode implements Node {
 
     @Override
     public NodeList getChildNodes() {
-        return doc.getChildNodes();
+        return new ImmutableNodeList(doc.getChildNodes());
     }
 
     @Override

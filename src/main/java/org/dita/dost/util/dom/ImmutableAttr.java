@@ -44,7 +44,7 @@ public class ImmutableAttr extends ImmutableNode implements Attr {
 
     @Override
     public Element getOwnerElement() {
-        return attr.getOwnerElement();
+        return new ImmutableElement(attr.getOwnerElement());
     }
 
     @Override

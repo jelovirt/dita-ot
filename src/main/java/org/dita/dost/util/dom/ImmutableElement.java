@@ -41,7 +41,7 @@ public class ImmutableElement extends ImmutableNode implements Element {
 
     @Override
     public Attr getAttributeNode(String name) {
-        return elem.getAttributeNode(name);
+        return new ImmutableAttr(elem.getAttributeNode(name));
     }
 
     @Override
@@ -56,7 +56,7 @@ public class ImmutableElement extends ImmutableNode implements Element {
 
     @Override
     public NodeList getElementsByTagName(String name) {
-        return elem.getElementsByTagName(name);
+        return new ImmutableNodeList(elem.getElementsByTagName(name));
     }
 
     @Override
@@ -86,7 +86,7 @@ public class ImmutableElement extends ImmutableNode implements Element {
 
     @Override
     public NodeList getElementsByTagNameNS(String namespaceURI, String localName) throws DOMException {
-        return elem.getElementsByTagNameNS(namespaceURI, localName);
+        return new ImmutableNodeList(elem.getElementsByTagNameNS(namespaceURI, localName));
     }
 
     @Override

@@ -76,7 +76,7 @@ public class ImmutableDocument extends ImmutableNode implements Document {
 
     @Override
     public NodeList getElementsByTagName(String tagname) {
-        return doc.getElementsByTagName(tagname);
+        return new ImmutableNodeList(doc.getElementsByTagName(tagname));
     }
 
     @Override
@@ -96,7 +96,7 @@ public class ImmutableDocument extends ImmutableNode implements Document {
 
     @Override
     public NodeList getElementsByTagNameNS(String namespaceURI, String localName) {
-        return doc.getElementsByTagNameNS(namespaceURI, localName);
+        return new ImmutableNodeList(doc.getElementsByTagNameNS(namespaceURI, localName));
     }
 
     @Override
