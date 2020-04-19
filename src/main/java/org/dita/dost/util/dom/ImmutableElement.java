@@ -76,7 +76,7 @@ public class ImmutableElement extends ImmutableNode implements Element {
 
     @Override
     public Attr getAttributeNodeNS(String namespaceURI, String localName) throws DOMException {
-        return elem.getAttributeNodeNS(namespaceURI, localName);
+        return new ImmutableAttr(elem.getAttributeNodeNS(namespaceURI, localName));
     }
 
     @Override

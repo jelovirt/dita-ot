@@ -27,23 +27,7 @@ public class ImmutableNodeList implements NodeList {
     public synchronized Node item(int index) {
         Node node = nodes.get(index);
         if (node == null) {
-            final Node src = srcList.item(index);
-            switch (src.getNodeType()) {
-                case Node.ELEMENT_NODE: node = new ImmutableElement((Element) src); break;
-                case Node.ATTRIBUTE_NODE: node = new ImmutableAttr((Attr) src); break;
-                case Node.TEXT_NODE: node = new ImmutableText((Text) src); break;
-                case Node.CDATA_SECTION_NODE: node = new ImmutableCDATASection((CDATASection) src); break;
-                case Node.ENTITY_REFERENCE_NODE: node = new ImmutableEntityReference(src); break;
-                case Node.ENTITY_NODE: node = new ImmutableEntity((Entity) src); break;
-                case Node.PROCESSING_INSTRUCTION_NODE: node = new ImmutableProcessingInstruction((ProcessingInstruction) src); break;
-                case Node.COMMENT_NODE: node = new ImmutableComment((Comment) src); break;
-                case Node.DOCUMENT_NODE: node = new ImmutableDocument((Document) src); break;
-//                case Node.DOCUMENT_TYPE_NODE: node = new ImmutableDocumentType((DocumentType) src); break;
-//                case Node.DOCUMENT_FRAGMENT_NODE: node = new ImmutableDocumentFragment((DocumentFragment) src); break;
-//                case Node.NOTATION_NODE: node = new ImmutableNotation((Notation) src); break;
-                default:
-                    throw new IllegalArgumentException();
-            }
+            node = ImmutableNode.wrap(srcList.item(index));
             nodes.set(index, node);
         }
         return node;

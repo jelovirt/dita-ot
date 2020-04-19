@@ -18,6 +18,25 @@ public class ImmutableNode implements Node {
         this.doc = doc;
     }
 
+    public static Node wrap(Node src) {
+        switch (src.getNodeType()) {
+            case Node.ELEMENT_NODE: return new ImmutableElement((Element) src);
+            case Node.ATTRIBUTE_NODE: return new ImmutableAttr((Attr) src);
+            case Node.TEXT_NODE: return new ImmutableText((Text) src);
+            case Node.CDATA_SECTION_NODE: return new ImmutableCDATASection((CDATASection) src);
+            case Node.ENTITY_REFERENCE_NODE: return new ImmutableEntityReference(src);
+            case Node.ENTITY_NODE: return new ImmutableEntity((Entity) src);
+            case Node.PROCESSING_INSTRUCTION_NODE: return new ImmutableProcessingInstruction((ProcessingInstruction) src);
+            case Node.COMMENT_NODE: return new ImmutableComment((Comment) src);
+            case Node.DOCUMENT_NODE: return new ImmutableDocument((Document) src);
+//                case Node.DOCUMENT_TYPE_NODE: return new ImmutableDocumentType((DocumentType) src);
+//                case Node.DOCUMENT_FRAGMENT_NODE: return new ImmutableDocumentFragment((DocumentFragment) src);
+//                case Node.NOTATION_NODE: return new ImmutableNotation((Notation) src);
+            default:
+                throw new IllegalArgumentException();
+        }
+    }
+
     @Override
     public String getNodeName() {
         return doc.getNodeName();
@@ -40,7 +59,7 @@ public class ImmutableNode implements Node {
 
     @Override
     public Node getParentNode() {
-        return doc.getParentNode();
+        return wrap(doc.getParentNode());
     }
 
     @Override
@@ -50,32 +69,32 @@ public class ImmutableNode implements Node {
 
     @Override
     public Node getFirstChild() {
-        return doc.getFirstChild();
+        return wrap(doc.getFirstChild());
     }
 
     @Override
     public Node getLastChild() {
-        return doc.getLastChild();
+        return wrap(doc.getLastChild());
     }
 
     @Override
     public Node getPreviousSibling() {
-        return doc.getPreviousSibling();
+        return wrap(doc.getPreviousSibling());
     }
 
     @Override
     public Node getNextSibling() {
-        return doc.getNextSibling();
+        return wrap(doc.getNextSibling());
     }
 
     @Override
     public NamedNodeMap getAttributes() {
-        return doc.getAttributes();
+        return new ImmutableNamedNodeMap(doc.getAttributes());
     }
 
     @Override
     public Document getOwnerDocument() {
-        return doc.getOwnerDocument();
+        return new ImmutableDocument(doc.getOwnerDocument());
     }
 
     @Override

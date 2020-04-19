@@ -31,7 +31,7 @@ public class ImmutableDocument extends ImmutableNode implements Document {
 
     @Override
     public Element getDocumentElement() {
-        return doc.getDocumentElement();
+        return new ImmutableElement(doc.getDocumentElement());
     }
 
     @Override
@@ -101,7 +101,7 @@ public class ImmutableDocument extends ImmutableNode implements Document {
 
     @Override
     public Element getElementById(String elementId) {
-        return doc.getElementById(elementId);
+        return new ImmutableElement(doc.getElementById(elementId));
     }
 
     @Override
