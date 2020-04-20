@@ -10,6 +10,7 @@ package org.dita.dost.store;
 
 import net.sf.saxon.s9api.Destination;
 import net.sf.saxon.s9api.SaxonApiException;
+import net.sf.saxon.s9api.XdmNode;
 import org.dita.dost.exception.DITAOTException;
 import org.w3c.dom.Document;
 import org.xml.sax.ContentHandler;
@@ -69,6 +70,8 @@ public interface Store {
      * @throws java.io.FileNotFoundException if file does not exist or cannot be read
      */
     Document getImmutableDocument(URI path) throws IOException;
+
+    XdmNode getImmutableNode(final URI path) throws IOException;
 
     /**
      * Get DOM document for file.
