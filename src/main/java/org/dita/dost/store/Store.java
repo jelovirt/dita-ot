@@ -92,6 +92,15 @@ public interface Store {
     void writeDocument(Document doc, URI dst) throws IOException;
 
     /**
+     * Write XdmNode to file.
+     *
+     * @param node XdmNode to store
+     * @param dst destination file URI, absolute or relative
+     * @throws IOException if serializing file fails
+     */
+    void writeDocument(XdmNode node, URI dst) throws IOException;
+
+    /**
      * Get temporary file destination
      *
      * @param path temporary file URI, absolute or relative
