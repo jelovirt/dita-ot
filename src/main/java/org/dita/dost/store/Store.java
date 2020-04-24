@@ -71,6 +71,13 @@ public interface Store {
      */
     Document getImmutableDocument(URI path) throws IOException;
 
+    /**
+     * Get immutable XsdNode for file.
+     *
+     * @param path temporary file URI, absolute or relative
+     * @return document or null if not available
+     * @throws java.io.FileNotFoundException if file does not exist or cannot be read
+     */
     XdmNode getImmutableNode(final URI path) throws IOException;
 
     /**
