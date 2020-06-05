@@ -17,7 +17,9 @@ See the accompanying LICENSE file for applicable license.
   <property file="${dita.dir}/local.properties"/>
 
   <import>
-    <fileset file="${dita.dir}/plugins/org.dita.base/build.xml"/>
+    <first>
+      <multirootfileset basedirs="${dita.dir},${dita.cache.dir}" includes="plugins/org.dita.base/build.xml"/>
+    </first>
   </import>
 
 </project>
