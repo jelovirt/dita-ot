@@ -18,6 +18,7 @@ See the accompanying LICENSE file for applicable license.
   <xmlcatalog id="dita.catalog">
     <catalogpath>
       <fileset dir="${dita.plugin.org.dita.base.dir}" includes="catalog-dita.xml"/>
+      <fileset dir="${dita.plugin.org.dita.base.cache.dir}" includes="catalog-dita.xml"/>
     </catalogpath>
   </xmlcatalog>
 
