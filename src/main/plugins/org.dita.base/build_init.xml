@@ -9,9 +9,6 @@ See the accompanying LICENSE file for applicable license.
 <project name="ditaot-init">
     
   <!-- Read configuration properties -->
-  <loadproperties>
-    <javaresource name="application.properties"/>
-  </loadproperties>
   <property file="${dita.dir}/config/org.dita.dost.platform/plugin.properties"/>
   <property file="${dita.dir}/config/configuration.properties"/>
   
