@@ -1300,8 +1300,8 @@ public final class XMLUtils {
     public DOMImplementation getDOMImplementation() {
       return b.getDOMImplementation();
     }
-  }
 
+  }
   /**
    * Get attribute value.
    *

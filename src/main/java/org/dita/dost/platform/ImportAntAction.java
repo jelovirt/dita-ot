@@ -28,15 +28,20 @@ final class ImportAntAction extends ImportAction {
   @Override
   public void getResult(final ContentHandler buf) throws SAXException {
     for (final Value value : valueSet) {
-      final String[] tokens = value.value().split("[/\\\\]", 2);
-      buf.startElement(NULL_NS_URI, "import", "import", XMLUtils.EMPTY_ATTRIBUTES);
+      final String[] tokens = value.value.split("[/\\\\]", 2);
       buf.startElement(
         NULL_NS_URI,
-        "fileset",
-        "fileset",
-        new AttributesBuilder().add("dir", tokens[0]).add("includes", tokens[1]).build()
+        "import",
+        "import",
+        XMLUtils.EMPTY_ATTRIBUTES
       );
-      buf.endElement(NULL_NS_URI, "fileset", "fileset");
+      buf.startElement(
+        NULL_NS_URI,
+        "javaresource",
+        "javaresource",
+        new AttributesBuilder().add("name", tokens[0] + "/" + tokens[1]).build()
+      );
+      buf.endElement(NULL_NS_URI, "javaresource", "javaresource");
       buf.endElement(NULL_NS_URI, "import", "import");
     }
   }

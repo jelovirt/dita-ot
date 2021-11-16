@@ -239,8 +239,11 @@ See the accompanying LICENSE file for applicable license.
     <property name="user.csspath.real" location="${dita.output.dir}/${user.csspath}"/>
     <mkdir dir="${user.csspath.real}"/>
     <!-- Always copy system default css files -->
-    <copy todir="${user.csspath.real}">
-      <fileset dir="${dita.plugin.org.dita.html5.dir}/css" includes="*.css"/>
+    <copy tofile="${user.csspath.real}/commonltr.css">
+      <javaresource name="org.dita.html5/css/commonltr.css"/>
+    </copy>
+    <copy tofile="${user.csspath.real}/commonrtl.css">
+      <javaresource name="org.dita.html5/css/commonrtl.css"/>
     </copy>
     <!-- Copy user specify css file when required -->
     <antcall target="html5.copy-css-user" inheritRefs="true"/>

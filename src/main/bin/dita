@@ -89,7 +89,7 @@ fi
 
 # set ANT_LIB location
 ANT_LIB="${DITA_HOME}/lib"
-ANT_CONFIG="${DITA_HOME}/config"
+ANT_CONFIG="${DITA_HOME}/config:${DITA_HOME}/plugins"
 
 if [ -z "$JAVACMD" ] ; then
   if [ -n "$JAVA_HOME"  ] ; then

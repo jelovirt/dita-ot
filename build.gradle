@@ -59,6 +59,14 @@ dependencies {
     testImplementation  group: 'org.xmlunit', name: 'xmlunit-core', version: '2.9.1'
 }
 
+sourceSets {
+    main {
+        resources {
+            srcDirs "src/main/resources", "src/main/plugins"
+        }
+    }
+}
+
 jar {
     archiveFileName = "${project.name}.jar"
     exclude "catalog.xml"
